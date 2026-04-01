@@ -168,6 +168,37 @@ export function Perfil() {
 
           <h1 className="text-2xl font-bold text-gray-800 text-center">Meu Perfil</h1>
 
+          {/* Debug: dados brutos */}
+          <details className="bg-gray-100 rounded-lg p-3 text-xs">
+            <summary className="font-bold text-gray-600 cursor-pointer">Debug: dados brutos</summary>
+            <div className="mt-2 space-y-2 overflow-auto max-h-64">
+              <div>
+                <p className="font-bold text-blue-600">Firebase Auth:</p>
+                <pre className="bg-white p-2 rounded text-[10px] overflow-auto">{JSON.stringify({
+                  uid: firebaseUser?.uid,
+                  email: firebaseUser?.email,
+                  phoneNumber: firebaseUser?.phoneNumber,
+                  displayName: firebaseUser?.displayName,
+                  providers: firebaseUser?.providerData.map(p => ({ id: p.providerId, email: p.email, phone: p.phoneNumber })),
+                }, null, 2)}</pre>
+              </div>
+              <div>
+                <p className="font-bold text-green-600">Firestore (usuario):</p>
+                <pre className="bg-white p-2 rounded text-[10px] overflow-auto">{JSON.stringify(usuario, null, 2)}</pre>
+              </div>
+              <div>
+                <p className="font-bold text-purple-600">State local:</p>
+                <pre className="bg-white p-2 rounded text-[10px] overflow-auto">{JSON.stringify({
+                  nomeEdit,
+                  apelidoEdit,
+                  nomeExibido: nome,
+                  apelidoExibido: apelido,
+                  loading,
+                }, null, 2)}</pre>
+              </div>
+            </div>
+          </details>
+
           {/* Seção 1: Dados Pessoais */}
           <section>
             <h2 className="text-lg font-semibold text-gray-700 mb-4">Dados Pessoais</h2>
