@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import type { Time } from '../types'
 
 interface PalpiteInputProps {
@@ -9,36 +10,64 @@ interface PalpiteInputProps {
   ehMataMata: boolean
   disabled: boolean
   alerta?: string
-  onChange: (golsCasa: number | null, golsVisitante: number | null, classificado: string | null) => void
+  onChange: (golsCasa: number, golsVisitante: number, classificado: string | null) => void
 }
 
 export function PalpiteInput({
   timeCasa,
   timeVisitante,
-  golsCasa,
-  golsVisitante,
-  classificado,
+  golsCasa: golsCasaProp,
+  golsVisitante: golsVisitanteProp,
+  classificado: classificadoProp,
   ehMataMata,
   disabled,
   alerta,
   onChange,
 }: PalpiteInputProps) {
-  const empate = ehMataMata && golsCasa !== null && golsVisitante !== null && golsCasa === golsVisitante
+  const [casa, setCasa] = useState(golsCasaProp?.toString() ?? '')
+  const [visitante, setVisitante] = useState(golsVisitanteProp?.toString() ?? '')
+  const [classificado, setClassificado] = useState(classificadoProp ?? '')
+
+  // Sync from parent when props change (e.g. after reload)
+  useEffect(() => {
+    setCasa(golsCasaProp?.toString() ?? '')
+  }, [golsCasaProp])
+
+  useEffect(() => {
+    setVisitante(golsVisitanteProp?.toString() ?? '')
+  }, [golsVisitanteProp])
+
+  useEffect(() => {
+    setClassificado(classificadoProp ?? '')
+  }, [classificadoProp])
+
+  function trySubmit(newCasa: string, newVisitante: string, newClassificado: string) {
+    const gc = parseInt(newCasa, 10)
+    const gv = parseInt(newVisitante, 10)
+    if (!isNaN(gc) && !isNaN(gv)) {
+      onChange(gc, gv, newClassificado || null)
+    }
+  }
+
+  function handleCasaChange(value: string) {
+    setCasa(value)
+    trySubmit(value, visitante, classificado)
+  }
+
+  function handleVisitanteChange(value: string) {
+    setVisitante(value)
+    trySubmit(casa, value, classificado)
+  }
+
+  function handleClassificadoChange(value: string) {
+    setClassificado(value)
+    trySubmit(casa, visitante, value)
+  }
+
+  const gc = parseInt(casa, 10)
+  const gv = parseInt(visitante, 10)
+  const empate = ehMataMata && !isNaN(gc) && !isNaN(gv) && gc === gv
   const borderClass = alerta ? 'border-yellow-400 border-2' : 'border border-gray-200'
-
-  function handleGolsCasa(value: string) {
-    const n = value === '' ? null : parseInt(value, 10)
-    onChange(isNaN(n as number) ? null : n, golsVisitante, classificado)
-  }
-
-  function handleGolsVisitante(value: string) {
-    const n = value === '' ? null : parseInt(value, 10)
-    onChange(golsCasa, isNaN(n as number) ? null : n, classificado)
-  }
-
-  function handleClassificado(value: string) {
-    onChange(golsCasa, golsVisitante, value || null)
-  }
 
   return (
     <div className={`rounded-lg bg-white p-4 ${borderClass}`}>
@@ -59,9 +88,9 @@ export function PalpiteInput({
             type="number"
             min={0}
             max={99}
-            value={golsCasa ?? ''}
+            value={casa}
             disabled={disabled}
-            onChange={(e) => handleGolsCasa(e.target.value)}
+            onChange={(e) => handleCasaChange(e.target.value)}
             className="w-12 text-center border border-gray-300 rounded p-1 text-lg font-bold disabled:bg-gray-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <span className="text-gray-400 font-bold">x</span>
@@ -69,9 +98,9 @@ export function PalpiteInput({
             type="number"
             min={0}
             max={99}
-            value={golsVisitante ?? ''}
+            value={visitante}
             disabled={disabled}
-            onChange={(e) => handleGolsVisitante(e.target.value)}
+            onChange={(e) => handleVisitanteChange(e.target.value)}
             className="w-12 text-center border border-gray-300 rounded p-1 text-lg font-bold disabled:bg-gray-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
@@ -90,11 +119,11 @@ export function PalpiteInput({
       {/* Desempate pênaltis */}
       {empate && (
         <div className="mt-3">
-          <label className="block text-sm text-gray-600 mb-1">Quem avanca (penaltis)?</label>
+          <label className="block text-sm text-gray-600 mb-1">Quem avança (pênaltis)?</label>
           <select
-            value={classificado ?? ''}
+            value={classificado}
             disabled={disabled}
-            onChange={(e) => handleClassificado(e.target.value)}
+            onChange={(e) => handleClassificadoChange(e.target.value)}
             className="w-full border border-gray-300 rounded p-1.5 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="">Selecione...</option>

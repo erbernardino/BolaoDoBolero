@@ -92,12 +92,11 @@ export function PalpitesMataMata({ fase }: Props) {
     jogo: Jogo,
     resolvedCasa: string | null,
     resolvedVisitante: string | null,
-    golsCasa: number | null,
-    golsVisitante: number | null,
+    golsCasa: number,
+    golsVisitante: number,
     classificado: string | null,
   ) {
     if (!firebaseUser) return
-    if (golsCasa === null || golsVisitante === null) return
     if (!resolvedCasa || !resolvedVisitante) return
 
     const id = `${firebaseUser.uid}_${jogo.id}`

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { doc, updateDoc } from 'firebase/firestore'
+import { doc, setDoc } from 'firebase/firestore'
 import { getToken, onMessage } from 'firebase/messaging'
 import { db, messaging } from '../config/firebase'
 import { useAuth } from './useAuth'
@@ -15,7 +15,7 @@ export function useNotifications() {
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') return
       const token = await getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY })
-      await updateDoc(doc(db, 'usuarios', firebaseUser!.uid), { fcmToken: token })
+      await setDoc(doc(db, 'usuarios', firebaseUser!.uid), { fcmToken: token }, { merge: true })
       onMessage(msg, (payload) => {
         if (payload.notification) {
           new Notification(payload.notification.title || '', { body: payload.notification.body })

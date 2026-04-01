@@ -1,7 +1,7 @@
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import type { Usuario } from '../types'
 
@@ -9,12 +9,14 @@ interface AuthState {
   firebaseUser: User | null
   usuario: Usuario | null
   loading: boolean
+  refreshUsuario: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthState>({
   firebaseUser: null,
   usuario: null,
   loading: true,
+  refreshUsuario: async () => {},
 })
 
 export function useAuth() {
@@ -35,6 +37,19 @@ export function useAuthProvider(): AuthState {
         const snap = await getDoc(doc(db, 'usuarios', user.uid))
         if (snap.exists()) {
           setUsuario({ uid: snap.id, ...snap.data() } as Usuario)
+        } else {
+          // Criar documento automaticamente para login social/telefone
+          const newUser = {
+            nome: user.displayName || '',
+            apelido: user.displayName?.split(' ')[0] || user.phoneNumber || '',
+            email: user.email || '',
+            telefone: user.phoneNumber || '',
+            role: 'participante' as const,
+            conviteId: '',
+            criadoEm: serverTimestamp(),
+          }
+          await setDoc(doc(db, 'usuarios', user.uid), newUser)
+          setUsuario({ uid: user.uid, ...newUser, criadoEm: null as any } as Usuario)
         }
       } else {
         setUsuario(null)
@@ -44,5 +59,16 @@ export function useAuthProvider(): AuthState {
     return unsubscribe
   }, [])
 
-  return { firebaseUser, usuario, loading }
+  const refreshUsuario = useCallback(async () => {
+    const currentUser = auth.currentUser
+    if (currentUser) {
+      await currentUser.reload()
+      const snap = await getDoc(doc(db, 'usuarios', currentUser.uid))
+      if (snap.exists()) {
+        setUsuario({ uid: snap.id, ...snap.data() } as Usuario)
+      }
+    }
+  }, [])
+
+  return { firebaseUser, usuario, loading, refreshUsuario }
 }

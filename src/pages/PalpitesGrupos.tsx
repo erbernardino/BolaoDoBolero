@@ -61,12 +61,11 @@ export function PalpitesGrupos() {
 
   async function handleChange(
     jogo: Jogo,
-    golsCasa: number | null,
-    golsVisitante: number | null,
+    golsCasa: number,
+    golsVisitante: number,
     classificado: string | null,
   ) {
     if (!firebaseUser) return
-    if (golsCasa === null || golsVisitante === null) return
 
     const id = `${firebaseUser.uid}_${jogo.id}`
     const palpite: Palpite = {
