@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore'
+import { collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from 'firebase/firestore'
 import { db } from '../../config/firebase'
 import type { Time } from '../../types'
 
@@ -26,6 +26,8 @@ export function GerenciarTimes() {
   const [times, setTimes] = useState<Time[]>([])
   const [form, setForm] = useState<FormState>(FORM_INITIAL)
   const [loading, setLoading] = useState(false)
+  const [editando, setEditando] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<FormState>(FORM_INITIAL)
 
   async function carregarTimes() {
     const snap = await getDocs(collection(db, 'times'))
@@ -60,6 +62,40 @@ export function GerenciarTimes() {
     if (!confirm('Tem certeza que deseja remover este time?')) return
     await deleteDoc(doc(db, 'times', id))
     await carregarTimes()
+  }
+
+  function handleEditar(time: Time) {
+    setEditando(time.id)
+    setEditForm({
+      nome: time.nome,
+      sigla: time.sigla,
+      bandeira: time.bandeira,
+      grupo: time.grupo,
+      confederacao: time.confederacao,
+    })
+  }
+
+  async function handleSalvarEdicao() {
+    if (!editando) return
+    if (editForm.sigla.length !== 3) {
+      alert('A sigla deve ter exatamente 3 caracteres.')
+      return
+    }
+    setLoading(true)
+    await updateDoc(doc(db, 'times', editando), {
+      nome: editForm.nome,
+      sigla: editForm.sigla.toUpperCase(),
+      bandeira: editForm.bandeira,
+      grupo: editForm.grupo,
+      confederacao: editForm.confederacao,
+    })
+    setEditando(null)
+    await carregarTimes()
+    setLoading(false)
+  }
+
+  function handleCancelarEdicao() {
+    setEditando(null)
   }
 
   const timesPorGrupo = GRUPOS.reduce<Record<string, Time[]>>((acc, g) => {
@@ -167,26 +203,100 @@ export function GerenciarTimes() {
             ) : (
               <ul className="divide-y divide-gray-100">
                 {timesPorGrupo[g].map((time) => (
-                  <li key={time.id} className="flex items-center gap-3 px-4 py-3">
-                    <img
-                      src={time.bandeira}
-                      alt={time.nome}
-                      className="w-8 h-6 object-cover rounded"
-                      onError={(e) => {
-                        ;(e.target as HTMLImageElement).style.display = 'none'
-                      }}
-                    />
-                    <span className="font-mono text-sm bg-gray-100 px-1 rounded">
-                      {time.sigla}
-                    </span>
-                    <span className="flex-1">{time.nome}</span>
-                    <span className="text-xs text-gray-500">{time.confederacao}</span>
-                    <button
-                      onClick={() => handleDelete(time.id)}
-                      className="text-red-600 hover:text-red-800 text-sm transition-colors"
-                    >
-                      Remover
-                    </button>
+                  <li key={time.id} className="px-4 py-3">
+                    {editando === time.id ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={editForm.nome}
+                            onChange={(e) => setEditForm({ ...editForm, nome: e.target.value })}
+                            placeholder="Nome"
+                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <input
+                            type="text"
+                            maxLength={3}
+                            value={editForm.sigla}
+                            onChange={(e) => setEditForm({ ...editForm, sigla: e.target.value })}
+                            placeholder="Sigla"
+                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                          />
+                          <input
+                            type="url"
+                            value={editForm.bandeira}
+                            onChange={(e) => setEditForm({ ...editForm, bandeira: e.target.value })}
+                            placeholder="Bandeira (URL)"
+                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:col-span-2"
+                          />
+                          <select
+                            value={editForm.grupo}
+                            onChange={(e) => setEditForm({ ...editForm, grupo: e.target.value })}
+                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            {GRUPOS.map((gr) => (
+                              <option key={gr} value={gr}>
+                                Grupo {gr}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            value={editForm.confederacao}
+                            onChange={(e) => setEditForm({ ...editForm, confederacao: e.target.value })}
+                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            {CONFEDERACOES.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={handleSalvarEdicao}
+                            disabled={loading}
+                            className="text-sm text-green-600 hover:text-green-800 font-medium"
+                          >
+                            Salvar
+                          </button>
+                          <button
+                            onClick={handleCancelarEdicao}
+                            className="text-sm text-gray-600 hover:text-gray-800"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={time.bandeira}
+                          alt={time.nome}
+                          className="w-8 h-6 object-cover rounded"
+                          onError={(e) => {
+                            ;(e.target as HTMLImageElement).style.display = 'none'
+                          }}
+                        />
+                        <span className="font-mono text-sm bg-gray-100 px-1 rounded">
+                          {time.sigla}
+                        </span>
+                        <span className="flex-1">{time.nome}</span>
+                        <span className="text-xs text-gray-500">{time.confederacao}</span>
+                        <button
+                          onClick={() => handleEditar(time)}
+                          className="text-blue-600 hover:text-blue-800 text-sm transition-colors"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(time.id)}
+                          className="text-red-600 hover:text-red-800 text-sm transition-colors"
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

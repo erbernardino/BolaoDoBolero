@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, addDoc, getDocs, deleteDoc, doc, Timestamp } from 'firebase/firestore'
+import { collection, addDoc, getDocs, deleteDoc, updateDoc, doc, Timestamp } from 'firebase/firestore'
 import { db } from '../../config/firebase'
 import type { Jogo, Time, Fase } from '../../types'
 
@@ -35,6 +35,8 @@ export function GerenciarJogos() {
   const [times, setTimes] = useState<Time[]>([])
   const [form, setForm] = useState<FormState>(FORM_INITIAL)
   const [loading, setLoading] = useState(false)
+  const [editando, setEditando] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<FormState>(FORM_INITIAL)
 
   async function carregarDados() {
     const [jogosSnap, timesSnap] = await Promise.all([
@@ -105,6 +107,71 @@ export function GerenciarJogos() {
     if (!confirm('Tem certeza que deseja remover este jogo?')) return
     await deleteDoc(doc(db, 'jogos', id))
     await carregarDados()
+  }
+
+  const isEditGrupos = editForm.fase === 'grupos'
+  const timesDoGrupoEdit = times.filter((t) => t.grupo === editForm.grupo)
+  const timesDisponiveisEdit = isEditGrupos ? timesDoGrupoEdit : times
+
+  function setEditField<K extends keyof FormState>(key: K, value: FormState[K]) {
+    setEditForm((prev) => {
+      const next = { ...prev, [key]: value }
+      if (key === 'fase' && value !== 'grupos') {
+        next.grupo = ''
+        next.timeCasa = ''
+        next.timeVisitante = ''
+      }
+      if (key === 'grupo') {
+        next.timeCasa = ''
+        next.timeVisitante = ''
+      }
+      return next
+    })
+  }
+
+  function handleEditar(jogo: Jogo) {
+    setEditando(jogo.id)
+    const date = jogo.dataHora.toDate()
+    const dataHora = date.toISOString().slice(0, 16)
+    setEditForm({
+      fase: jogo.fase,
+      grupo: jogo.grupo ?? 'A',
+      timeCasa: jogo.timeCasa,
+      timeVisitante: jogo.timeVisitante,
+      dataHora,
+    })
+  }
+
+  async function handleSalvarEdicao() {
+    if (!editando) return
+    if (!editForm.dataHora) {
+      alert('Informe a data e hora do jogo.')
+      return
+    }
+    if (isEditGrupos && (!editForm.timeCasa || !editForm.timeVisitante)) {
+      alert('Selecione os dois times.')
+      return
+    }
+    if (isEditGrupos && editForm.timeCasa === editForm.timeVisitante) {
+      alert('Time da casa e visitante não podem ser iguais.')
+      return
+    }
+
+    setLoading(true)
+    await updateDoc(doc(db, 'jogos', editando), {
+      fase: editForm.fase,
+      grupo: isEditGrupos ? editForm.grupo : null,
+      timeCasa: isEditGrupos ? editForm.timeCasa : '',
+      timeVisitante: isEditGrupos ? editForm.timeVisitante : '',
+      dataHora: Timestamp.fromDate(new Date(editForm.dataHora)),
+    })
+    setEditando(null)
+    await carregarDados()
+    setLoading(false)
+  }
+
+  function handleCancelarEdicao() {
+    setEditando(null)
   }
 
   function nomeTime(id: string) {
@@ -244,28 +311,119 @@ export function GerenciarJogos() {
             ) : (
               <ul className="divide-y divide-gray-100">
                 {jogosPorFase[fase].map((jogo) => (
-                  <li key={jogo.id} className="flex items-center gap-3 px-4 py-3">
-                    <span className="flex-1 font-medium">{jogoLabel(jogo)}</span>
-                    <span className="text-sm text-gray-500">
-                      {jogo.dataHora.toDate().toLocaleString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                    {jogo.encerrado && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                        Encerrado
-                      </span>
+                  <li key={jogo.id} className="px-4 py-3">
+                    {editando === jogo.id ? (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <select
+                          value={editForm.fase}
+                          onChange={(e) => setEditField('fase', e.target.value as Fase)}
+                          className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          {FASES.map((f) => (
+                            <option key={f} value={f}>
+                              {FASE_LABELS[f]}
+                            </option>
+                          ))}
+                        </select>
+
+                        {isEditGrupos && (
+                          <select
+                            value={editForm.grupo}
+                            onChange={(e) => setEditField('grupo', e.target.value)}
+                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            {GRUPOS.map((g) => (
+                              <option key={g} value={g}>
+                                Grupo {g}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+
+                        {isEditGrupos && (
+                          <select
+                            value={editForm.timeCasa}
+                            onChange={(e) => setEditField('timeCasa', e.target.value)}
+                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Selecione...</option>
+                            {timesDisponiveisEdit.map((t) => (
+                              <option key={t.id} value={t.id}>
+                                {t.nome}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+
+                        {isEditGrupos && (
+                          <select
+                            value={editForm.timeVisitante}
+                            onChange={(e) => setEditField('timeVisitante', e.target.value)}
+                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Selecione...</option>
+                            {timesDisponiveisEdit
+                              .filter((t) => t.id !== editForm.timeCasa)
+                              .map((t) => (
+                                <option key={t.id} value={t.id}>
+                                  {t.nome}
+                                </option>
+                              ))}
+                          </select>
+                        )}
+
+                        <input
+                          type="datetime-local"
+                          value={editForm.dataHora}
+                          onChange={(e) => setEditField('dataHora', e.target.value)}
+                          className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+
+                        <button
+                          onClick={handleSalvarEdicao}
+                          disabled={loading}
+                          className="text-sm text-green-600 hover:text-green-800 font-medium"
+                        >
+                          Salvar
+                        </button>
+                        <button
+                          onClick={handleCancelarEdicao}
+                          className="text-sm text-gray-600 hover:text-gray-800"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <span className="flex-1 font-medium">{jogoLabel(jogo)}</span>
+                        <span className="text-sm text-gray-500">
+                          {jogo.dataHora.toDate().toLocaleString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        {jogo.encerrado && (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                            Encerrado
+                          </span>
+                        )}
+                        <button
+                          onClick={() => handleEditar(jogo)}
+                          className="text-blue-600 hover:text-blue-800 text-sm transition-colors"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(jogo.id)}
+                          className="text-red-600 hover:text-red-800 text-sm transition-colors"
+                        >
+                          Remover
+                        </button>
+                      </div>
                     )}
-                    <button
-                      onClick={() => handleDelete(jogo.id)}
-                      className="text-red-600 hover:text-red-800 text-sm transition-colors"
-                    >
-                      Remover
-                    </button>
                   </li>
                 ))}
               </ul>

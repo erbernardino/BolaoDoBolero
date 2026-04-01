@@ -2,17 +2,32 @@ import { useState, useEffect } from 'react'
 import { collection, addDoc, getDocs, Timestamp } from 'firebase/firestore'
 import { db } from '../../config/firebase'
 import { useAuth } from '../../hooks/useAuth'
-import type { Convite } from '../../types'
+import type { Convite, Usuario } from '../../types'
+
+type ConviteComUsuario = Convite & { usuarioInfo?: Usuario }
 
 export function GerenciarConvites() {
   const { firebaseUser } = useAuth()
-  const [convites, setConvites] = useState<Convite[]>([])
+  const [convites, setConvites] = useState<ConviteComUsuario[]>([])
   const [loading, setLoading] = useState(false)
   const [copiado, setCopiado] = useState<string | null>(null)
 
   async function carregarConvites() {
-    const snap = await getDocs(collection(db, 'convites'))
-    const lista = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Convite))
+    const [convitesSnap, usuariosSnap] = await Promise.all([
+      getDocs(collection(db, 'convites')),
+      getDocs(collection(db, 'usuarios')),
+    ])
+
+    const usuariosMap = new Map<string, Usuario>()
+    usuariosSnap.forEach((d) => {
+      usuariosMap.set(d.id, { uid: d.id, ...d.data() } as Usuario)
+    })
+
+    const lista = convitesSnap.docs.map((d) => {
+      const convite = { id: d.id, ...d.data() } as Convite
+      const usuarioInfo = convite.usadoPor ? usuariosMap.get(convite.usadoPor) : undefined
+      return { ...convite, usuarioInfo }
+    })
     setConvites(lista)
   }
 
@@ -68,6 +83,13 @@ export function GerenciarConvites() {
             >
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-500 truncate">{urlConvite(convite.id)}</p>
+                {convite.usado && convite.usuarioInfo && (
+                  <div className="mt-1 text-xs text-gray-600">
+                    <span className="font-medium">{convite.usuarioInfo.nome}</span>
+                    {convite.usuarioInfo.email && <span> &middot; {convite.usuarioInfo.email}</span>}
+                    {convite.usuarioInfo.telefone && <span> &middot; {convite.usuarioInfo.telefone}</span>}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-3 shrink-0">

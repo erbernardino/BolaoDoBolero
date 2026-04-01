@@ -233,7 +233,7 @@ export function InserirResultados() {
           <p className="px-4 py-3 text-gray-500 text-sm">Nenhum jogo encerrado.</p>
         ) : (
           <ul className="divide-y divide-gray-100">
-            {jogosEncerrados.map((jogo) => renderJogoCard(jogo, false))}
+            {jogosEncerrados.map((jogo) => renderJogoCard(jogo, true))}
           </ul>
         )}
       </div>
