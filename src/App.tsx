@@ -5,6 +5,7 @@ import { AdminRoute } from './components/AdminRoute'
 import { Login } from './pages/Login'
 import { Cadastro } from './pages/Cadastro'
 import { Home } from './pages/Home'
+import { Regulamento } from './pages/Regulamento'
 
 export default function App() {
   const authState = useAuthProvider()
@@ -17,7 +18,7 @@ export default function App() {
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/palpites" element={<ProtectedRoute><div>Palpites</div></ProtectedRoute>} />
           <Route path="/ranking" element={<ProtectedRoute><div>Ranking</div></ProtectedRoute>} />
-          <Route path="/regulamento" element={<ProtectedRoute><div>Regulamento</div></ProtectedRoute>} />
+          <Route path="/regulamento" element={<ProtectedRoute><Regulamento /></ProtectedRoute>} />
           <Route path="/admin/*" element={<AdminRoute><div>Admin</div></AdminRoute>} />
         </Routes>
       </BrowserRouter>
