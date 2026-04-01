@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDocFromServer, getDoc } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import type { Usuario } from '../types'
 
@@ -28,15 +28,21 @@ export { AuthContext }
 async function carregarUsuario(uid: string, tentativas = 3): Promise<Usuario | null> {
   for (let i = 0; i < tentativas; i++) {
     try {
-      const snap = await getDoc(doc(db, 'usuarios', uid))
+      // getDocFromServer bypassa o cache local (que pode estar poluído pelo setDoc merge do fcmToken)
+      const snap = await getDocFromServer(doc(db, 'usuarios', uid))
       if (snap.exists()) {
         return { uid: snap.id, ...snap.data() } as Usuario
       }
       return null
     } catch {
-      if (i < tentativas - 1) {
-        await new Promise(r => setTimeout(r, 1000))
+      // Fallback: tentar do cache se o servidor falhar
+      if (i === tentativas - 1) {
+        try {
+          const snap = await getDoc(doc(db, 'usuarios', uid))
+          if (snap.exists()) return { uid: snap.id, ...snap.data() } as Usuario
+        } catch { /* ignore */ }
       }
+      await new Promise(r => setTimeout(r, 1000))
     }
   }
   return null
