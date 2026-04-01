@@ -3,12 +3,16 @@ import { signOut } from 'firebase/auth'
 import { auth } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
+import { CompletarPerfil } from '../components/CompletarPerfil'
 
 export function Home() {
   const { usuario } = useAuth()
 
-  const handleSignOut = async () => {
-    await signOut(auth)
+  const perfilIncompleto = usuario &&
+    ((usuario.nome?.trim()?.length ?? 0) < 2 || (usuario.apelido?.trim()?.length ?? 0) < 2)
+
+  if (perfilIncompleto) {
+    return <CompletarPerfil />
   }
 
   return (
@@ -57,7 +61,7 @@ export function Home() {
         </div>
 
         <button
-          onClick={handleSignOut}
+          onClick={() => signOut(auth)}
           className="mt-10 px-5 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors text-sm"
         >
           Sair
