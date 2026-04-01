@@ -1,13 +1,49 @@
 import * as admin from 'firebase-admin'
 
-export async function enviarNotificacaoTodos(titulo: string, corpo: string) {
+/**
+ * Busca tokens FCM de usuários específicos (por uid).
+ * Se uids estiver vazio, retorna tokens de todos os usuários.
+ */
+async function getTokens(uids?: string[]): Promise<string[]> {
   const db = admin.firestore()
-  const usuariosSnap = await db.collection('usuarios').get()
   const tokens: string[] = []
-  for (const doc of usuariosSnap.docs) {
-    const data = doc.data()
-    if (data.fcmToken) tokens.push(data.fcmToken)
+
+  if (uids && uids.length > 0) {
+    // Buscar tokens dos usuários específicos
+    for (const uid of uids) {
+      const snap = await db.doc(`usuarios/${uid}`).get()
+      const token = snap.data()?.fcmToken
+      if (token) tokens.push(token)
+    }
+  } else {
+    // Buscar tokens de todos
+    const snap = await db.collection('usuarios').get()
+    for (const doc of snap.docs) {
+      const token = doc.data().fcmToken
+      if (token) tokens.push(token)
+    }
   }
+
+  return tokens
+}
+
+/**
+ * Envia notificação para todos os usuários.
+ */
+export async function enviarNotificacaoTodos(titulo: string, corpo: string) {
+  const tokens = await getTokens()
+  if (tokens.length === 0) return
+  await admin.messaging().sendEachForMulticast({
+    tokens,
+    notification: { title: titulo, body: corpo },
+  })
+}
+
+/**
+ * Envia notificação para usuários específicos (por uid).
+ */
+export async function enviarNotificacaoParaUsuarios(titulo: string, corpo: string, uids: string[]) {
+  const tokens = await getTokens(uids)
   if (tokens.length === 0) return
   await admin.messaging().sendEachForMulticast({
     tokens,
