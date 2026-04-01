@@ -1,0 +1,97 @@
+import { useState, useEffect } from 'react'
+import { collection, addDoc, getDocs, Timestamp } from 'firebase/firestore'
+import { db } from '../../config/firebase'
+import { useAuth } from '../../hooks/useAuth'
+import type { Convite } from '../../types'
+
+export function GerenciarConvites() {
+  const { firebaseUser } = useAuth()
+  const [convites, setConvites] = useState<Convite[]>([])
+  const [loading, setLoading] = useState(false)
+  const [copiado, setCopiado] = useState<string | null>(null)
+
+  async function carregarConvites() {
+    const snap = await getDocs(collection(db, 'convites'))
+    const lista = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Convite))
+    setConvites(lista)
+  }
+
+  useEffect(() => {
+    carregarConvites()
+  }, [])
+
+  async function gerarConvite() {
+    if (!firebaseUser) return
+    setLoading(true)
+    await addDoc(collection(db, 'convites'), {
+      criadoPor: firebaseUser.uid,
+      usado: false,
+      usadoPor: null,
+      criadoEm: Timestamp.now(),
+    })
+    await carregarConvites()
+    setLoading(false)
+  }
+
+  function urlConvite(id: string) {
+    return `${window.location.origin}/convite/${id}`
+  }
+
+  async function copiar(id: string) {
+    await navigator.clipboard.writeText(urlConvite(id))
+    setCopiado(id)
+    setTimeout(() => setCopiado(null), 2000)
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Gerenciar Convites</h1>
+
+      <button
+        onClick={gerarConvite}
+        disabled={loading}
+        className="mb-6 bg-blue-700 text-white px-5 py-2 rounded hover:bg-blue-800 disabled:opacity-50 transition-colors"
+      >
+        {loading ? 'Gerando...' : 'Gerar Novo Convite'}
+      </button>
+
+      {convites.length === 0 ? (
+        <p className="text-gray-500">Nenhum convite gerado ainda.</p>
+      ) : (
+        <ul className="space-y-3">
+          {convites.map((convite) => (
+            <li
+              key={convite.id}
+              className={`bg-white shadow rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3 ${
+                convite.usado ? 'opacity-50' : ''
+              }`}
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-500 truncate">{urlConvite(convite.id)}</p>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
+                <span
+                  className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                    convite.usado
+                      ? 'bg-gray-200 text-gray-600'
+                      : 'bg-green-100 text-green-700'
+                  }`}
+                >
+                  {convite.usado ? 'Usado' : 'Disponível'}
+                </span>
+
+                <button
+                  onClick={() => copiar(convite.id)}
+                  className="text-sm text-blue-700 hover:text-blue-900 transition-colors"
+                >
+                  {copiado === convite.id ? 'Copiado!' : 'Copiar'}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
