@@ -37,7 +37,7 @@ export interface OrigemGrupo {
 export interface OrigemJogo {
   tipo: 'jogo'
   jogoId: string
-  resultado: 'vencedor'
+  resultado: 'vencedor' | 'perdedor'
 }
 
 export type Origem = OrigemGrupo | OrigemJogo

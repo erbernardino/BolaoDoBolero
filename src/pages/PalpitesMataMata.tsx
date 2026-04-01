@@ -66,15 +66,17 @@ export function PalpitesMataMata({ fase }: Props) {
       }
 
       // Compute group standings from user palpites
+      // jogos have grupo="A", grupos have nome="Grupo A" — extract letter from nome
       const jogosGrupos = todosJogos.filter((j) => j.fase === 'grupos')
       const classPorGrupo: Record<string, ClassificacaoTime[]> = {}
 
       for (const grupo of grupos) {
-        const jogosDoGrupo = jogosGrupos.filter((j) => j.grupo === grupo.id)
+        const letra = grupo.nome.replace('Grupo ', '')
+        const jogosDoGrupo = jogosGrupos.filter((j) => j.grupo === letra)
         const palpitesGrupo = jogosDoGrupo
           .map((j) => palpitesMap.get(j.id))
           .filter((p): p is Palpite => p !== undefined)
-        classPorGrupo[grupo.id] = calcularClassificacaoGrupo(palpitesGrupo, grupo.times)
+        classPorGrupo[letra] = calcularClassificacaoGrupo(palpitesGrupo, grupo.times)
       }
       setClassificacoes(classPorGrupo)
 
@@ -132,11 +134,26 @@ export function PalpitesMataMata({ fase }: Props) {
     palpitesPorJogoId[jogoId] = p
   })
 
+  function descreverOrigem(origem: Jogo['origemCasa']): string {
+    if (!origem) return '?'
+    if (origem.tipo === 'grupo') {
+      const pos = origem.posicao === 1 ? '1o' : origem.posicao === 2 ? '2o' : '3o'
+      return `${pos} Grupo ${origem.grupo}`
+    }
+    return `Venc. ${origem.jogoId.replace('_', ' ')}`
+  }
+
   return (
     <div className="space-y-4">
       {prazoExpirado && (
         <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 text-yellow-800 text-sm font-medium">
           Prazo encerrado. Nao e mais possivel alterar seus palpites.
+        </div>
+      )}
+
+      {fase === 'oitavas' && Object.keys(classificacoes).length === 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 text-sm">
+          Preencha os palpites da fase de grupos primeiro. Os times das oitavas serão calculados automaticamente com base nos seus resultados.
         </div>
       )}
 
@@ -177,8 +194,10 @@ export function PalpitesMataMata({ fase }: Props) {
             golsVisitante={palpite?.golsVisitante ?? null}
             classificado={palpite?.classificado ?? null}
             dataHora={jogo.dataHora}
+            labelCasa={!timeCasa ? descreverOrigem(jogo.origemCasa) : undefined}
+            labelVisitante={!timeVisitante ? descreverOrigem(jogo.origemVisitante) : undefined}
             ehMataMata={true}
-            disabled={prazoExpirado || jogo.encerrado}
+            disabled={prazoExpirado || jogo.encerrado || !timeCasa || !timeVisitante}
             alerta={alerta}
             onChange={(gc, gv, cl) =>
               handleChange(jogo, resolvedCasaId, resolvedVisitanteId, gc, gv, cl)

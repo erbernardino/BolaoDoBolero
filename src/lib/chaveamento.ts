@@ -14,9 +14,25 @@ export function resolverTimeMataMataPorPalpites(
   if (origem.tipo === 'jogo') {
     const palpite = palpitesPorJogoId[origem.jogoId]
     if (!palpite) return null
-    if (palpite.golsCasa > palpite.golsVisitante) return palpite.timeCasa
-    if (palpite.golsVisitante > palpite.golsCasa) return palpite.timeVisitante
-    return palpite.classificado
+
+    let vencedor: string | null
+    let perdedor: string | null
+
+    if (palpite.golsCasa > palpite.golsVisitante) {
+      vencedor = palpite.timeCasa
+      perdedor = palpite.timeVisitante
+    } else if (palpite.golsVisitante > palpite.golsCasa) {
+      vencedor = palpite.timeVisitante
+      perdedor = palpite.timeCasa
+    } else {
+      // Empate — classificado é o vencedor nos pênaltis
+      vencedor = palpite.classificado
+      perdedor = palpite.classificado === palpite.timeCasa
+        ? palpite.timeVisitante
+        : palpite.timeCasa
+    }
+
+    return origem.resultado === 'perdedor' ? perdedor : vencedor
   }
   return null
 }

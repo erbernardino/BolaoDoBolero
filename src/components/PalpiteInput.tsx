@@ -9,6 +9,8 @@ interface PalpiteInputProps {
   golsVisitante: number | null
   classificado: string | null
   dataHora?: Timestamp | null
+  labelCasa?: string
+  labelVisitante?: string
   ehMataMata: boolean
   disabled: boolean
   alerta?: string
@@ -22,6 +24,8 @@ export function PalpiteInput({
   golsVisitante: golsVisitanteProp,
   classificado: classificadoProp,
   dataHora,
+  labelCasa,
+  labelVisitante,
   ehMataMata,
   disabled,
   alerta,
@@ -84,7 +88,9 @@ export function PalpiteInput({
       <div className="flex items-center justify-between gap-3">
         {/* Time Casa */}
         <div className="flex items-center gap-2 flex-1 justify-end">
-          <span className="font-semibold text-gray-700 text-sm">{timeCasa?.sigla ?? '?'}</span>
+          <span className={`font-semibold text-sm ${timeCasa ? 'text-gray-700' : 'text-gray-400 italic'}`}>
+            {timeCasa?.sigla ?? labelCasa ?? '?'}
+          </span>
           {timeCasa?.bandeira ? (
             <img src={timeCasa.bandeira} alt={timeCasa.sigla} className="w-8 h-6 object-cover rounded" />
           ) : (
@@ -122,7 +128,9 @@ export function PalpiteInput({
           ) : (
             <div className="w-8 h-6 bg-gray-200 rounded" />
           )}
-          <span className="font-semibold text-gray-700 text-sm">{timeVisitante?.sigla ?? '?'}</span>
+          <span className={`font-semibold text-sm ${timeVisitante ? 'text-gray-700' : 'text-gray-400 italic'}`}>
+            {timeVisitante?.sigla ?? labelVisitante ?? '?'}
+          </span>
         </div>
       </div>
 
