@@ -11,6 +11,8 @@ interface PalpiteInputProps {
   dataHora?: Timestamp | null
   resultado?: Resultado | null
   encerrado?: boolean
+  realTimeCasa?: Time | null
+  realTimeVisitante?: Time | null
   labelCasa?: string
   labelVisitante?: string
   ehMataMata: boolean
@@ -28,6 +30,8 @@ export function PalpiteInput({
   dataHora,
   resultado,
   encerrado,
+  realTimeCasa,
+  realTimeVisitante,
   labelCasa,
   labelVisitante,
   ehMataMata,
@@ -137,6 +141,20 @@ export function PalpiteInput({
           </span>
         </div>
       </div>
+
+      {/* Times reais do mata-mata (quando disponíveis e diferentes do palpite) */}
+      {realTimeCasa && realTimeVisitante && (
+        <div className="mt-2 flex items-center justify-center gap-2">
+          <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1">
+            <span className="text-xs text-emerald-600">Real:</span>
+            {realTimeCasa.bandeira && <img src={realTimeCasa.bandeira} alt="" className="w-5 h-3.5 object-cover rounded" />}
+            <span className="text-xs font-bold text-emerald-700">{realTimeCasa.sigla}</span>
+            <span className="text-xs text-emerald-400">vs</span>
+            <span className="text-xs font-bold text-emerald-700">{realTimeVisitante.sigla}</span>
+            {realTimeVisitante.bandeira && <img src={realTimeVisitante.bandeira} alt="" className="w-5 h-3.5 object-cover rounded" />}
+          </div>
+        </div>
+      )}
 
       {/* Resultado real */}
       {encerrado && resultado && (

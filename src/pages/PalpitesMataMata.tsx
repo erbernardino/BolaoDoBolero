@@ -6,20 +6,66 @@ import { PalpiteInput } from '../components/PalpiteInput'
 import { calcularClassificacaoGrupo } from '../lib/classificacao'
 import { selecionarMelhoresTerceiros } from '../lib/melhoresTerceiros'
 import { resolverTimeMataMataPorPalpites } from '../lib/chaveamento'
-import type { Jogo, Time, Palpite, Config, ClassificacaoTime, Grupo, Fase } from '../types'
+import type { Jogo, Time, Palpite, Config, ClassificacaoTime, Grupo, Fase, Origem } from '../types'
 
 interface Props {
   fase: Fase
 }
 
+/**
+ * Resolve um time do mata-mata usando resultados REAIS (jogo.resultado).
+ * Cria "palpites virtuais" a partir dos resultados reais para reutilizar a lógica de chaveamento.
+ */
+function resolverTimeReal(
+  origem: Origem | null,
+  classReaisPorGrupo: Record<string, ClassificacaoTime[]>,
+  todosJogos: Jogo[],
+  _melhoresTerceirosReais: ClassificacaoTime[],
+): string | null {
+  if (!origem) return null
+
+  if (origem.tipo === 'grupo') {
+    const classificacao = classReaisPorGrupo[origem.grupo]
+    if (!classificacao || classificacao.length < origem.posicao) return null
+    return classificacao[origem.posicao - 1].timeId
+  }
+
+  if (origem.tipo === 'jogo') {
+    const jogoRef = todosJogos.find(j => j.id === origem.jogoId)
+    if (!jogoRef || !jogoRef.resultado || !jogoRef.encerrado) return null
+
+    const r = jogoRef.resultado
+    let vencedor: string | null
+    let perdedor: string | null
+
+    if (r.golsCasa > r.golsVisitante) {
+      vencedor = jogoRef.timeCasa || null
+      perdedor = jogoRef.timeVisitante || null
+    } else if (r.golsVisitante > r.golsCasa) {
+      vencedor = jogoRef.timeVisitante || null
+      perdedor = jogoRef.timeCasa || null
+    } else {
+      vencedor = r.classificado || null
+      perdedor = r.classificado === jogoRef.timeCasa ? (jogoRef.timeVisitante || null) : (jogoRef.timeCasa || null)
+    }
+
+    return origem.resultado === 'perdedor' ? perdedor : vencedor
+  }
+
+  return null
+}
+
 export function PalpitesMataMata({ fase }: Props) {
   const { firebaseUser } = useAuth()
   const [jogos, setJogos] = useState<Jogo[]>([])
+  const [todosJogos, setTodosJogos] = useState<Jogo[]>([])
   const [times, setTimes] = useState<Map<string, Time>>(new Map())
   const [palpites, setPalpites] = useState<Map<string, Palpite>>(new Map())
   const [config, setConfig] = useState<Config | null>(null)
   const [classificacoes, setClassificacoes] = useState<Record<string, ClassificacaoTime[]>>({})
   const [melhoresTerceiros, setMelhoresTerceiros] = useState<ClassificacaoTime[]>([])
+  const [classReais, setClassReais] = useState<Record<string, ClassificacaoTime[]>>({})
+  const [melhoresTerceirosReais, setMelhoresTerceirosReais] = useState<ClassificacaoTime[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,11 +77,12 @@ export function PalpitesMataMata({ fase }: Props) {
         getDocs(collection(db, 'config')),
       ])
 
-      const todosJogos: Jogo[] = []
+      const todos: Jogo[] = []
       jogosSnap.forEach((d) => {
-        todosJogos.push({ id: d.id, ...d.data() } as Jogo)
+        todos.push({ id: d.id, ...d.data() } as Jogo)
       })
-      setJogos(todosJogos.filter((j) => j.fase === fase))
+      setTodosJogos(todos)
+      setJogos(todos.filter((j) => j.fase === fase))
 
       const timesMap = new Map<string, Time>()
       timesSnap.forEach((d) => {
@@ -53,7 +100,7 @@ export function PalpitesMataMata({ fase }: Props) {
       })
 
       // Load user palpites
-      let palpitesMap = new Map<string, Palpite>()
+      const palpitesMap = new Map<string, Palpite>()
       if (firebaseUser) {
         const palpitesSnap = await getDocs(collection(db, 'palpites'))
         palpitesSnap.forEach((d) => {
@@ -65,11 +112,10 @@ export function PalpitesMataMata({ fase }: Props) {
         setPalpites(palpitesMap)
       }
 
-      // Compute group standings from user palpites
-      // jogos have grupo="A", grupos have nome="Grupo A" — extract letter from nome
-      const jogosGrupos = todosJogos.filter((j) => j.fase === 'grupos')
-      const classPorGrupo: Record<string, ClassificacaoTime[]> = {}
+      const jogosGrupos = todos.filter((j) => j.fase === 'grupos')
 
+      // Classificação baseada nos PALPITES do usuário
+      const classPorGrupo: Record<string, ClassificacaoTime[]> = {}
       for (const grupo of grupos) {
         const letra = grupo.nome.replace('Grupo ', '')
         const jogosDoGrupo = jogosGrupos.filter((j) => j.grupo === letra)
@@ -80,9 +126,36 @@ export function PalpitesMataMata({ fase }: Props) {
       }
       setClassificacoes(classPorGrupo)
 
-      // Select best 3rds
-      const terceiros: ClassificacaoTime[] = Object.values(classPorGrupo).map((cl) => cl[2]).filter(Boolean)
+      const terceiros = Object.values(classPorGrupo).map((cl) => cl[2]).filter(Boolean)
       setMelhoresTerceiros(selecionarMelhoresTerceiros(terceiros))
+
+      // Classificação baseada nos RESULTADOS REAIS
+      const classReaisPorGrupo: Record<string, ClassificacaoTime[]> = {}
+      for (const grupo of grupos) {
+        const letra = grupo.nome.replace('Grupo ', '')
+        const jogosDoGrupo = jogosGrupos.filter((j) => j.grupo === letra)
+        // Criar "palpites virtuais" a partir dos resultados reais
+        const palpitesReais: Palpite[] = jogosDoGrupo
+          .filter(j => j.encerrado && j.resultado)
+          .map(j => ({
+            id: `real_${j.id}`,
+            uid: 'real',
+            jogoId: j.id,
+            timeCasa: j.timeCasa,
+            timeVisitante: j.timeVisitante,
+            golsCasa: j.resultado!.golsCasa,
+            golsVisitante: j.resultado!.golsVisitante,
+            classificado: j.resultado!.classificado,
+            criadoEm: Timestamp.now(),
+          }))
+        if (palpitesReais.length > 0) {
+          classReaisPorGrupo[letra] = calcularClassificacaoGrupo(palpitesReais, grupo.times)
+        }
+      }
+      setClassReais(classReaisPorGrupo)
+
+      const terceirosReais = Object.values(classReaisPorGrupo).map((cl) => cl[2]).filter(Boolean)
+      setMelhoresTerceirosReais(selecionarMelhoresTerceiros(terceirosReais))
 
       setLoading(false)
     }
@@ -162,6 +235,7 @@ export function PalpitesMataMata({ fase }: Props) {
       )}
 
       {jogos.map((jogo) => {
+        // Times baseados nos PALPITES do usuário
         const resolvedCasaId = jogo.origemCasa
           ? resolverTimeMataMataPorPalpites(jogo.origemCasa, classificacoes, palpitesPorJogoId, melhoresTerceiros)
           : jogo.timeCasa || null
@@ -172,6 +246,17 @@ export function PalpitesMataMata({ fase }: Props) {
 
         const timeCasa = resolvedCasaId ? (times.get(resolvedCasaId) ?? null) : null
         const timeVisitante = resolvedVisitanteId ? (times.get(resolvedVisitanteId) ?? null) : null
+
+        // Times REAIS baseados nos resultados oficiais
+        const realCasaId = jogo.origemCasa
+          ? resolverTimeReal(jogo.origemCasa, classReais, todosJogos, melhoresTerceirosReais)
+          : null
+        const realVisitanteId = jogo.origemVisitante
+          ? resolverTimeReal(jogo.origemVisitante, classReais, todosJogos, melhoresTerceirosReais)
+          : null
+
+        const realTimeCasa = realCasaId ? (times.get(realCasaId) ?? null) : null
+        const realTimeVisitante = realVisitanteId ? (times.get(realVisitanteId) ?? null) : null
 
         const palpite = palpites.get(jogo.id)
 
@@ -196,6 +281,8 @@ export function PalpitesMataMata({ fase }: Props) {
             dataHora={jogo.dataHora}
             resultado={jogo.resultado}
             encerrado={jogo.encerrado}
+            realTimeCasa={realTimeCasa}
+            realTimeVisitante={realTimeVisitante}
             labelCasa={!timeCasa ? descreverOrigem(jogo.origemCasa) : undefined}
             labelVisitante={!timeVisitante ? descreverOrigem(jogo.origemVisitante) : undefined}
             ehMataMata={true}
