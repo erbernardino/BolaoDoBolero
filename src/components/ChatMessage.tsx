@@ -11,11 +11,15 @@ interface Props {
   onDelete?: (id: string) => void
 }
 
-function formatarTextoComMencoes(texto: string): React.ReactNode[] {
+function formatarTextoComMencoes(texto: string, isMine: boolean): React.ReactNode[] {
   const parts = texto.split(/(@\S+)/g)
   return parts.map((part, i) => {
     if (part.startsWith('@')) {
-      return <span key={i} className="text-blue-600 font-semibold">{part}</span>
+      return (
+        <span key={i} className={`font-semibold ${isMine ? 'text-blue-200 underline' : 'text-blue-600'}`}>
+          {part}
+        </span>
+      )
     }
     return <span key={i}>{part}</span>
   })
@@ -36,7 +40,7 @@ export function ChatMessage({ id, nome, texto, criadoEm, isMine, isAdmin, onDele
           <p className="text-xs font-semibold text-blue-600 mb-0.5">{nome}</p>
         )}
         <p className={`text-sm break-words ${isMine ? 'text-white' : ''}`}>
-          {isMine ? texto : formatarTextoComMencoes(texto)}
+          {formatarTextoComMencoes(texto, isMine)}
         </p>
         <div className={`flex items-center gap-2 mt-1 ${isMine ? 'justify-end' : 'justify-between'}`}>
           <span className={`text-[10px] ${isMine ? 'text-blue-200' : 'text-gray-400'}`}>{hora}</span>
