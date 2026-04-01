@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   unlink,
@@ -15,20 +15,18 @@ export function Perfil() {
   const { firebaseUser, usuario, loading, refreshUsuario } = useAuth()
   const navigate = useNavigate()
 
-  const [nome, setNome] = useState(usuario?.nome || '')
-  const [apelido, setApelido] = useState(usuario?.apelido || '')
+  // null = ainda não editou, usa valor do usuario
+  const [nomeEdit, setNomeEdit] = useState<string | null>(null)
+  const [apelidoEdit, setApelidoEdit] = useState<string | null>(null)
   const [salvando, setSalvando] = useState(false)
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
   const [providerMsg, setProviderMsg] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
   const [unlinking, setUnlinking] = useState(false)
   const [linkingGoogle, setLinkingGoogle] = useState(false)
 
-  useEffect(() => {
-    if (usuario) {
-      setNome(usuario.nome || '')
-      setApelido(usuario.apelido || '')
-    }
-  }, [usuario])
+  // Valor exibido: se editou usa o editado, senão usa do Firestore
+  const nome = nomeEdit ?? usuario?.nome ?? ''
+  const apelido = apelidoEdit ?? usuario?.apelido ?? ''
 
   const providers = useMemo(() => {
     if (!firebaseUser) return { email: false, phone: false, google: false }
@@ -182,7 +180,7 @@ export function Perfil() {
                   id="nome"
                   type="text"
                   value={nome}
-                  onChange={(e) => setNome(e.target.value)}
+                  onChange={(e) => setNomeEdit(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                   minLength={2}
@@ -196,7 +194,7 @@ export function Perfil() {
                   id="apelido"
                   type="text"
                   value={apelido}
-                  onChange={(e) => setApelido(e.target.value)}
+                  onChange={(e) => setApelidoEdit(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                   minLength={2}
