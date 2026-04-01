@@ -40,19 +40,17 @@ export function useAuthProvider(): AuthState {
         try {
           const snap = await getDoc(doc(db, 'usuarios', user.uid))
           if (snap.exists()) {
+            setUsuario({ uid: snap.id, ...snap.data() } as Usuario)
+            // Sincronizar email/telefone em background (sem bloquear)
             const data = snap.data()
-            // Sincronizar email/telefone do Auth com Firestore
             const authEmail = user.email || ''
             const authPhone = user.phoneNumber || ''
             if (data.email !== authEmail || data.telefone !== authPhone) {
-              await setDoc(doc(db, 'usuarios', user.uid), {
+              setDoc(doc(db, 'usuarios', user.uid), {
                 email: authEmail,
                 telefone: authPhone,
               }, { merge: true }).catch(() => {})
-              data.email = authEmail
-              data.telefone = authPhone
             }
-            setUsuario({ uid: snap.id, ...data } as Usuario)
           } else {
             setUsuario(null)
           }
