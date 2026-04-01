@@ -6,11 +6,13 @@ import { InserirResultados } from './InserirResultados'
 import { GerenciarConvites } from './GerenciarConvites'
 import { Configuracoes } from './Configuracoes'
 import { GerenciarUsuarios } from './GerenciarUsuarios'
+import { VerPalpites } from './VerPalpites'
 
 const NAV_LINKS = [
   { to: '/admin/times', label: 'Times' },
   { to: '/admin/jogos', label: 'Jogos' },
   { to: '/admin/resultados', label: 'Resultados' },
+  { to: '/admin/palpites', label: 'Palpites' },
   { to: '/admin/convites', label: 'Convites' },
   { to: '/admin/usuarios', label: 'Usuários' },
   { to: '/admin/config', label: 'Configurações' },
@@ -47,6 +49,7 @@ export function AdminDashboard() {
           <Route path="times" element={<GerenciarTimes />} />
           <Route path="jogos" element={<GerenciarJogos />} />
           <Route path="resultados" element={<InserirResultados />} />
+          <Route path="palpites" element={<VerPalpites />} />
           <Route path="convites" element={<GerenciarConvites />} />
           <Route path="usuarios" element={<GerenciarUsuarios />} />
           <Route path="config" element={<Configuracoes />} />
