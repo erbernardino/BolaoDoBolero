@@ -74,14 +74,15 @@ export function useChat() {
   }, [hasMore, loadingMore])
 
   // Send message
-  const enviarMensagem = useCallback(async (texto: string, mencoes: string[]) => {
-    if (!firebaseUser || !usuario) return
-    await addDoc(collection(db, 'chat'), {
+  const enviarMensagem = useCallback(async (texto: string, mencoes: string[]): Promise<string | null> => {
+    if (!firebaseUser || !usuario) return null
+    const ref = await addDoc(collection(db, 'chat'), {
       uid: firebaseUser.uid,
       texto,
       mencoes,
       criadoEm: Timestamp.now(),
     })
+    return ref.id
   }, [firebaseUser, usuario])
 
   // Delete message

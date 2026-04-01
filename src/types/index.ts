@@ -107,6 +107,7 @@ export interface Notificacao {
   titulo: string
   corpo: string
   lida: boolean
+  link?: string
   criadoEm: Timestamp
 }
 

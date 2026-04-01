@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useNotificacoesInApp } from '../hooks/useNotificacoesInApp'
 
 export function NotificacoesBell() {
   const { notificacoes, naoLidas, marcarTodasComoLidas } = useNotificacoesInApp()
+  const navigate = useNavigate()
   const [aberto, setAberto] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -71,9 +73,15 @@ export function NotificacoesBell() {
               notificacoes.map(n => (
                 <div
                   key={n.id}
+                  onClick={() => {
+                    if (n.link) {
+                      setAberto(false)
+                      navigate(n.link)
+                    }
+                  }}
                   className={`px-4 py-3 border-b border-gray-50 last:border-0 ${
                     !n.lida ? 'bg-blue-50/50' : ''
-                  }`}
+                  } ${n.link ? 'cursor-pointer hover:bg-gray-50' : ''}`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">

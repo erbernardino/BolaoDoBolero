@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { collection, getDocs, addDoc, Timestamp } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
@@ -11,10 +12,12 @@ import type { Usuario } from '../types'
 export function Chat() {
   const { firebaseUser, usuario } = useAuth()
   const { mensagens, loading, loadingMore, hasMore, enviarMensagem, apagarMensagem, carregarMais } = useChat()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isAtBottom, setIsAtBottom] = useState(true)
+  const [highlightId, setHighlightId] = useState<string | null>(null)
   const prevCountRef = useRef(0)
 
   // Load users for mentions
@@ -23,6 +26,25 @@ export function Chat() {
       setUsuarios(snap.docs.map(d => ({ uid: d.id, ...d.data() } as Usuario)))
     })
   }, [])
+
+  // Scroll to mentioned message from ?msg= param
+  useEffect(() => {
+    const msgId = searchParams.get('msg')
+    if (msgId && !loading && mensagens.length > 0) {
+      setHighlightId(msgId)
+      // Remove param from URL
+      setSearchParams({}, { replace: true })
+      // Scroll to the message
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`msg-${msgId}`)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          // Remove highlight after animation
+          setTimeout(() => setHighlightId(null), 3000)
+        }
+      })
+    }
+  }, [searchParams, loading, mensagens])
 
   // Auto-scroll on new messages if at bottom
   useEffect(() => {
@@ -52,11 +74,11 @@ export function Chat() {
   }
 
   async function handleSend(texto: string, mencoes: string[]) {
-    await enviarMensagem(texto, mencoes)
+    const msgId = await enviarMensagem(texto, mencoes)
 
     // Save in-app notification for mentioned users
     for (const uid of mencoes) {
-      if (uid === firebaseUser?.uid) continue // don't notify yourself
+      if (uid === firebaseUser?.uid) continue
       try {
         await addDoc(
           collection(db, 'notificacoes_usuario', uid, 'items'),
@@ -64,11 +86,12 @@ export function Chat() {
             titulo: 'Menção no chat',
             corpo: `@${usuario?.apelido || usuario?.nome} mencionou você: "${texto.substring(0, 60)}${texto.length > 60 ? '...' : ''}"`,
             lida: false,
+            link: msgId ? `/chat?msg=${msgId}` : '/chat',
             criadoEm: Timestamp.now(),
           }
         )
       } catch {
-        // Silently fail - notification is not critical
+        // Silently fail
       }
     }
   }
@@ -116,6 +139,7 @@ export function Chat() {
                 criadoEm={m.criadoEm}
                 isMine={m.uid === firebaseUser?.uid}
                 isAdmin={isAdmin}
+                highlighted={m.id === highlightId}
                 onDelete={handleDelete}
               />
             ))
