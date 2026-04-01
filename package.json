@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "setup:admin": "npx tsx scripts/setup-admin.ts",
-    "seed:times": "npx tsx scripts/seed-times.ts"
+    "seed:times": "npx tsx scripts/seed-times.ts",
+    "seed:jogos": "npx tsx scripts/seed-jogos.ts"
   },
   "dependencies": {
     "firebase": "^12.11.0",
