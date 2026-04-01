@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { Timestamp } from 'firebase/firestore'
-import type { Time } from '../types'
+import type { Time, Resultado } from '../types'
 
 interface PalpiteInputProps {
   timeCasa: Time | null
@@ -9,6 +9,8 @@ interface PalpiteInputProps {
   golsVisitante: number | null
   classificado: string | null
   dataHora?: Timestamp | null
+  resultado?: Resultado | null
+  encerrado?: boolean
   labelCasa?: string
   labelVisitante?: string
   ehMataMata: boolean
@@ -24,6 +26,8 @@ export function PalpiteInput({
   golsVisitante: golsVisitanteProp,
   classificado: classificadoProp,
   dataHora,
+  resultado,
+  encerrado,
   labelCasa,
   labelVisitante,
   ehMataMata,
@@ -133,6 +137,18 @@ export function PalpiteInput({
           </span>
         </div>
       </div>
+
+      {/* Resultado real */}
+      {encerrado && resultado && (
+        <div className="mt-2 text-center">
+          <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1">
+            <span className="text-xs text-gray-500">Resultado:</span>
+            <span className="text-sm font-bold text-gray-700">
+              {resultado.golsCasa} x {resultado.golsVisitante}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Desempate pênaltis */}
       {empate && (

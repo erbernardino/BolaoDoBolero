@@ -54,7 +54,7 @@ export function Ranking() {
         {loading ? (
           <p className="text-gray-500">Carregando...</p>
         ) : ranking.length === 0 ? (
-          <p className="text-gray-500">Nenhum resultado registrado ainda.</p>
+          <p className="text-gray-500">Ranking ainda não disponível.</p>
         ) : (
           <RankingTable ranking={ranking} />
         )}

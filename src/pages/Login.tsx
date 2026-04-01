@@ -7,11 +7,12 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
   signInWithPopup,
+  signOut,
   GoogleAuthProvider,
   RecaptchaVerifier,
 } from 'firebase/auth'
 import type { ConfirmationResult } from 'firebase/auth'
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 
 const googleProvider = new GoogleAuthProvider()
@@ -69,8 +70,14 @@ export function Login() {
     setLoading(true)
     setError('')
     try {
-      await signInWithEmailLink(auth, emailForSignIn, window.location.href)
+      const result = await signInWithEmailLink(auth, emailForSignIn, window.location.href)
       window.localStorage.removeItem(EMAIL_LINK_STORAGE_KEY)
+      const userDoc = await getDoc(doc(db, 'usuarios', result.user.uid))
+      if (!userDoc.exists()) {
+        await signOut(auth)
+        setError('Você não tem cadastro no bolão. Solicite um convite ao administrador.')
+        return
+      }
       navigate('/')
     } catch (err: unknown) {
       setError(getErrorMessage(err))
@@ -92,7 +99,13 @@ export function Login() {
     setError('')
     setLoading(true)
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      const result = await signInWithEmailAndPassword(auth, email, password)
+      const userDoc = await getDoc(doc(db, 'usuarios', result.user.uid))
+      if (!userDoc.exists()) {
+        await signOut(auth)
+        setError('Você não tem cadastro no bolão. Solicite um convite ao administrador.')
+        return
+      }
       navigate('/')
     } catch (err: unknown) {
       setError(getErrorMessage(err))
@@ -152,7 +165,13 @@ export function Login() {
     setError('')
     setLoading(true)
     try {
-      await confirmationRef.current!.confirm(smsCode)
+      const result = await confirmationRef.current!.confirm(smsCode)
+      const userDoc = await getDoc(doc(db, 'usuarios', result.user.uid))
+      if (!userDoc.exists()) {
+        await signOut(auth)
+        setError('Você não tem cadastro no bolão. Solicite um convite ao administrador.')
+        return
+      }
       navigate('/')
     } catch (err: unknown) {
       setError(getErrorMessage(err))
@@ -166,18 +185,11 @@ export function Login() {
     setLoading(true)
     try {
       const result = await signInWithPopup(auth, googleProvider)
-      // Criar documento de usuário se não existir (para login social)
       const userDoc = await getDoc(doc(db, 'usuarios', result.user.uid))
       if (!userDoc.exists()) {
-        await setDoc(doc(db, 'usuarios', result.user.uid), {
-          nome: result.user.displayName || '',
-          apelido: result.user.displayName?.split(' ')[0] || '',
-          email: result.user.email || '',
-          telefone: result.user.phoneNumber || '',
-          role: 'participante',
-          conviteId: '',
-          criadoEm: serverTimestamp(),
-        })
+        await signOut(auth)
+        setError('Você não tem cadastro no bolão. Solicite um convite ao administrador.')
+        return
       }
       navigate('/')
     } catch (err: unknown) {

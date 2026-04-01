@@ -194,6 +194,8 @@ export function PalpitesMataMata({ fase }: Props) {
             golsVisitante={palpite?.golsVisitante ?? null}
             classificado={palpite?.classificado ?? null}
             dataHora={jogo.dataHora}
+            resultado={jogo.resultado}
+            encerrado={jogo.encerrado}
             labelCasa={!timeCasa ? descreverOrigem(jogo.origemCasa) : undefined}
             labelVisitante={!timeVisitante ? descreverOrigem(jogo.origemVisitante) : undefined}
             ehMataMata={true}

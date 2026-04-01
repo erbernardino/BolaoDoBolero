@@ -131,6 +131,8 @@ export function PalpitesGrupos() {
                   golsVisitante={palpite?.golsVisitante ?? null}
                   classificado={palpite?.classificado ?? null}
                   dataHora={jogo.dataHora}
+                  resultado={jogo.resultado}
+                  encerrado={jogo.encerrado}
                   ehMataMata={false}
                   disabled={prazoExpirado || jogo.encerrado}
                   onChange={(gc, gv, cl) => handleChange(jogo, gc, gv, cl)}
