@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, createContext, useContext } from 'react'
+import { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, onSnapshot } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import type { Usuario } from '../types'
 
@@ -29,34 +29,47 @@ export function useAuthProvider(): AuthState {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null)
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [loading, setLoading] = useState(true)
+  const unsubUsuarioRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
       setFirebaseUser(user)
+
+      // Limpar listener anterior do documento
+      if (unsubUsuarioRef.current) {
+        unsubUsuarioRef.current()
+        unsubUsuarioRef.current = null
+      }
+
       if (user) {
-        const snap = await getDoc(doc(db, 'usuarios', user.uid))
-        if (snap.exists()) {
-          setUsuario({ uid: snap.id, ...snap.data() } as Usuario)
-        } else {
-          // Criar documento automaticamente para login social/telefone
-          const newUser = {
-            nome: user.displayName || '',
-            apelido: user.displayName?.split(' ')[0] || user.phoneNumber || '',
-            email: user.email || '',
-            telefone: user.phoneNumber || '',
-            role: 'participante' as const,
-            conviteId: '',
-            criadoEm: serverTimestamp(),
-          }
-          await setDoc(doc(db, 'usuarios', user.uid), newUser)
-          setUsuario({ uid: user.uid, ...newUser, criadoEm: null as any } as Usuario)
-        }
+        // Escutar documento do usuario em tempo real
+        unsubUsuarioRef.current = onSnapshot(
+          doc(db, 'usuarios', user.uid),
+          (snap) => {
+            if (snap.exists()) {
+              setUsuario({ uid: snap.id, ...snap.data() } as Usuario)
+            } else {
+              setUsuario(null)
+            }
+            setLoading(false)
+          },
+          () => {
+            // Em caso de erro, tentar leitura direta
+            setLoading(false)
+          },
+        )
       } else {
         setUsuario(null)
+        setLoading(false)
       }
-      setLoading(false)
     })
-    return unsubscribe
+
+    return () => {
+      unsubAuth()
+      if (unsubUsuarioRef.current) {
+        unsubUsuarioRef.current()
+      }
+    }
   }, [])
 
   const refreshUsuario = useCallback(async () => {

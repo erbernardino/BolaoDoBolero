@@ -32,11 +32,21 @@ async function getTokens(uids?: string[]): Promise<string[]> {
  */
 export async function enviarNotificacaoTodos(titulo: string, corpo: string) {
   const tokens = await getTokens()
-  if (tokens.length === 0) return
-  await admin.messaging().sendEachForMulticast({
+  console.log(`[Notificação] Enviando para TODOS. Tokens encontrados: ${tokens.length}`)
+  if (tokens.length === 0) {
+    console.log('[Notificação] Nenhum token FCM encontrado. Abortando.')
+    return
+  }
+  const result = await admin.messaging().sendEachForMulticast({
     tokens,
     notification: { title: titulo, body: corpo },
   })
+  console.log(`[Notificação] Sucesso: ${result.successCount}, Falhas: ${result.failureCount}`)
+  if (result.failureCount > 0) {
+    result.responses.forEach((r, i) => {
+      if (r.error) console.error(`[Notificação] Falha token[${i}]: ${r.error.code} - ${r.error.message}`)
+    })
+  }
 }
 
 /**
@@ -44,11 +54,21 @@ export async function enviarNotificacaoTodos(titulo: string, corpo: string) {
  */
 export async function enviarNotificacaoParaUsuarios(titulo: string, corpo: string, uids: string[]) {
   const tokens = await getTokens(uids)
-  if (tokens.length === 0) return
-  await admin.messaging().sendEachForMulticast({
+  console.log(`[Notificação] Enviando para ${uids.length} uids. Tokens encontrados: ${tokens.length}`)
+  if (tokens.length === 0) {
+    console.log('[Notificação] Nenhum token FCM encontrado. Abortando.')
+    return
+  }
+  const result = await admin.messaging().sendEachForMulticast({
     tokens,
     notification: { title: titulo, body: corpo },
   })
+  console.log(`[Notificação] Sucesso: ${result.successCount}, Falhas: ${result.failureCount}`)
+  if (result.failureCount > 0) {
+    result.responses.forEach((r, i) => {
+      if (r.error) console.error(`[Notificação] Falha token[${i}]: ${r.error.code} - ${r.error.message}`)
+    })
+  }
 }
 
 export async function notificarResultadoRegistrado(jogoId: string) {
