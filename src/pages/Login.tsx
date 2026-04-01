@@ -3,25 +3,35 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   signInWithEmailAndPassword,
   signInWithPhoneNumber,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
   RecaptchaVerifier,
 } from 'firebase/auth'
 import type { ConfirmationResult } from 'firebase/auth'
 import { auth } from '../config/firebase'
 
-type Mode = 'email' | 'phone'
+type Mode = 'email' | 'emailLink' | 'phone'
 type PhoneStep = 'input' | 'confirm'
+type EmailLinkStep = 'input' | 'sent' | 'confirm'
+
+const EMAIL_LINK_STORAGE_KEY = 'boleroEmailForSignIn'
 
 export function Login() {
   const navigate = useNavigate()
 
   const [mode, setMode] = useState<Mode>('email')
   const [phoneStep, setPhoneStep] = useState<PhoneStep>('input')
+  const [emailLinkStep, setEmailLinkStep] = useState<EmailLinkStep>('input')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   // email/password fields
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+
+  // email link fields
+  const [emailLink, setEmailLink] = useState('')
 
   // phone fields
   const [phone, setPhone] = useState('')
@@ -30,11 +40,39 @@ export function Login() {
   const recaptchaRef = useRef<RecaptchaVerifier | null>(null)
   const recaptchaContainerRef = useRef<HTMLDivElement>(null)
 
+  // Detectar se o usuário está retornando de um link de e-mail
+  useEffect(() => {
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      const savedEmail = window.localStorage.getItem(EMAIL_LINK_STORAGE_KEY)
+      if (savedEmail) {
+        completeEmailLinkSignIn(savedEmail)
+      } else {
+        // Email não encontrado no storage — pedir para o usuário digitar
+        setMode('emailLink')
+        setEmailLinkStep('confirm')
+      }
+    }
+  }, [])
+
   useEffect(() => {
     return () => {
       recaptchaRef.current?.clear()
     }
   }, [])
+
+  async function completeEmailLinkSignIn(emailForSignIn: string) {
+    setLoading(true)
+    setError('')
+    try {
+      await signInWithEmailLink(auth, emailForSignIn, window.location.href)
+      window.localStorage.removeItem(EMAIL_LINK_STORAGE_KEY)
+      navigate('/')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const ensureRecaptcha = () => {
     if (!recaptchaRef.current && recaptchaContainerRef.current) {
@@ -56,6 +94,34 @@ export function Login() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSendEmailLink = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      const actionCodeSettings = {
+        url: window.location.origin + '/login',
+        handleCodeInApp: true,
+      }
+      await sendSignInLinkToEmail(auth, emailLink, actionCodeSettings)
+      window.localStorage.setItem(EMAIL_LINK_STORAGE_KEY, emailLink)
+      setEmailLinkStep('sent')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleConfirmEmailLink = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!emailLink) {
+      setError('Digite seu e-mail para continuar.')
+      return
+    }
+    await completeEmailLinkSignIn(emailLink)
   }
 
   const handleSendSms = async (e: React.FormEvent) => {
@@ -94,6 +160,7 @@ export function Login() {
     setMode(newMode)
     setError('')
     setPhoneStep('input')
+    setEmailLinkStep('input')
     setSmsCode('')
     recaptchaRef.current?.clear()
     recaptchaRef.current = null
@@ -108,31 +175,23 @@ export function Login() {
 
         {/* Mode toggle */}
         <div className="flex rounded-lg overflow-hidden border border-blue-200 mb-6">
-          <button
-            type="button"
-            onClick={() => switchMode('email')}
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${
-              mode === 'email'
-                ? 'bg-blue-700 text-white'
-                : 'bg-white text-blue-700 hover:bg-blue-50'
-            }`}
-          >
-            E-mail
-          </button>
-          <button
-            type="button"
-            onClick={() => switchMode('phone')}
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${
-              mode === 'phone'
-                ? 'bg-blue-700 text-white'
-                : 'bg-white text-blue-700 hover:bg-blue-50'
-            }`}
-          >
-            Telefone (SMS)
-          </button>
+          {(['email', 'emailLink', 'phone'] as Mode[]).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => switchMode(m)}
+              className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                mode === m
+                  ? 'bg-blue-700 text-white'
+                  : 'bg-white text-blue-700 hover:bg-blue-50'
+              }`}
+            >
+              {m === 'email' ? 'E-mail + Senha' : m === 'emailLink' ? 'Link por E-mail' : 'Telefone'}
+            </button>
+          ))}
         </div>
 
-        {/* Email form */}
+        {/* Email + Password form */}
         {mode === 'email' && (
           <form onSubmit={handleEmailSignIn} className="space-y-4">
             <div>
@@ -164,6 +223,82 @@ export function Login() {
               className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
             >
               {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
+        )}
+
+        {/* Email Link (passwordless) form */}
+        {mode === 'emailLink' && emailLinkStep === 'input' && (
+          <form onSubmit={handleSendEmailLink} className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Enviaremos um link de acesso para seu e-mail. Sem necessidade de senha.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+              <input
+                type="email"
+                required
+                value={emailLink}
+                onChange={(e) => setEmailLink(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="seu@email.com"
+              />
+            </div>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Enviando...' : 'Enviar link de acesso'}
+            </button>
+          </form>
+        )}
+
+        {mode === 'emailLink' && emailLinkStep === 'sent' && (
+          <div className="text-center space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-800 font-medium">Link enviado!</p>
+              <p className="text-sm text-green-700 mt-1">
+                Verifique a caixa de entrada de <strong>{emailLink}</strong> e clique no link para entrar.
+              </p>
+            </div>
+            <p className="text-xs text-gray-500">
+              Não recebeu? Verifique a pasta de spam ou{' '}
+              <button
+                type="button"
+                onClick={() => setEmailLinkStep('input')}
+                className="text-blue-600 hover:underline"
+              >
+                tente novamente
+              </button>
+            </p>
+          </div>
+        )}
+
+        {mode === 'emailLink' && emailLinkStep === 'confirm' && (
+          <form onSubmit={handleConfirmEmailLink} className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Confirme seu e-mail para completar o login.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+              <input
+                type="email"
+                required
+                value={emailLink}
+                onChange={(e) => setEmailLink(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="seu@email.com"
+              />
+            </div>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Entrando...' : 'Confirmar e entrar'}
             </button>
           </form>
         )}
@@ -264,6 +399,8 @@ function getErrorMessage(err: unknown): string {
         return 'Código de verificação inválido.'
       case 'auth/too-many-requests':
         return 'Muitas tentativas. Tente novamente mais tarde.'
+      case 'auth/invalid-action-code':
+        return 'Link expirado ou inválido. Solicite um novo.'
       default:
         return 'Ocorreu um erro. Tente novamente.'
     }
