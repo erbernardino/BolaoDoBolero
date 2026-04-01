@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react'
+import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
-import { doc, getDoc, onSnapshot } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import type { Usuario } from '../types'
 
@@ -29,46 +29,33 @@ export function useAuthProvider(): AuthState {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null)
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [loading, setLoading] = useState(true)
-  const unsubUsuarioRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (user) => {
+    // Timeout de segurança — nunca travar em "Carregando..."
+    const timeout = setTimeout(() => setLoading(false), 5000)
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user)
-
-      // Limpar listener anterior do documento
-      if (unsubUsuarioRef.current) {
-        unsubUsuarioRef.current()
-        unsubUsuarioRef.current = null
-      }
-
       if (user) {
-        // Escutar documento do usuario em tempo real
-        unsubUsuarioRef.current = onSnapshot(
-          doc(db, 'usuarios', user.uid),
-          (snap) => {
-            if (snap.exists()) {
-              setUsuario({ uid: snap.id, ...snap.data() } as Usuario)
-            } else {
-              setUsuario(null)
-            }
-            setLoading(false)
-          },
-          () => {
-            // Em caso de erro, tentar leitura direta
-            setLoading(false)
-          },
-        )
+        try {
+          const snap = await getDoc(doc(db, 'usuarios', user.uid))
+          if (snap.exists()) {
+            setUsuario({ uid: snap.id, ...snap.data() } as Usuario)
+          } else {
+            setUsuario(null)
+          }
+        } catch {
+          setUsuario(null)
+        }
       } else {
         setUsuario(null)
-        setLoading(false)
       }
+      clearTimeout(timeout)
+      setLoading(false)
     })
-
     return () => {
-      unsubAuth()
-      if (unsubUsuarioRef.current) {
-        unsubUsuarioRef.current()
-      }
+      clearTimeout(timeout)
+      unsubscribe()
     }
   }, [])
 
@@ -76,6 +63,7 @@ export function useAuthProvider(): AuthState {
     const currentUser = auth.currentUser
     if (currentUser) {
       await currentUser.reload()
+      setFirebaseUser(auth.currentUser)
       const snap = await getDoc(doc(db, 'usuarios', currentUser.uid))
       if (snap.exists()) {
         setUsuario({ uid: snap.id, ...snap.data() } as Usuario)

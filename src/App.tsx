@@ -4,7 +4,6 @@ import { useNotifications } from './hooks/useNotifications'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminRoute } from './components/AdminRoute'
 import { OfflineBanner } from './components/OfflineBanner'
-import { PWAUpdatePrompt } from './components/PWAUpdatePrompt'
 import { PWAInstallPrompt } from './components/PWAInstallPrompt'
 import { Login } from './pages/Login'
 import { Cadastro } from './pages/Cadastro'
@@ -14,6 +13,7 @@ import { Palpites } from './pages/Palpites'
 import { Ranking } from './pages/Ranking'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { PalpitesGeral } from './pages/PalpitesGeral'
+import { Chat } from './pages/Chat'
 import { Perfil } from './pages/Perfil'
 import { VerificarVinculo } from './pages/VerificarVinculo'
 
@@ -30,11 +30,11 @@ function AppContent() {
       <Route path="/ranking" element={<ProtectedRoute><Ranking /></ProtectedRoute>} />
       <Route path="/regulamento" element={<ProtectedRoute><Regulamento /></ProtectedRoute>} />
       <Route path="/todos-palpites" element={<ProtectedRoute><PalpitesGeral /></ProtectedRoute>} />
+      <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
       <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
       <Route path="/perfil/verificar/:tipo" element={<ProtectedRoute><VerificarVinculo /></ProtectedRoute>} />
       <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
     </Routes>
-    <PWAUpdatePrompt />
     <PWAInstallPrompt />
     </>
   )

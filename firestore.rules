@@ -70,11 +70,12 @@ service cloud.firestore {
       allow update: if false;
     }
 
-    // /notificacoes_usuario/{uid}/items — dono lê e atualiza (marcar como lida), Cloud Functions escreve
+    // /notificacoes_usuario/{uid}/items — dono lê/atualiza, autenticados criam (menções), Cloud Functions também criam
     match /notificacoes_usuario/{uid}/items/{notifId} {
       allow read: if isOwner(uid);
       allow update: if isOwner(uid);
-      allow create, delete: if false; // Apenas Cloud Functions via Admin SDK
+      allow create: if isAuthenticated();
+      allow delete: if false;
     }
 
     // /ranking/{uid}: read by authenticated, write only by Cloud Functions via Admin SDK

@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore'
 import { getMessaging, isSupported } from 'firebase/messaging'
 
 const firebaseConfig = {
@@ -14,7 +14,5 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-})
+export const db = getFirestore(app)
 export const messaging = async () => (await isSupported()) ? getMessaging(app) : null

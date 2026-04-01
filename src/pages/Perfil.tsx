@@ -136,13 +136,11 @@ export function Perfil() {
       const googleEmail = result.user.providerData.find(
         (p) => p.providerId === 'google.com'
       )?.email
-
       if (googleEmail && !usuario!.email) {
         await updateDoc(doc(db, 'usuarios', firebaseUser!.uid), {
           email: googleEmail,
         })
       }
-
       await refreshUsuario()
       setProviderMsg({ tipo: 'sucesso', texto: 'Google vinculado com sucesso!' })
     } catch {

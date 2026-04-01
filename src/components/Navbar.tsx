@@ -35,6 +35,7 @@ export function Navbar() {
   const navLinks = [
     { to: '/palpites', label: 'Palpites' },
     { to: '/todos-palpites', label: 'Geral' },
+    { to: '/chat', label: 'Chat' },
     { to: '/ranking', label: 'Ranking' },
     { to: '/regulamento', label: 'Regulamento' },
     ...(usuario?.role === 'admin' ? [{ to: '/admin', label: 'Admin' }] : []),
