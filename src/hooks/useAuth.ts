@@ -25,38 +25,40 @@ export function useAuth() {
 
 export { AuthContext }
 
+async function carregarUsuario(uid: string, tentativas = 3): Promise<Usuario | null> {
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      const snap = await getDoc(doc(db, 'usuarios', uid))
+      if (snap.exists()) {
+        return { uid: snap.id, ...snap.data() } as Usuario
+      }
+      return null
+    } catch {
+      if (i < tentativas - 1) {
+        await new Promise(r => setTimeout(r, 1000))
+      }
+    }
+  }
+  return null
+}
+
 export function useAuthProvider(): AuthState {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null)
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Timeout de segurança — nunca travar em "Carregando..."
-    const timeout = setTimeout(() => setLoading(false), 5000)
-
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user)
       if (user) {
-        try {
-          const snap = await getDoc(doc(db, 'usuarios', user.uid))
-          if (snap.exists()) {
-            setUsuario({ uid: snap.id, ...snap.data() } as Usuario)
-          } else {
-            setUsuario(null)
-          }
-        } catch {
-          setUsuario(null)
-        }
+        const u = await carregarUsuario(user.uid)
+        setUsuario(u)
       } else {
         setUsuario(null)
       }
-      clearTimeout(timeout)
       setLoading(false)
     })
-    return () => {
-      clearTimeout(timeout)
-      unsubscribe()
-    }
+    return unsubscribe
   }, [])
 
   const refreshUsuario = useCallback(async () => {
@@ -64,10 +66,8 @@ export function useAuthProvider(): AuthState {
     if (currentUser) {
       await currentUser.reload()
       setFirebaseUser(auth.currentUser)
-      const snap = await getDoc(doc(db, 'usuarios', currentUser.uid))
-      if (snap.exists()) {
-        setUsuario({ uid: snap.id, ...snap.data() } as Usuario)
-      }
+      const u = await carregarUsuario(currentUser.uid)
+      if (u) setUsuario(u)
     }
   }, [])
 
