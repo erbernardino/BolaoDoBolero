@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Navbar } from '../components/Navbar'
 import { PalpitesGrupos } from './PalpitesGrupos'
 import { PalpitesMataMata } from './PalpitesMataMata'
+import { PalpitesEspeciais } from './PalpitesEspeciais'
 import type { Fase } from '../types'
 
-type Tab = Fase
+type Tab = Fase | 'especiais'
 
 const TABS: { label: string; value: Tab }[] = [
   { label: 'Grupos', value: 'grupos' },
@@ -13,6 +14,7 @@ const TABS: { label: string; value: Tab }[] = [
   { label: 'Semis', value: 'semi' },
   { label: '3o Lugar', value: 'terceiro' },
   { label: 'Final', value: 'final' },
+  { label: 'Especiais', value: 'especiais' },
 ]
 
 export function Palpites() {
@@ -43,6 +45,8 @@ export function Palpites() {
 
         {tabAtiva === 'grupos' ? (
           <PalpitesGrupos />
+        ) : tabAtiva === 'especiais' ? (
+          <PalpitesEspeciais />
         ) : (
           <PalpitesMataMata fase={tabAtiva} />
         )}

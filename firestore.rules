@@ -54,6 +54,14 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // /palpites_especiais/{uid}: read by authenticated, write by owner before prazo
+    match /palpites_especiais/{uid} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(uid) && prazoAberto();
+      allow update: if isOwner(uid) && prazoAberto();
+      allow delete: if false;
+    }
+
     // /ranking/{uid}: read by authenticated, write only by Cloud Functions via Admin SDK
     match /ranking/{uid} {
       allow read: if isAuthenticated();

@@ -102,6 +102,14 @@ export interface Convite {
   criadoEm: Timestamp
 }
 
+export interface PalpiteEspecial {
+  uid: string
+  campeao: string        // timeId
+  vice: string           // timeId
+  artilheiro: string     // nome livre do jogador
+  criadoEm: Timestamp
+}
+
 export interface ClassificacaoTime {
   timeId: string
   pontos: number
