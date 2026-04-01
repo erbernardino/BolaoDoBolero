@@ -84,9 +84,9 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // /usuarios/{uid}: read by owner or admin, create/update by owner, no delete
+    // /usuarios/{uid}: read by any authenticated user, create/update by owner, no delete
     match /usuarios/{uid} {
-      allow read: if isOwner(uid) || isAdmin();
+      allow read: if isAuthenticated();
       allow create: if isOwner(uid);
       allow update: if isOwner(uid);
       allow delete: if false;
