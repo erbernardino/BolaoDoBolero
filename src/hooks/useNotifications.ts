@@ -18,7 +18,7 @@ export function useNotifications() {
         if (permission !== 'granted') return
         const token = await getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY })
         // updateDoc: atualiza documento existente no cache, sem criar entrada parcial
-        await updateDoc(doc(db, 'usuarios', usuario.uid), { fcmToken: token })
+        await updateDoc(doc(db, 'usuarios', usuario!.uid), { fcmToken: token })
         onMessage(msg, (payload) => {
           const { title, body } = payload.notification || {}
           if (title) {
