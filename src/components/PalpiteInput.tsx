@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import type { Timestamp } from 'firebase/firestore'
 import type { Time } from '../types'
 
 interface PalpiteInputProps {
@@ -7,6 +8,7 @@ interface PalpiteInputProps {
   golsCasa: number | null
   golsVisitante: number | null
   classificado: string | null
+  dataHora?: Timestamp | null
   ehMataMata: boolean
   disabled: boolean
   alerta?: string
@@ -19,6 +21,7 @@ export function PalpiteInput({
   golsCasa: golsCasaProp,
   golsVisitante: golsVisitanteProp,
   classificado: classificadoProp,
+  dataHora,
   ehMataMata,
   disabled,
   alerta,
@@ -69,8 +72,15 @@ export function PalpiteInput({
   const empate = ehMataMata && !isNaN(gc) && !isNaN(gv) && gc === gv
   const borderClass = alerta ? 'border-yellow-400 border-2' : 'border border-gray-200'
 
+  const dataFormatada = dataHora
+    ? dataHora.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : null
+
   return (
     <div className={`rounded-lg bg-white p-4 ${borderClass}`}>
+      {dataFormatada && (
+        <p className="text-xs text-gray-400 text-center mb-2">{dataFormatada}</p>
+      )}
       <div className="flex items-center justify-between gap-3">
         {/* Time Casa */}
         <div className="flex items-center gap-2 flex-1 justify-end">

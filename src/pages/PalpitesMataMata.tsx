@@ -176,6 +176,7 @@ export function PalpitesMataMata({ fase }: Props) {
             golsCasa={palpite?.golsCasa ?? null}
             golsVisitante={palpite?.golsVisitante ?? null}
             classificado={palpite?.classificado ?? null}
+            dataHora={jogo.dataHora}
             ehMataMata={true}
             disabled={prazoExpirado || jogo.encerrado}
             alerta={alerta}
