@@ -30,13 +30,12 @@ export function CompletarPerfil() {
     setSalvando(true)
 
     try {
+      // merge: true sem incluir 'role' para não sobrescrever admin
       await setDoc(doc(db, 'usuarios', firebaseUser.uid), {
         nome: nomeTrimmed,
         apelido: apelidoTrimmed,
         email: firebaseUser.email || '',
         telefone: firebaseUser.phoneNumber || '',
-        role: 'participante',
-        conviteId: '',
         criadoEm: serverTimestamp(),
       }, { merge: true })
       await refreshUsuario()
