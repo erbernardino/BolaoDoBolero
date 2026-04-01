@@ -172,6 +172,17 @@ export function InserirResultados() {
     setSalvando((prev) => ({ ...prev, [jogo.id]: false }))
   }
 
+  async function handleRemoverResultado(jogoId: string) {
+    if (!confirm('Tem certeza que deseja remover o resultado deste jogo?')) return
+    setSalvando((prev) => ({ ...prev, [jogoId]: true }))
+    await updateDoc(doc(db, 'jogos', jogoId), {
+      resultado: null,
+      encerrado: false,
+    })
+    await carregarDados()
+    setSalvando((prev) => ({ ...prev, [jogoId]: false }))
+  }
+
   const jogosAbertos = jogos.filter((j) => !j.encerrado)
   const jogosEncerrados = jogos.filter((j) => j.encerrado)
 
@@ -301,9 +312,9 @@ export function InserirResultados() {
           </div>
         )}
 
-        {/* Botão salvar */}
+        {/* Botões salvar / remover resultado */}
         {editable && (timeCasa || !isMataMata) && (
-          <div className="mt-3 flex justify-center">
+          <div className="mt-3 flex justify-center gap-3">
             <button
               onClick={() => handleSalvar(jogo)}
               disabled={salvando[jogo.id] || (isMataMata && (!casaId || !visitanteId))}
@@ -311,6 +322,15 @@ export function InserirResultados() {
             >
               {salvando[jogo.id] ? 'Salvando...' : 'Salvar Resultado'}
             </button>
+            {jogo.encerrado && (
+              <button
+                onClick={() => handleRemoverResultado(jogo.id)}
+                disabled={salvando[jogo.id]}
+                className="bg-red-600 text-white px-6 py-1.5 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors text-sm font-medium"
+              >
+                Remover Resultado
+              </button>
+            )}
           </div>
         )}
 
@@ -349,7 +369,7 @@ export function InserirResultados() {
           <p className="px-4 py-3 text-gray-500 text-sm">Nenhum jogo encerrado.</p>
         ) : (
           <ul className="divide-y divide-gray-100">
-            {jogosEncerrados.map((jogo) => renderJogoCard(jogo, false))}
+            {jogosEncerrados.map((jogo) => renderJogoCard(jogo, true))}
           </ul>
         )}
       </div>
