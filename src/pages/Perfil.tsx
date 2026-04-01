@@ -15,8 +15,8 @@ export function Perfil() {
   const { firebaseUser, usuario, loading, refreshUsuario } = useAuth()
   const navigate = useNavigate()
 
-  const [nome, setNome] = useState('')
-  const [apelido, setApelido] = useState('')
+  const [nome, setNome] = useState(usuario?.nome || '')
+  const [apelido, setApelido] = useState(usuario?.apelido || '')
   const [salvando, setSalvando] = useState(false)
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
   const [providerMsg, setProviderMsg] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
