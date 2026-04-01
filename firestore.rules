@@ -62,6 +62,13 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // /notificacoes_usuario/{uid}/items — dono lê e atualiza (marcar como lida), Cloud Functions escreve
+    match /notificacoes_usuario/{uid}/items/{notifId} {
+      allow read: if isOwner(uid);
+      allow update: if isOwner(uid);
+      allow create, delete: if false; // Apenas Cloud Functions via Admin SDK
+    }
+
     // /ranking/{uid}: read by authenticated, write only by Cloud Functions via Admin SDK
     match /ranking/{uid} {
       allow read: if isAuthenticated();

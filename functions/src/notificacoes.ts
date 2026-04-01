@@ -1,74 +1,83 @@
 import * as admin from 'firebase-admin'
 
 /**
- * Busca tokens FCM de usuários específicos (por uid).
- * Se uids estiver vazio, retorna tokens de todos os usuários.
+ * Busca UIDs e tokens FCM.
+ * Se uids fornecido, retorna só esses. Senão, retorna todos.
  */
-async function getTokens(uids?: string[]): Promise<string[]> {
+async function getDestinatarios(uids?: string[]): Promise<{ uid: string; token: string | null }[]> {
   const db = admin.firestore()
-  const tokens: string[] = []
+  const result: { uid: string; token: string | null }[] = []
 
   if (uids && uids.length > 0) {
-    // Buscar tokens dos usuários específicos
     for (const uid of uids) {
       const snap = await db.doc(`usuarios/${uid}`).get()
-      const token = snap.data()?.fcmToken
-      if (token) tokens.push(token)
+      result.push({ uid, token: snap.data()?.fcmToken || null })
     }
   } else {
-    // Buscar tokens de todos
     const snap = await db.collection('usuarios').get()
     for (const doc of snap.docs) {
-      const token = doc.data().fcmToken
-      if (token) tokens.push(token)
+      result.push({ uid: doc.id, token: doc.data().fcmToken || null })
     }
   }
 
-  return tokens
+  return result
 }
 
 /**
- * Envia notificação para todos os usuários.
+ * Salva notificação no histórico de cada usuário.
+ */
+async function salvarHistorico(titulo: string, corpo: string, destinatarios: { uid: string }[]) {
+  const db = admin.firestore()
+  const batch = db.batch()
+  const agora = admin.firestore.Timestamp.now()
+
+  for (const { uid } of destinatarios) {
+    const ref = db.collection('notificacoes_usuario').doc(uid).collection('items').doc()
+    batch.set(ref, {
+      titulo,
+      corpo,
+      lida: false,
+      criadoEm: agora,
+    })
+  }
+
+  await batch.commit()
+}
+
+/**
+ * Envia push + salva no histórico para todos.
  */
 export async function enviarNotificacaoTodos(titulo: string, corpo: string) {
-  const tokens = await getTokens()
-  console.log(`[Notificação] Enviando para TODOS. Tokens encontrados: ${tokens.length}`)
-  if (tokens.length === 0) {
-    console.log('[Notificação] Nenhum token FCM encontrado. Abortando.')
-    return
-  }
-  const result = await admin.messaging().sendEachForMulticast({
-    tokens,
-    notification: { title: titulo, body: corpo },
-  })
-  console.log(`[Notificação] Sucesso: ${result.successCount}, Falhas: ${result.failureCount}`)
-  if (result.failureCount > 0) {
-    result.responses.forEach((r, i) => {
-      if (r.error) console.error(`[Notificação] Falha token[${i}]: ${r.error.code} - ${r.error.message}`)
+  const destinatarios = await getDestinatarios()
+  const tokens = destinatarios.map(d => d.token).filter(Boolean) as string[]
+
+  if (tokens.length > 0) {
+    const result = await admin.messaging().sendEachForMulticast({
+      tokens,
+      notification: { title: titulo, body: corpo },
     })
+    console.log(`[Notificação] Todos - Sucesso: ${result.successCount}, Falhas: ${result.failureCount}`)
   }
+
+  await salvarHistorico(titulo, corpo, destinatarios)
 }
 
 /**
- * Envia notificação para usuários específicos (por uid).
+ * Envia push + salva no histórico para usuários específicos.
  */
 export async function enviarNotificacaoParaUsuarios(titulo: string, corpo: string, uids: string[]) {
-  const tokens = await getTokens(uids)
-  console.log(`[Notificação] Enviando para ${uids.length} uids. Tokens encontrados: ${tokens.length}`)
-  if (tokens.length === 0) {
-    console.log('[Notificação] Nenhum token FCM encontrado. Abortando.')
-    return
-  }
-  const result = await admin.messaging().sendEachForMulticast({
-    tokens,
-    notification: { title: titulo, body: corpo },
-  })
-  console.log(`[Notificação] Sucesso: ${result.successCount}, Falhas: ${result.failureCount}`)
-  if (result.failureCount > 0) {
-    result.responses.forEach((r, i) => {
-      if (r.error) console.error(`[Notificação] Falha token[${i}]: ${r.error.code} - ${r.error.message}`)
+  const destinatarios = await getDestinatarios(uids)
+  const tokens = destinatarios.map(d => d.token).filter(Boolean) as string[]
+
+  if (tokens.length > 0) {
+    const result = await admin.messaging().sendEachForMulticast({
+      tokens,
+      notification: { title: titulo, body: corpo },
     })
+    console.log(`[Notificação] ${uids.length} uids - Sucesso: ${result.successCount}, Falhas: ${result.failureCount}`)
   }
+
+  await salvarHistorico(titulo, corpo, destinatarios)
 }
 
 export async function notificarResultadoRegistrado(jogoId: string) {

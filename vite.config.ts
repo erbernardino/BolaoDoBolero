@@ -10,18 +10,49 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: { enabled: true },
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Bolão do Bolero',
         short_name: 'Bolero',
         description: 'Bolão da Copa do Mundo 2026',
+        lang: 'pt-BR',
         theme_color: '#1e40af',
         background_color: '#ffffff',
         display: 'standalone',
+        orientation: 'portrait',
         start_url: '/',
+        scope: '/',
+        categories: ['sports', 'entertainment'],
         icons: [
           { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/icon-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'firestore-cache',
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/flagcdn\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'flag-images',
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+        ],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/firebase-messaging-sw\.js$/],
       },
     }),
   ],

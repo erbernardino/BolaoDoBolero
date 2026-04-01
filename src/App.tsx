@@ -3,6 +3,9 @@ import { AuthContext, useAuthProvider } from './hooks/useAuth'
 import { useNotifications } from './hooks/useNotifications'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminRoute } from './components/AdminRoute'
+import { OfflineBanner } from './components/OfflineBanner'
+import { PWAUpdatePrompt } from './components/PWAUpdatePrompt'
+import { PWAInstallPrompt } from './components/PWAInstallPrompt'
 import { Login } from './pages/Login'
 import { Cadastro } from './pages/Cadastro'
 import { Home } from './pages/Home'
@@ -17,6 +20,8 @@ import { VerificarVinculo } from './pages/VerificarVinculo'
 function AppContent() {
   useNotifications()
   return (
+    <>
+    <OfflineBanner />
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/convite/:conviteId" element={<Cadastro />} />
@@ -29,6 +34,9 @@ function AppContent() {
       <Route path="/perfil/verificar/:tipo" element={<ProtectedRoute><VerificarVinculo /></ProtectedRoute>} />
       <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
     </Routes>
+    <PWAUpdatePrompt />
+    <PWAInstallPrompt />
+    </>
   )
 }
 

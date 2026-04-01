@@ -102,6 +102,14 @@ export interface Convite {
   criadoEm: Timestamp
 }
 
+export interface Notificacao {
+  id: string
+  titulo: string
+  corpo: string
+  lida: boolean
+  criadoEm: Timestamp
+}
+
 export interface PalpiteEspecial {
   uid: string
   campeao: string        // timeId
