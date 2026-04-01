@@ -1,6 +1,7 @@
 import * as admin from 'firebase-admin'
 import { onDocumentUpdated } from 'firebase-functions/v2/firestore'
 import { processarResultadoJogo } from './pontuacao'
+import { notificarResultadoRegistrado, notificarRankingAtualizado } from './notificacoes'
 
 admin.initializeApp()
 
@@ -10,5 +11,7 @@ export const onJogoEncerrado = onDocumentUpdated('jogos/{jogoId}', async (event)
   if (!antes || !depois) return
   if (!antes.encerrado && depois.encerrado && depois.resultado) {
     await processarResultadoJogo(event.params.jogoId)
+    await notificarResultadoRegistrado(event.params.jogoId)
+    await notificarRankingAtualizado()
   }
 })
