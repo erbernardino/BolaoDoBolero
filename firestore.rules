@@ -1,0 +1,79 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function prazoAberto() {
+      return isAuthenticated() &&
+        request.time < get(/databases/$(database)/documents/config/geral).data.prazoLimitePalpites;
+    }
+
+    // /config/{docId}: read by authenticated, write by admin
+    match /config/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // /times/{timeId}: read by authenticated, write by admin
+    match /times/{timeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // /grupos/{grupoId}: read by authenticated, write by admin
+    match /grupos/{grupoId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // /jogos/{jogoId}: read by authenticated, write by admin
+    match /jogos/{jogoId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // /palpites/{palpiteId}: read by authenticated, create/update by owner before prazo, no delete
+    match /palpites/{palpiteId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(request.resource.data.uid) && prazoAberto();
+      allow update: if isOwner(resource.data.uid) && prazoAberto();
+      allow delete: if false;
+    }
+
+    // /ranking/{uid}: read by authenticated, write only by Cloud Functions via Admin SDK
+    match /ranking/{uid} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // /usuarios/{uid}: read by owner or admin, create/update by owner, no delete
+    match /usuarios/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid);
+      allow delete: if false;
+    }
+
+    // /convites/{conviteId}: read by anyone, create by admin, update by authenticated, no delete
+    match /convites/{conviteId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAuthenticated();
+      allow delete: if false;
+    }
+  }
+}
