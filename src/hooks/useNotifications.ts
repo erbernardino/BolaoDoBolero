@@ -5,10 +5,11 @@ import { db, messaging } from '../config/firebase'
 import { useAuth } from './useAuth'
 
 export function useNotifications() {
-  const { firebaseUser } = useAuth()
+  const { usuario } = useAuth()
 
+  // Só roda quando usuario já está carregado do Firestore (documento completo no cache)
   useEffect(() => {
-    if (!firebaseUser) return
+    if (!usuario) return
     async function setup() {
       try {
         const msg = await messaging()
@@ -16,7 +17,8 @@ export function useNotifications() {
         const permission = await Notification.requestPermission()
         if (permission !== 'granted') return
         const token = await getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY })
-        await updateDoc(doc(db, 'usuarios', firebaseUser!.uid), { fcmToken: token })
+        // updateDoc: atualiza documento existente no cache, sem criar entrada parcial
+        await updateDoc(doc(db, 'usuarios', usuario.uid), { fcmToken: token })
         onMessage(msg, (payload) => {
           const { title, body } = payload.notification || {}
           if (title) {
@@ -28,5 +30,5 @@ export function useNotifications() {
       }
     }
     setup()
-  }, [firebaseUser])
+  }, [usuario])
 }
