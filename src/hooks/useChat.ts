@@ -6,7 +6,6 @@ import { useAuth } from './useAuth'
 interface ChatMessage {
   id: string
   uid: string
-  nome: string
   texto: string
   mencoes: string[]
   criadoEm: Timestamp
@@ -79,7 +78,6 @@ export function useChat() {
     if (!firebaseUser || !usuario) return
     await addDoc(collection(db, 'chat'), {
       uid: firebaseUser.uid,
-      nome: usuario.apelido || usuario.nome || 'Anônimo',
       texto,
       mencoes,
       criadoEm: Timestamp.now(),

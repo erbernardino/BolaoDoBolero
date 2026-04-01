@@ -80,6 +80,11 @@ export function Chat() {
 
   const isAdmin = usuario?.role === 'admin'
 
+  function getNome(uid: string): string {
+    const u = usuarios.find(u => u.uid === uid)
+    return u?.apelido || u?.nome || 'Anônimo'
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
@@ -106,7 +111,7 @@ export function Chat() {
                 key={m.id}
                 id={m.id}
                 uid={m.uid}
-                nome={m.nome}
+                nome={getNome(m.uid)}
                 texto={m.texto}
                 criadoEm={m.criadoEm}
                 isMine={m.uid === firebaseUser?.uid}
