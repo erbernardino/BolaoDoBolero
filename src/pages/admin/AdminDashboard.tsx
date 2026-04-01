@@ -1,6 +1,8 @@
 import { NavLink, Routes, Route, Navigate } from 'react-router-dom'
 import { Navbar } from '../../components/Navbar'
 import { GerenciarTimes } from './GerenciarTimes'
+import { GerenciarJogos } from './GerenciarJogos'
+import { InserirResultados } from './InserirResultados'
 import { GerenciarConvites } from './GerenciarConvites'
 import { Configuracoes } from './Configuracoes'
 
@@ -41,8 +43,8 @@ export function AdminDashboard() {
         <Routes>
           <Route index element={<Navigate to="times" replace />} />
           <Route path="times" element={<GerenciarTimes />} />
-          <Route path="jogos" element={<div>Em breve</div>} />
-          <Route path="resultados" element={<div>Em breve</div>} />
+          <Route path="jogos" element={<GerenciarJogos />} />
+          <Route path="resultados" element={<InserirResultados />} />
           <Route path="convites" element={<GerenciarConvites />} />
           <Route path="config" element={<Configuracoes />} />
         </Routes>
