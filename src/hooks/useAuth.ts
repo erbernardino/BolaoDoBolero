@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react'
-import { onAuthStateChanged, User } from 'firebase/auth'
+import { onAuthStateChanged } from 'firebase/auth'
+import type { User } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import type { Usuario } from '../types'

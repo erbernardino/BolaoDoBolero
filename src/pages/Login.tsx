@@ -4,8 +4,8 @@ import {
   signInWithEmailAndPassword,
   signInWithPhoneNumber,
   RecaptchaVerifier,
-  ConfirmationResult,
 } from 'firebase/auth'
+import type { ConfirmationResult } from 'firebase/auth'
 import { auth } from '../config/firebase'
 
 type Mode = 'email' | 'phone'

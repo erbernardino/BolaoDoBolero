@@ -4,7 +4,7 @@ export function resolverTimeMataMataPorPalpites(
   origem: Origem,
   classificacoesPorGrupo: Record<string, ClassificacaoTime[]>,
   palpitesPorJogoId: Record<string, Palpite>,
-  melhoresTerceiros: ClassificacaoTime[],
+  _melhoresTerceiros: ClassificacaoTime[],
 ): string | null {
   if (origem.tipo === 'grupo') {
     const classificacao = classificacoesPorGrupo[origem.grupo]
