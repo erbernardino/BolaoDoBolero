@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import type { User } from 'firebase/auth'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import type { Usuario } from '../types'
 
@@ -41,16 +41,6 @@ export function useAuthProvider(): AuthState {
           const snap = await getDoc(doc(db, 'usuarios', user.uid))
           if (snap.exists()) {
             setUsuario({ uid: snap.id, ...snap.data() } as Usuario)
-            // Sincronizar email/telefone em background (sem bloquear)
-            const data = snap.data()
-            const authEmail = user.email || ''
-            const authPhone = user.phoneNumber || ''
-            if (data.email !== authEmail || data.telefone !== authPhone) {
-              setDoc(doc(db, 'usuarios', user.uid), {
-                email: authEmail,
-                telefone: authPhone,
-              }, { merge: true }).catch(() => {})
-            }
           } else {
             setUsuario(null)
           }

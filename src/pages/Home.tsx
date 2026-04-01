@@ -3,17 +3,12 @@ import { signOut } from 'firebase/auth'
 import { auth } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
-import { CompletarPerfil } from '../components/CompletarPerfil'
 
 export function Home() {
   const { usuario } = useAuth()
 
   const perfilIncompleto = usuario &&
     ((usuario.nome?.trim()?.length ?? 0) < 2 || (usuario.apelido?.trim()?.length ?? 0) < 2)
-
-  if (perfilIncompleto) {
-    return <CompletarPerfil />
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -23,6 +18,15 @@ export function Home() {
           Bem-vindo, {usuario?.apelido ?? 'participante'}!
         </h1>
         <p className="text-gray-500 mb-8">O que você quer fazer hoje?</p>
+
+        {perfilIncompleto && (
+          <Link
+            to="/perfil"
+            className="block mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded-xl text-yellow-800 text-sm"
+          >
+            Seu perfil está incompleto. <span className="font-semibold underline">Clique aqui para preencher seu nome e apelido.</span>
+          </Link>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Link
