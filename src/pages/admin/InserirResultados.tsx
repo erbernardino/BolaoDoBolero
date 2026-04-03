@@ -238,6 +238,9 @@ export function InserirResultados() {
         {/* Fase + data */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
+            {jogo.numero != null && (
+              <span className="text-xs font-bold text-gray-500">Jogo {jogo.numero}</span>
+            )}
             {jogo.fase !== 'grupos' && (
               <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
                 {faseLabels[jogo.fase] ?? jogo.fase}

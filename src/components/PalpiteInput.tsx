@@ -3,6 +3,7 @@ import type { Timestamp } from 'firebase/firestore'
 import type { Time, Resultado } from '../types'
 
 interface PalpiteInputProps {
+  numero?: number
   timeCasa: Time | null
   timeVisitante: Time | null
   golsCasa: number | null
@@ -22,6 +23,7 @@ interface PalpiteInputProps {
 }
 
 export function PalpiteInput({
+  numero,
   timeCasa,
   timeVisitante,
   golsCasa: golsCasaProp,
@@ -90,17 +92,21 @@ export function PalpiteInput({
 
   return (
     <div className={`rounded-lg bg-white p-4 ${borderClass}`}>
-      {dataFormatada && (
-        <p className="text-xs text-gray-400 text-center mb-2">{dataFormatada}</p>
+      {(numero || dataFormatada) && (
+        <p className="text-xs text-gray-400 text-center mb-2">
+          {numero != null && <span className="font-semibold text-gray-500">Jogo {numero}</span>}
+          {numero != null && dataFormatada && <span> — </span>}
+          {dataFormatada}
+        </p>
       )}
       <div className="flex items-center justify-between gap-3">
         {/* Time Casa */}
         <div className="flex items-center gap-2 flex-1 justify-end">
           <span className={`font-semibold text-sm ${timeCasa ? 'text-gray-700' : 'text-gray-400 italic'}`}>
-            {timeCasa?.sigla ?? labelCasa ?? '?'}
+            {timeCasa?.nome ?? labelCasa ?? '?'}
           </span>
           {timeCasa?.bandeira ? (
-            <img src={timeCasa.bandeira} alt={timeCasa.sigla} className="w-8 h-6 object-cover rounded" />
+            <img src={timeCasa.bandeira} alt={timeCasa.nome ?? timeCasa.sigla} className="w-8 h-6 object-cover rounded" />
           ) : (
             <div className="w-8 h-6 bg-gray-200 rounded" />
           )}
@@ -132,12 +138,12 @@ export function PalpiteInput({
         {/* Time Visitante */}
         <div className="flex items-center gap-2 flex-1">
           {timeVisitante?.bandeira ? (
-            <img src={timeVisitante.bandeira} alt={timeVisitante.sigla} className="w-8 h-6 object-cover rounded" />
+            <img src={timeVisitante.bandeira} alt={timeVisitante.nome ?? timeVisitante.sigla} className="w-8 h-6 object-cover rounded" />
           ) : (
             <div className="w-8 h-6 bg-gray-200 rounded" />
           )}
           <span className={`font-semibold text-sm ${timeVisitante ? 'text-gray-700' : 'text-gray-400 italic'}`}>
-            {timeVisitante?.sigla ?? labelVisitante ?? '?'}
+            {timeVisitante?.nome ?? labelVisitante ?? '?'}
           </span>
         </div>
       </div>
@@ -147,11 +153,11 @@ export function PalpiteInput({
         <div className="mt-2 flex items-center justify-center gap-2">
           <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1">
             <span className="text-xs text-emerald-600">Real:</span>
-            {realTimeCasa.bandeira && <img src={realTimeCasa.bandeira} alt="" className="w-5 h-3.5 object-cover rounded" />}
-            <span className="text-xs font-bold text-emerald-700">{realTimeCasa.sigla}</span>
+            {realTimeCasa.bandeira && <img src={realTimeCasa.bandeira} alt="" className="w-5 h-3.5 object-cover rounded" title={realTimeCasa.nome} />}
+            <span className="text-xs font-bold text-emerald-700">{realTimeCasa.nome}</span>
             <span className="text-xs text-emerald-400">vs</span>
-            <span className="text-xs font-bold text-emerald-700">{realTimeVisitante.sigla}</span>
-            {realTimeVisitante.bandeira && <img src={realTimeVisitante.bandeira} alt="" className="w-5 h-3.5 object-cover rounded" />}
+            <span className="text-xs font-bold text-emerald-700">{realTimeVisitante.nome}</span>
+            {realTimeVisitante.bandeira && <img src={realTimeVisitante.bandeira} alt="" className="w-5 h-3.5 object-cover rounded" title={realTimeVisitante.nome} />}
           </div>
         </div>
       )}
@@ -172,6 +178,7 @@ export function PalpiteInput({
       {empate && (
         <div className="mt-3">
           <label className="block text-sm text-gray-600 mb-1">Quem avança (pênaltis)?</label>
+          <p className="text-xs text-gray-400 mb-1">Apenas para definir os times das próximas fases. Não vale pontuação.</p>
           <select
             value={classificado}
             disabled={disabled}
