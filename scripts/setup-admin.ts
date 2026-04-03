@@ -43,7 +43,7 @@ async function main() {
   const configSnap = await configRef.get()
   if (!configSnap.exists) {
     await configRef.set({
-      pontos: { placarExato: 10, placarUmTime: 5, vencedor: 3 },
+      pontos: { placarExato: 5, colunaCerta: 3, totalGols: 1 },
       prazoLimitePalpites: Timestamp.fromDate(new Date('2026-06-11T00:00:00Z')),
       visibilidadePalpites: 'apos_jogo',
       regrasPremiacao: '',

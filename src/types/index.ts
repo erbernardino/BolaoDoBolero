@@ -3,8 +3,8 @@ import { Timestamp } from 'firebase/firestore'
 export interface Config {
   pontos: {
     placarExato: number
-    placarUmTime: number
-    vencedor: number
+    colunaCerta: number
+    totalGols: number
   }
   prazoLimitePalpites: Timestamp
   visibilidadePalpites: 'apos_prazo' | 'apos_jogo' | 'sempre' | 'nunca'
@@ -26,7 +26,7 @@ export interface Grupo {
   times: string[]
 }
 
-export type Fase = 'grupos' | 'oitavas' | 'quartas' | 'semi' | 'terceiro' | 'final'
+export type Fase = 'grupos' | 'fase32' | 'oitavas' | 'quartas' | 'semi' | 'terceiro' | 'final'
 
 export interface OrigemGrupo {
   tipo: 'grupo'
@@ -77,8 +77,8 @@ export interface Ranking {
   uid: string
   pontosTotal: number
   placaresExatos: number
-  placaresUmTime: number
-  vencedoresAcertados: number
+  colunasCertas: number
+  totalGolsAcertados: number
 }
 
 export type Role = 'admin' | 'participante'

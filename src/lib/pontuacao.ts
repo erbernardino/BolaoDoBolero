@@ -5,11 +5,11 @@ interface Placar {
 
 interface ConfigPontos {
   placarExato: number
-  placarUmTime: number
-  vencedor: number
+  colunaCerta: number
+  totalGols: number
 }
 
-type TipoAcerto = 'placarExato' | 'placarUmTime' | 'vencedor' | null
+type TipoAcerto = 'placarExato' | 'colunaCerta' | 'totalGols' | null
 
 interface ResultadoPontuacao {
   pontos: number
@@ -21,19 +21,32 @@ export function calcularPontosPalpite(
   resultado: Placar,
   config: ConfigPontos,
 ): ResultadoPontuacao {
-  if (palpite.golsCasa === resultado.golsCasa && palpite.golsVisitante === resultado.golsVisitante) {
-    return { pontos: config.placarExato, tipo: 'placarExato' }
-  }
-  if (
-    (palpite.golsCasa === resultado.golsCasa && resultado.golsCasa > 0) ||
-    (palpite.golsVisitante === resultado.golsVisitante && resultado.golsVisitante > 0)
-  ) {
-    return { pontos: config.placarUmTime, tipo: 'placarUmTime' }
-  }
+  // Coluna = vencedor ou empate
   const vPalpite = Math.sign(palpite.golsCasa - palpite.golsVisitante)
   const vResultado = Math.sign(resultado.golsCasa - resultado.golsVisitante)
-  if (vPalpite === vResultado) {
-    return { pontos: config.vencedor, tipo: 'vencedor' }
+  const colunaCerta = vPalpite === vResultado
+
+  // Resultado = placar exato
+  const resultadoCerto =
+    palpite.golsCasa === resultado.golsCasa && palpite.golsVisitante === resultado.golsVisitante
+
+  // Total de gols
+  const totalPalpite = palpite.golsCasa + palpite.golsVisitante
+  const totalResultado = resultado.golsCasa + resultado.golsVisitante
+  const totalGolsCerto = totalPalpite === totalResultado
+
+  // 5 pts: coluna certa + resultado certo (placar exato)
+  if (colunaCerta && resultadoCerto) {
+    return { pontos: config.placarExato, tipo: 'placarExato' }
   }
+  // 3 pts: coluna certa + resultado errado
+  if (colunaCerta) {
+    return { pontos: config.colunaCerta, tipo: 'colunaCerta' }
+  }
+  // 1 pt: coluna errada + total de gols certo
+  if (totalGolsCerto) {
+    return { pontos: config.totalGols, tipo: 'totalGols' }
+  }
+  // 0 pts: errou tudo
   return { pontos: 0, tipo: null }
 }

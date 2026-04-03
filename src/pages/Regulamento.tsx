@@ -24,9 +24,10 @@ export function Regulamento() {
           <section>
             <h2 className="font-bold text-lg mb-2">Pontuação</h2>
             <ul className="list-disc ml-5 space-y-1">
-              <li>Placar exato: <strong>{config?.pontos.placarExato ?? 10}</strong> pontos</li>
-              <li>Acertar placar de um time: <strong>{config?.pontos.placarUmTime ?? 5}</strong> pontos</li>
-              <li>Acertar vencedor/empate: <strong>{config?.pontos.vencedor ?? 3}</strong> pontos</li>
+              <li>Placar exato (coluna certa + resultado certo): <strong>{config?.pontos.placarExato ?? 5}</strong> pontos</li>
+              <li>Coluna certa (acertou vencedor/empate, errou placar): <strong>{config?.pontos.colunaCerta ?? 3}</strong> pontos</li>
+              <li>Total de gols certo (errou coluna, acertou nº de gols): <strong>{config?.pontos.totalGols ?? 1}</strong> ponto</li>
+              <li>Errou tudo: <strong>0</strong> pontos</li>
             </ul>
             <p className="text-sm text-gray-600 mt-2">Pontuação não cumulativa — vale o maior acerto por jogo.</p>
           </section>
@@ -40,10 +41,9 @@ export function Regulamento() {
           <section>
             <h2 className="font-bold text-lg mb-2">Desempate</h2>
             <ol className="list-decimal ml-5 space-y-1">
-              <li>Maior soma total de pontos</li>
-              <li>Mais placares exatos acertados</li>
-              <li>Mais placares de um time acertados</li>
-              <li>Mais vencedores acertados</li>
+              <li>Maior número de placares exatos ({config?.pontos.placarExato ?? 5} pontos)</li>
+              <li>Maior número de colunas certas ({config?.pontos.colunaCerta ?? 3} pontos)</li>
+              <li>Maior número de totais de gols acertados ({config?.pontos.totalGols ?? 1} ponto)</li>
             </ol>
           </section>
           <section>

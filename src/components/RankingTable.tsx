@@ -14,8 +14,8 @@ export function RankingTable({ ranking }: Props) {
             <th className="px-3 py-2 text-left">Participante</th>
             <th className="px-3 py-2 text-center">Pontos</th>
             <th className="px-3 py-2 text-center">Exatos</th>
-            <th className="px-3 py-2 text-center">1 Time</th>
-            <th className="px-3 py-2 text-center">Vencedor</th>
+            <th className="px-3 py-2 text-center">Coluna</th>
+            <th className="px-3 py-2 text-center">Gols</th>
           </tr>
         </thead>
         <tbody>
@@ -25,8 +25,8 @@ export function RankingTable({ ranking }: Props) {
               <td className="px-3 py-2">{r.usuario.apelido || r.usuario.nome}</td>
               <td className="px-3 py-2 text-center font-bold">{r.pontosTotal}</td>
               <td className="px-3 py-2 text-center">{r.placaresExatos}</td>
-              <td className="px-3 py-2 text-center">{r.placaresUmTime}</td>
-              <td className="px-3 py-2 text-center">{r.vencedoresAcertados}</td>
+              <td className="px-3 py-2 text-center">{r.colunasCertas}</td>
+              <td className="px-3 py-2 text-center">{r.totalGolsAcertados}</td>
             </tr>
           ))}
         </tbody>

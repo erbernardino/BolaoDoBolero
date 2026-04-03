@@ -1,23 +1,26 @@
 import { useState, useEffect } from 'react'
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore'
+import { getFunctions, httpsCallable } from 'firebase/functions'
 import { db } from '../../config/firebase'
 import type { Config } from '../../types'
+
+const functions = getFunctions()
 
 type VisibilidadeOption = Config['visibilidadePalpites']
 
 interface FormState {
   placarExato: number
-  placarUmTime: number
-  vencedor: number
+  colunaCerta: number
+  totalGols: number
   prazoLimitePalpites: string
   visibilidadePalpites: VisibilidadeOption
   regrasPremiacao: string
 }
 
 const DEFAULTS: FormState = {
-  placarExato: 10,
-  placarUmTime: 5,
-  vencedor: 3,
+  placarExato: 5,
+  colunaCerta: 3,
+  totalGols: 1,
   prazoLimitePalpites: '',
   visibilidadePalpites: 'apos_prazo',
   regrasPremiacao: '',
@@ -39,6 +42,8 @@ export function Configuracoes() {
   const [form, setForm] = useState<FormState>(DEFAULTS)
   const [loading, setLoading] = useState(false)
   const [salvo, setSalvo] = useState(false)
+  const [recalculando, setRecalculando] = useState(false)
+  const [rankingMsg, setRankingMsg] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
 
   useEffect(() => {
     async function carregar() {
@@ -47,8 +52,8 @@ export function Configuracoes() {
         const data = snap.data() as Config
         setForm({
           placarExato: data.pontos?.placarExato ?? DEFAULTS.placarExato,
-          placarUmTime: data.pontos?.placarUmTime ?? DEFAULTS.placarUmTime,
-          vencedor: data.pontos?.vencedor ?? DEFAULTS.vencedor,
+          colunaCerta: data.pontos?.colunaCerta ?? DEFAULTS.colunaCerta,
+          totalGols: data.pontos?.totalGols ?? DEFAULTS.totalGols,
           prazoLimitePalpites: data.prazoLimitePalpites
             ? timestampToDatetimeLocal(data.prazoLimitePalpites)
             : '',
@@ -67,8 +72,8 @@ export function Configuracoes() {
     const config: Config = {
       pontos: {
         placarExato: form.placarExato,
-        placarUmTime: form.placarUmTime,
-        vencedor: form.vencedor,
+        colunaCerta: form.colunaCerta,
+        totalGols: form.totalGols,
       },
       prazoLimitePalpites: form.prazoLimitePalpites
         ? datetimeLocalToTimestamp(form.prazoLimitePalpites)
@@ -81,6 +86,24 @@ export function Configuracoes() {
     setLoading(false)
     setSalvo(true)
     setTimeout(() => setSalvo(false), 3000)
+  }
+
+  async function handleRecalcularRanking() {
+    if (!confirm('Tem certeza? Isso vai zerar e recalcular todo o ranking do zero.')) return
+    setRankingMsg(null)
+    setRecalculando(true)
+    try {
+      const fn = httpsCallable<unknown, { recalculados: number }>(functions, 'recalcularRanking')
+      const result = await fn({})
+      setRankingMsg({
+        tipo: 'sucesso',
+        texto: `Ranking recalculado com sucesso! ${result.data.recalculados} jogo(s) processado(s).`,
+      })
+    } catch {
+      setRankingMsg({ tipo: 'erro', texto: 'Erro ao recalcular ranking. Tente novamente.' })
+    } finally {
+      setRecalculando(false)
+    }
   }
 
   return (
@@ -102,22 +125,22 @@ export function Configuracoes() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">Placar Um Time</label>
+              <label className="text-sm font-medium text-gray-700">Coluna Certa</label>
               <input
                 type="number"
                 min={0}
-                value={form.placarUmTime}
-                onChange={(e) => setForm({ ...form, placarUmTime: Number(e.target.value) })}
+                value={form.colunaCerta}
+                onChange={(e) => setForm({ ...form, colunaCerta: Number(e.target.value) })}
                 className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">Vencedor</label>
+              <label className="text-sm font-medium text-gray-700">Total de Gols</label>
               <input
                 type="number"
                 min={0}
-                value={form.vencedor}
-                onChange={(e) => setForm({ ...form, vencedor: Number(e.target.value) })}
+                value={form.totalGols}
+                onChange={(e) => setForm({ ...form, totalGols: Number(e.target.value) })}
                 className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -180,6 +203,28 @@ export function Configuracoes() {
           {salvo && <span className="text-green-600 font-medium">Salvo!</span>}
         </div>
       </form>
+      {/* Recalcular Ranking */}
+      <div className="bg-white shadow rounded-lg p-6 mt-6">
+        <h2 className="text-lg font-semibold mb-2">Recalcular Ranking</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Zera todo o ranking e recalcula a pontuacao de todos os jogos encerrados. Use caso tenha alterado os pontos ou corrigido algum resultado.
+        </p>
+
+        {rankingMsg && (
+          <p className={`text-sm mb-4 ${rankingMsg.tipo === 'sucesso' ? 'text-green-600' : 'text-red-600'}`}>
+            {rankingMsg.texto}
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={handleRecalcularRanking}
+          disabled={recalculando}
+          className="bg-amber-600 text-white px-5 py-2 rounded hover:bg-amber-700 disabled:opacity-50 transition-colors"
+        >
+          {recalculando ? 'Recalculando...' : 'Recalcular Ranking'}
+        </button>
+      </div>
     </div>
   )
 }

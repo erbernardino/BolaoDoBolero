@@ -2,13 +2,13 @@ import * as admin from 'firebase-admin'
 
 interface ConfigPontos {
   placarExato: number
-  placarUmTime: number
-  vencedor: number
+  colunaCerta: number
+  totalGols: number
 }
 
 interface ResultadoPontuacao {
   pontos: number
-  tipo: 'placarExato' | 'placarUmTime' | 'vencedor' | null
+  tipo: 'placarExato' | 'colunaCerta' | 'totalGols' | null
 }
 
 export function calcularPontos(
@@ -16,18 +16,25 @@ export function calcularPontos(
   resultado: { golsCasa: number; golsVisitante: number },
   config: ConfigPontos,
 ): ResultadoPontuacao {
-  if (palpite.golsCasa === resultado.golsCasa && palpite.golsVisitante === resultado.golsVisitante) {
-    return { pontos: config.placarExato, tipo: 'placarExato' }
-  }
-  const casaMatch = palpite.golsCasa === resultado.golsCasa && palpite.golsCasa > 0
-  const visitanteMatch = palpite.golsVisitante === resultado.golsVisitante && palpite.golsVisitante > 0
-  if (casaMatch || visitanteMatch) {
-    return { pontos: config.placarUmTime, tipo: 'placarUmTime' }
-  }
   const vPalpite = Math.sign(palpite.golsCasa - palpite.golsVisitante)
   const vResultado = Math.sign(resultado.golsCasa - resultado.golsVisitante)
-  if (vPalpite === vResultado) {
-    return { pontos: config.vencedor, tipo: 'vencedor' }
+  const colunaCerta = vPalpite === vResultado
+
+  const resultadoCerto =
+    palpite.golsCasa === resultado.golsCasa && palpite.golsVisitante === resultado.golsVisitante
+
+  const totalPalpite = palpite.golsCasa + palpite.golsVisitante
+  const totalResultado = resultado.golsCasa + resultado.golsVisitante
+  const totalGolsCerto = totalPalpite === totalResultado
+
+  if (colunaCerta && resultadoCerto) {
+    return { pontos: config.placarExato, tipo: 'placarExato' }
+  }
+  if (colunaCerta) {
+    return { pontos: config.colunaCerta, tipo: 'colunaCerta' }
+  }
+  if (totalGolsCerto) {
+    return { pontos: config.totalGols, tipo: 'totalGols' }
   }
   return { pontos: 0, tipo: null }
 }
@@ -56,15 +63,15 @@ export async function processarResultadoJogo(jogoId: string) {
       batch.update(rankingRef, {
         pontosTotal: ranking.pontosTotal + resultado.pontos,
         placaresExatos: ranking.placaresExatos + (resultado.tipo === 'placarExato' ? 1 : 0),
-        placaresUmTime: ranking.placaresUmTime + (resultado.tipo === 'placarUmTime' ? 1 : 0),
-        vencedoresAcertados: ranking.vencedoresAcertados + (resultado.tipo === 'vencedor' ? 1 : 0),
+        colunasCertas: ranking.colunasCertas + (resultado.tipo === 'colunaCerta' ? 1 : 0),
+        totalGolsAcertados: ranking.totalGolsAcertados + (resultado.tipo === 'totalGols' ? 1 : 0),
       })
     } else {
       batch.set(rankingRef, {
         pontosTotal: resultado.pontos,
         placaresExatos: resultado.tipo === 'placarExato' ? 1 : 0,
-        placaresUmTime: resultado.tipo === 'placarUmTime' ? 1 : 0,
-        vencedoresAcertados: resultado.tipo === 'vencedor' ? 1 : 0,
+        colunasCertas: resultado.tipo === 'colunaCerta' ? 1 : 0,
+        totalGolsAcertados: resultado.tipo === 'totalGols' ? 1 : 0,
       })
     }
   }

@@ -35,8 +35,8 @@ export function Ranking() {
       lista.sort((a, b) => {
         if (b.pontosTotal !== a.pontosTotal) return b.pontosTotal - a.pontosTotal
         if (b.placaresExatos !== a.placaresExatos) return b.placaresExatos - a.placaresExatos
-        if (b.placaresUmTime !== a.placaresUmTime) return b.placaresUmTime - a.placaresUmTime
-        return b.vencedoresAcertados - a.vencedoresAcertados
+        if (b.colunasCertas !== a.colunasCertas) return b.colunasCertas - a.colunasCertas
+        return b.totalGolsAcertados - a.totalGolsAcertados
       })
 
       setRanking(lista)
