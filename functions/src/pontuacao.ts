@@ -4,6 +4,7 @@ interface ConfigPontos {
   placarExato: number
   colunaCerta: number
   totalGols: number
+  palpiteEspecial?: number
 }
 
 interface ResultadoPontuacao {
@@ -62,6 +63,7 @@ export async function processarResultadoJogo(jogoId: string) {
       const ranking = rankingSnap.data()!
       batch.update(rankingRef, {
         pontosTotal: ranking.pontosTotal + resultado.pontos,
+        pontosJogos: (ranking.pontosJogos ?? 0) + resultado.pontos,
         placaresExatos: ranking.placaresExatos + (resultado.tipo === 'placarExato' ? 1 : 0),
         colunasCertas: ranking.colunasCertas + (resultado.tipo === 'colunaCerta' ? 1 : 0),
         totalGolsAcertados: ranking.totalGolsAcertados + (resultado.tipo === 'totalGols' ? 1 : 0),
@@ -69,11 +71,160 @@ export async function processarResultadoJogo(jogoId: string) {
     } else {
       batch.set(rankingRef, {
         pontosTotal: resultado.pontos,
+        pontosJogos: resultado.pontos,
+        pontosEspeciais: 0,
         placaresExatos: resultado.tipo === 'placarExato' ? 1 : 0,
         colunasCertas: resultado.tipo === 'colunaCerta' ? 1 : 0,
         totalGolsAcertados: resultado.tipo === 'totalGols' ? 1 : 0,
+        pontosFaseGrupos: 0,
+        pontosJogosBrasil: 0,
       })
     }
   }
   await batch.commit()
+}
+
+interface RankingData {
+  pontosTotal: number
+  pontosJogos: number
+  pontosEspeciais: number
+  placaresExatos: number
+  colunasCertas: number
+  totalGolsAcertados: number
+  pontosFaseGrupos: number
+  pontosJogosBrasil: number
+}
+
+function emptyRanking(): RankingData {
+  return {
+    pontosTotal: 0,
+    pontosJogos: 0,
+    pontosEspeciais: 0,
+    placaresExatos: 0,
+    colunasCertas: 0,
+    totalGolsAcertados: 0,
+    pontosFaseGrupos: 0,
+    pontosJogosBrasil: 0,
+  }
+}
+
+/**
+ * Recalcula o ranking inteiro do zero, considerando todos os jogos que têm resultado
+ * e os palpites especiais. Usado a cada salvamento de resultado.
+ */
+export async function recalcularTodoRanking() {
+  const db = admin.firestore()
+
+  const configSnap = await db.doc('config/geral').get()
+  const config = configSnap.data()
+  if (!config) return
+
+  const pontos = config.pontos as ConfigPontos
+  const ptsEspecial = pontos.palpiteEspecial ?? 10
+
+  // Buscar times para identificar o Brasil
+  const timesSnap = await db.collection('times').get()
+  const brasilId = timesSnap.docs.find(d => d.data().sigla === 'BRA')?.id ?? null
+
+  // Buscar todos os jogos com resultado
+  const jogosSnap = await db.collection('jogos').get()
+  const jogosComResultado = jogosSnap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter((j: any) => j.resultado)
+
+  // Buscar todos os palpites de jogos
+  const palpitesSnap = await db.collection('palpites').get()
+
+  // Calcular ranking por usuário (pontos de jogos)
+  const rankingMap = new Map<string, RankingData>()
+
+  for (const jogo of jogosComResultado) {
+    const jogoData = jogo as any
+    const isFaseGrupos = jogoData.fase === 'grupos'
+    const isJogoBrasil = brasilId != null &&
+      (jogoData.timeCasa === brasilId || jogoData.timeVisitante === brasilId)
+
+    const palpitesDoJogo = palpitesSnap.docs
+      .map(d => d.data())
+      .filter((p: any) => p.jogoId === jogo.id)
+
+    for (const palpite of palpitesDoJogo) {
+      const p = palpite as any
+      const resultado = calcularPontos(
+        { golsCasa: p.golsCasa, golsVisitante: p.golsVisitante },
+        { golsCasa: jogoData.resultado.golsCasa, golsVisitante: jogoData.resultado.golsVisitante },
+        pontos,
+      )
+
+      const atual = rankingMap.get(p.uid) ?? emptyRanking()
+      atual.pontosJogos += resultado.pontos
+      atual.pontosTotal += resultado.pontos
+      if (resultado.tipo === 'placarExato') atual.placaresExatos += 1
+      if (resultado.tipo === 'colunaCerta') atual.colunasCertas += 1
+      if (resultado.tipo === 'totalGols') atual.totalGolsAcertados += 1
+      if (isFaseGrupos) atual.pontosFaseGrupos += resultado.pontos
+      if (isJogoBrasil) atual.pontosJogosBrasil += resultado.pontos
+      rankingMap.set(p.uid, atual)
+    }
+  }
+
+  // Palpites especiais
+  const resultadoEspecialSnap = await db.doc('config/resultado_especial').get()
+  if (resultadoEspecialSnap.exists) {
+    const re = resultadoEspecialSnap.data() as {
+      campeao?: string
+      vice?: string
+      terceiro?: string
+      quarto?: string
+      paisesArtilheiros?: string[]
+    }
+
+    const palpitesEspeciaisSnap = await db.collection('palpites_especiais').get()
+
+    for (const peDoc of palpitesEspeciaisSnap.docs) {
+      const pe = peDoc.data() as {
+        uid: string
+        campeao?: string
+        vice?: string
+        terceiro?: string
+        quarto?: string
+        paisArtilheiro?: string
+      }
+
+      let pontosEsp = 0
+      if (re.campeao && pe.campeao === re.campeao) pontosEsp += ptsEspecial
+      if (re.vice && pe.vice === re.vice) pontosEsp += ptsEspecial
+      if (re.terceiro && pe.terceiro === re.terceiro) pontosEsp += ptsEspecial
+      if (re.quarto && pe.quarto === re.quarto) pontosEsp += ptsEspecial
+      if (re.paisesArtilheiros && re.paisesArtilheiros.length > 0 && pe.paisArtilheiro) {
+        if (re.paisesArtilheiros.includes(pe.paisArtilheiro)) pontosEsp += ptsEspecial
+      }
+
+      if (pontosEsp > 0) {
+        const atual = rankingMap.get(pe.uid) ?? emptyRanking()
+        atual.pontosEspeciais = pontosEsp
+        atual.pontosTotal += pontosEsp
+        rankingMap.set(pe.uid, atual)
+      }
+    }
+  }
+
+  // Limpar ranking atual
+  const rankingAtualSnap = await db.collection('ranking').get()
+  if (!rankingAtualSnap.empty) {
+    const deleteBatch = db.batch()
+    for (const d of rankingAtualSnap.docs) {
+      deleteBatch.delete(d.ref)
+    }
+    await deleteBatch.commit()
+  }
+
+  // Gravar novo ranking
+  if (rankingMap.size > 0) {
+    const batch = db.batch()
+    for (const [uid, dados] of rankingMap) {
+      batch.set(db.doc(`ranking/${uid}`), dados)
+    }
+    await batch.commit()
+  }
 }

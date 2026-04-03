@@ -5,6 +5,15 @@ export interface Config {
     placarExato: number
     colunaCerta: number
     totalGols: number
+    palpiteEspecial: number
+  }
+  premiacao: {
+    primeiro: number
+    segundo: number
+    terceiro: number
+    antepenultimo: number
+    doacao: number
+    taxaInscricao: number
   }
   prazoLimitePalpites: Timestamp
   visibilidadePalpites: 'apos_prazo' | 'apos_jogo' | 'sempre' | 'nunca'
@@ -59,6 +68,7 @@ export interface Jogo {
   dataHora: Timestamp
   resultado: Resultado | null
   encerrado: boolean
+  aoVivo?: boolean
 }
 
 export interface Palpite {
@@ -76,9 +86,13 @@ export interface Palpite {
 export interface Ranking {
   uid: string
   pontosTotal: number
+  pontosJogos: number
+  pontosEspeciais: number
   placaresExatos: number
   colunasCertas: number
   totalGolsAcertados: number
+  pontosFaseGrupos: number
+  pontosJogosBrasil: number
 }
 
 export type Role = 'admin' | 'participante'
@@ -113,10 +127,20 @@ export interface Notificacao {
 
 export interface PalpiteEspecial {
   uid: string
-  campeao: string        // timeId
-  vice: string           // timeId
-  artilheiro: string     // nome livre do jogador
+  campeao: string          // timeId
+  vice: string             // timeId
+  terceiro: string         // timeId
+  quarto: string           // timeId
+  paisArtilheiro: string   // timeId
   criadoEm: Timestamp
+}
+
+export interface ResultadoEspecial {
+  campeao: string            // timeId
+  vice: string               // timeId
+  terceiro: string           // timeId
+  quarto: string             // timeId
+  paisesArtilheiros: string[] // timeIds (pode ter mais de um artilheiro)
 }
 
 export interface ClassificacaoTime {

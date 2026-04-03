@@ -10,7 +10,9 @@ export function PalpitesEspeciais() {
   const [config, setConfig] = useState<Config | null>(null)
   const [campeao, setCampeao] = useState('')
   const [vice, setVice] = useState('')
-  const [artilheiro, setArtilheiro] = useState('')
+  const [terceiro, setTerceiro] = useState('')
+  const [quarto, setQuarto] = useState('')
+  const [paisArtilheiro, setPaisArtilheiro] = useState('')
   const [loading, setLoading] = useState(true)
   const [salvando, setSalvando] = useState(false)
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
@@ -37,7 +39,9 @@ export function PalpitesEspeciais() {
         const data = palpiteSnap.data() as PalpiteEspecial
         setCampeao(data.campeao || '')
         setVice(data.vice || '')
-        setArtilheiro(data.artilheiro || '')
+        setTerceiro(data.terceiro || '')
+        setQuarto(data.quarto || '')
+        setPaisArtilheiro(data.paisArtilheiro || '')
       }
 
       setLoading(false)
@@ -49,21 +53,31 @@ export function PalpitesEspeciais() {
     ? Timestamp.now().toMillis() > config.prazoLimitePalpites.toMillis()
     : false
 
+  // Colocações selecionadas (para filtrar repetições)
+  const colocacoesSelecionadas = [campeao, vice, terceiro, quarto].filter(Boolean)
+
+  function timesDisponiveis(excluir: string[]) {
+    return times.filter(t => !excluir.includes(t.id))
+  }
+
   async function handleSalvar(e: React.FormEvent) {
     e.preventDefault()
     if (!firebaseUser) return
     setMensagem(null)
 
-    if (!campeao || !vice) {
-      setMensagem({ tipo: 'erro', texto: 'Selecione o campeão e o vice.' })
+    if (!campeao || !vice || !terceiro || !quarto) {
+      setMensagem({ tipo: 'erro', texto: 'Selecione as 4 colocações (campeão, vice, 3o e 4o).' })
       return
     }
-    if (campeao === vice) {
-      setMensagem({ tipo: 'erro', texto: 'Campeão e vice devem ser times diferentes.' })
+
+    const colocacoes = [campeao, vice, terceiro, quarto]
+    if (new Set(colocacoes).size !== colocacoes.length) {
+      setMensagem({ tipo: 'erro', texto: 'Não pode haver repetição de países nas colocações.' })
       return
     }
-    if (!artilheiro.trim()) {
-      setMensagem({ tipo: 'erro', texto: 'Informe o nome do artilheiro.' })
+
+    if (!paisArtilheiro) {
+      setMensagem({ tipo: 'erro', texto: 'Selecione o país do artilheiro.' })
       return
     }
 
@@ -73,7 +87,9 @@ export function PalpitesEspeciais() {
         uid: firebaseUser.uid,
         campeao,
         vice,
-        artilheiro: artilheiro.trim(),
+        terceiro,
+        quarto,
+        paisArtilheiro,
         criadoEm: Timestamp.now(),
       })
       setMensagem({ tipo: 'sucesso', texto: 'Palpites especiais salvos!' })
@@ -92,82 +108,86 @@ export function PalpitesEspeciais() {
     return <p className="text-gray-500 text-center py-8">Carregando...</p>
   }
 
-  const timeCampeao = getTime(campeao)
-  const timeVice = getTime(vice)
+  const ptsEspecial = config?.pontos?.palpiteEspecial ?? 10
+
+  const campos = [
+    { label: 'Campeao', icone: '\u{1F3C6}', value: campeao, setter: setCampeao },
+    { label: 'Vice-Campeao', icone: '\u{1F948}', value: vice, setter: setVice },
+    { label: '3o Lugar', icone: '\u{1F949}', value: terceiro, setter: setTerceiro },
+    { label: '4o Lugar', icone: '4', value: quarto, setter: setQuarto },
+  ] as const
 
   return (
     <div className="space-y-6">
       {prazoExpirado && (
         <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 text-yellow-800 text-sm font-medium">
-          Prazo encerrado. Não é mais possível alterar seus palpites especiais.
+          Prazo encerrado. Nao e mais possivel alterar seus palpites especiais.
         </div>
       )}
 
+      <p className="text-sm text-gray-600">
+        Cada acerto vale <strong>{ptsEspecial} pontos</strong>. Nao pode haver repeticao de paises nas colocacoes.
+      </p>
+
       <form onSubmit={handleSalvar} className="space-y-6">
-        {/* Campeão */}
+        {campos.map(({ label, icone, value, setter }) => {
+          const outrosColocacoes = colocacoesSelecionadas.filter(id => id !== value)
+          const opcoes = timesDisponiveis(outrosColocacoes)
+          const timeSelecionado = getTime(value)
+
+          return (
+            <div key={label} className="bg-white rounded-lg p-5 border border-gray-200">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">{icone}</span>
+                <h3 className="text-lg font-bold text-gray-800">{label}</h3>
+              </div>
+              <select
+                value={value}
+                onChange={e => setter(e.target.value)}
+                disabled={prazoExpirado}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              >
+                <option value="">Selecione...</option>
+                {opcoes.map(t => (
+                  <option key={t.id} value={t.id}>{t.nome} ({t.sigla})</option>
+                ))}
+              </select>
+              {timeSelecionado && (
+                <div className="mt-2 flex items-center gap-2">
+                  {timeSelecionado.bandeira && <img src={timeSelecionado.bandeira} alt="" className="w-8 h-5 object-cover rounded" />}
+                  <span className="font-semibold text-gray-700">{timeSelecionado.nome}</span>
+                </div>
+              )}
+            </div>
+          )
+        })}
+
+        {/* Pais do Artilheiro */}
         <div className="bg-white rounded-lg p-5 border border-gray-200">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">🏆</span>
-            <h3 className="text-lg font-bold text-gray-800">Campeão</h3>
+            <span className="text-2xl">{'\u26BD'}</span>
+            <h3 className="text-lg font-bold text-gray-800">Pais do Artilheiro</h3>
           </div>
+          <p className="text-xs text-gray-500 mb-2">
+            Selecione o pais do artilheiro da Copa. Pode repetir um pais das colocacoes.
+          </p>
           <select
-            value={campeao}
-            onChange={e => setCampeao(e.target.value)}
+            value={paisArtilheiro}
+            onChange={e => setPaisArtilheiro(e.target.value)}
             disabled={prazoExpirado}
             className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           >
-            <option value="">Selecione o campeão...</option>
+            <option value="">Selecione o pais...</option>
             {times.map(t => (
               <option key={t.id} value={t.id}>{t.nome} ({t.sigla})</option>
             ))}
           </select>
-          {timeCampeao && (
+          {getTime(paisArtilheiro) && (
             <div className="mt-2 flex items-center gap-2">
-              {timeCampeao.bandeira && <img src={timeCampeao.bandeira} alt="" className="w-8 h-5 object-cover rounded" />}
-              <span className="font-semibold text-gray-700">{timeCampeao.nome}</span>
+              {getTime(paisArtilheiro)!.bandeira && <img src={getTime(paisArtilheiro)!.bandeira} alt="" className="w-8 h-5 object-cover rounded" />}
+              <span className="font-semibold text-gray-700">{getTime(paisArtilheiro)!.nome}</span>
             </div>
           )}
-        </div>
-
-        {/* Vice */}
-        <div className="bg-white rounded-lg p-5 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">🥈</span>
-            <h3 className="text-lg font-bold text-gray-800">Vice-Campeão</h3>
-          </div>
-          <select
-            value={vice}
-            onChange={e => setVice(e.target.value)}
-            disabled={prazoExpirado}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-          >
-            <option value="">Selecione o vice...</option>
-            {times.filter(t => t.id !== campeao).map(t => (
-              <option key={t.id} value={t.id}>{t.nome} ({t.sigla})</option>
-            ))}
-          </select>
-          {timeVice && (
-            <div className="mt-2 flex items-center gap-2">
-              {timeVice.bandeira && <img src={timeVice.bandeira} alt="" className="w-8 h-5 object-cover rounded" />}
-              <span className="font-semibold text-gray-700">{timeVice.nome}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Artilheiro */}
-        <div className="bg-white rounded-lg p-5 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">⚽</span>
-            <h3 className="text-lg font-bold text-gray-800">Artilheiro</h3>
-          </div>
-          <input
-            type="text"
-            value={artilheiro}
-            onChange={e => setArtilheiro(e.target.value)}
-            disabled={prazoExpirado}
-            placeholder="Nome do jogador artilheiro..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-          />
         </div>
 
         {mensagem && (

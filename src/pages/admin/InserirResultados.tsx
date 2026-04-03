@@ -62,6 +62,7 @@ export function InserirResultados() {
       getDocs(collection(db, 'grupos')),
     ])
     const listaJogos = jogosSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Jogo))
+    listaJogos.sort((a, b) => a.dataHora.toMillis() - b.dataHora.toMillis())
     setJogos(listaJogos)
     setTimes(timesSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Time)))
     setGrupos(gruposSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Grupo)))
@@ -160,13 +161,14 @@ export function InserirResultados() {
     }
 
     setSalvando((prev) => ({ ...prev, [jogo.id]: true }))
+    const encerrar = !jogo.aoVivo
     await updateDoc(doc(db, 'jogos', jogo.id), {
       resultado: {
         golsCasa,
         golsVisitante,
         classificado: isMataMata && empate ? form.classificado : null,
       },
-      encerrado: true,
+      ...(encerrar ? { encerrado: true, aoVivo: false } : {}),
     })
     await carregarDados()
     setSalvando((prev) => ({ ...prev, [jogo.id]: false }))
@@ -183,15 +185,28 @@ export function InserirResultados() {
     setSalvando((prev) => ({ ...prev, [jogoId]: false }))
   }
 
-  const jogosAbertos = jogos.filter((j) => !j.encerrado)
+  async function handleToggleAoVivo(jogo: Jogo) {
+    const novoValor = !jogo.aoVivo
+    setSalvando((prev) => ({ ...prev, [jogo.id]: true }))
+    const update: Record<string, unknown> = { aoVivo: novoValor }
+    if (novoValor && !jogo.resultado) {
+      update.resultado = { golsCasa: 0, golsVisitante: 0, classificado: null }
+    }
+    await updateDoc(doc(db, 'jogos', jogo.id), update)
+    await carregarDados()
+    setSalvando((prev) => ({ ...prev, [jogo.id]: false }))
+  }
+
+  const jogosAoVivo = jogos.filter((j) => j.aoVivo === true && !j.encerrado)
+  const jogosAbertos = jogos.filter((j) => !j.encerrado && !j.aoVivo)
   const jogosEncerrados = jogos.filter((j) => j.encerrado)
 
   function renderTimeDisplay(time: Time | null, label: string) {
     if (time) {
       return (
         <div className="flex items-center gap-1.5">
-          {time.bandeira && <img src={time.bandeira} alt={time.sigla} className="w-6 h-4 object-cover rounded" />}
-          <span className="font-medium text-gray-800 text-sm">{time.sigla}</span>
+          {time.bandeira && <img src={time.bandeira} alt={time.nome} className="w-6 h-4 object-cover rounded" />}
+          <span className="font-medium text-gray-800 text-sm">{time.nome}</span>
         </div>
       )
     }
@@ -210,6 +225,7 @@ export function InserirResultados() {
     const timeVisitante = getTime(visitanteId)
 
     const faseLabels: Record<string, string> = {
+      fase32: 'Segunda Fase',
       oitavas: 'Oitavas',
       quartas: 'Quartas',
       semi: 'Semi',
@@ -312,15 +328,26 @@ export function InserirResultados() {
           </div>
         )}
 
-        {/* Botões salvar / remover resultado */}
+        {/* Botões salvar / ao vivo / remover resultado */}
         {editable && (timeCasa || !isMataMata) && (
-          <div className="mt-3 flex justify-center gap-3">
+          <div className="mt-3 flex flex-wrap justify-center gap-3">
             <button
               onClick={() => handleSalvar(jogo)}
               disabled={salvando[jogo.id] || (isMataMata && (!casaId || !visitanteId))}
               className="bg-blue-700 text-white px-6 py-1.5 rounded-lg hover:bg-blue-800 disabled:opacity-50 transition-colors text-sm font-medium"
             >
               {salvando[jogo.id] ? 'Salvando...' : 'Salvar Resultado'}
+            </button>
+            <button
+              onClick={() => handleToggleAoVivo(jogo)}
+              disabled={salvando[jogo.id]}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
+                jogo.aoVivo
+                  ? 'bg-red-500 text-white hover:bg-red-600'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {jogo.aoVivo ? '🔴 Ao Vivo — Desativar' : 'Marcar Ao Vivo'}
             </button>
             {jogo.encerrado && (
               <button
@@ -346,7 +373,27 @@ export function InserirResultados() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Inserir Resultados</h1>
+      <h1 className="text-2xl font-bold mb-2">Inserir Resultados</h1>
+      <p className="text-sm text-gray-500 mb-6">
+        Placar dos 90 minutos regulamentares. Gols na prorrogacao e penaltis nao sao computados.
+        Em caso de empate no mata-mata, selecione quem avanca (penaltis).
+      </p>
+
+      {/* Jogos Ao Vivo */}
+      {jogosAoVivo.length > 0 && (
+        <div className="bg-white shadow rounded-lg overflow-hidden mb-8 border-2 border-red-400">
+          <div className="bg-red-600 text-white px-4 py-2 font-semibold flex items-center gap-2">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
+            </span>
+            Ao Vivo ({jogosAoVivo.length})
+          </div>
+          <ul className="divide-y divide-red-100 bg-red-50/30">
+            {jogosAoVivo.map((jogo) => renderJogoCard(jogo, true))}
+          </ul>
+        </div>
+      )}
 
       <div className="bg-white shadow rounded-lg overflow-hidden mb-8">
         <div className="bg-blue-700 text-white px-4 py-2 font-semibold">

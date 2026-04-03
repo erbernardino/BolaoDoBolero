@@ -12,6 +12,13 @@ interface FormState {
   placarExato: number
   colunaCerta: number
   totalGols: number
+  palpiteEspecial: number
+  premiacaoPrimeiro: number
+  premiacaoSegundo: number
+  premiacaoTerceiro: number
+  premiacaoAntepenultimo: number
+  premiacaoDoacao: number
+  taxaInscricao: number
   prazoLimitePalpites: string
   visibilidadePalpites: VisibilidadeOption
   regrasPremiacao: string
@@ -21,6 +28,13 @@ const DEFAULTS: FormState = {
   placarExato: 5,
   colunaCerta: 3,
   totalGols: 1,
+  palpiteEspecial: 10,
+  premiacaoPrimeiro: 50,
+  premiacaoSegundo: 25,
+  premiacaoTerceiro: 10,
+  premiacaoAntepenultimo: 5,
+  premiacaoDoacao: 10,
+  taxaInscricao: 200,
   prazoLimitePalpites: '',
   visibilidadePalpites: 'apos_prazo',
   regrasPremiacao: '',
@@ -54,6 +68,13 @@ export function Configuracoes() {
           placarExato: data.pontos?.placarExato ?? DEFAULTS.placarExato,
           colunaCerta: data.pontos?.colunaCerta ?? DEFAULTS.colunaCerta,
           totalGols: data.pontos?.totalGols ?? DEFAULTS.totalGols,
+          palpiteEspecial: data.pontos?.palpiteEspecial ?? DEFAULTS.palpiteEspecial,
+          premiacaoPrimeiro: data.premiacao?.primeiro ?? DEFAULTS.premiacaoPrimeiro,
+          premiacaoSegundo: data.premiacao?.segundo ?? DEFAULTS.premiacaoSegundo,
+          premiacaoTerceiro: data.premiacao?.terceiro ?? DEFAULTS.premiacaoTerceiro,
+          premiacaoAntepenultimo: data.premiacao?.antepenultimo ?? DEFAULTS.premiacaoAntepenultimo,
+          premiacaoDoacao: data.premiacao?.doacao ?? DEFAULTS.premiacaoDoacao,
+          taxaInscricao: data.premiacao?.taxaInscricao ?? DEFAULTS.taxaInscricao,
           prazoLimitePalpites: data.prazoLimitePalpites
             ? timestampToDatetimeLocal(data.prazoLimitePalpites)
             : '',
@@ -74,6 +95,15 @@ export function Configuracoes() {
         placarExato: form.placarExato,
         colunaCerta: form.colunaCerta,
         totalGols: form.totalGols,
+        palpiteEspecial: form.palpiteEspecial,
+      },
+      premiacao: {
+        primeiro: form.premiacaoPrimeiro,
+        segundo: form.premiacaoSegundo,
+        terceiro: form.premiacaoTerceiro,
+        antepenultimo: form.premiacaoAntepenultimo,
+        doacao: form.premiacaoDoacao,
+        taxaInscricao: form.taxaInscricao,
       },
       prazoLimitePalpites: form.prazoLimitePalpites
         ? datetimeLocalToTimestamp(form.prazoLimitePalpites)
@@ -115,7 +145,12 @@ export function Configuracoes() {
           <h2 className="text-lg font-semibold mb-4">Pontuação</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">Placar Exato</label>
+              <label className="text-sm font-medium text-gray-700 group relative cursor-help">
+                Placar Exato
+                <span className="invisible group-hover:visible absolute left-0 top-full mt-1 z-10 w-56 rounded bg-gray-800 px-3 py-2 text-xs font-normal text-white shadow-lg">
+                  Acertou a coluna (vencedor/empate) e o resultado exato do jogo.
+                </span>
+              </label>
               <input
                 type="number"
                 min={0}
@@ -125,7 +160,12 @@ export function Configuracoes() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">Coluna Certa</label>
+              <label className="text-sm font-medium text-gray-700 group relative cursor-help">
+                Coluna Certa
+                <span className="invisible group-hover:visible absolute left-0 top-full mt-1 z-10 w-56 rounded bg-gray-800 px-3 py-2 text-xs font-normal text-white shadow-lg">
+                  Acertou quem venceu ou se empatou, mas errou o placar.
+                </span>
+              </label>
               <input
                 type="number"
                 min={0}
@@ -135,12 +175,105 @@ export function Configuracoes() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">Total de Gols</label>
+              <label className="text-sm font-medium text-gray-700 group relative cursor-help">
+                Total de Gols
+                <span className="invisible group-hover:visible absolute left-0 top-full mt-1 z-10 w-56 rounded bg-gray-800 px-3 py-2 text-xs font-normal text-white shadow-lg">
+                  Errou a coluna, mas acertou o total de gols do jogo. Ex: apostou 3x1, resultado 2x2 (total 4).
+                </span>
+              </label>
               <input
                 type="number"
                 min={0}
                 value={form.totalGols}
                 onChange={(e) => setForm({ ...form, totalGols: Number(e.target.value) })}
+                className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700 group relative cursor-help">
+                Palpite Especial
+                <span className="invisible group-hover:visible absolute left-0 top-full mt-1 z-10 w-56 rounded bg-gray-800 px-3 py-2 text-xs font-normal text-white shadow-lg">
+                  Pontos por cada acerto nos palpites especiais (campeao, vice, 3o, 4o, pais do artilheiro).
+                </span>
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={form.palpiteEspecial}
+                onChange={(e) => setForm({ ...form, palpiteEspecial: Number(e.target.value) })}
+                className="border rounded px-3 py-2 w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-4">Premiacao</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Taxa de Inscricao (R$)</label>
+              <input
+                type="number"
+                min={0}
+                value={form.taxaInscricao}
+                onChange={(e) => setForm({ ...form, taxaInscricao: Number(e.target.value) })}
+                className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">1o lugar (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={form.premiacaoPrimeiro}
+                onChange={(e) => setForm({ ...form, premiacaoPrimeiro: Number(e.target.value) })}
+                className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">2o lugar (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={form.premiacaoSegundo}
+                onChange={(e) => setForm({ ...form, premiacaoSegundo: Number(e.target.value) })}
+                className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">3o lugar (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={form.premiacaoTerceiro}
+                onChange={(e) => setForm({ ...form, premiacaoTerceiro: Number(e.target.value) })}
+                className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Antepenultimo (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={form.premiacaoAntepenultimo}
+                onChange={(e) => setForm({ ...form, premiacaoAntepenultimo: Number(e.target.value) })}
+                className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Doacao (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={form.premiacaoDoacao}
+                onChange={(e) => setForm({ ...form, premiacaoDoacao: Number(e.target.value) })}
                 className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
