@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { NotificacoesBell } from './NotificacoesBell'
+import { BannerLiberacao } from './BannerLiberacao'
 
 function Avatar({ src, nome, size = 'sm' }: { src?: string | null; nome?: string; size?: 'sm' | 'md' }) {
   const dim = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
@@ -35,7 +36,6 @@ export function Navbar() {
   const navLinks = [
     { to: '/palpites', label: 'Palpites' },
     { to: '/todos-palpites', label: 'Geral' },
-    { to: '/chat', label: 'Chat' },
     { to: '/ranking', label: 'Ranking' },
     { to: '/regulamento', label: 'Regulamento' },
     ...(usuario?.role === 'admin' ? [{ to: '/admin', label: 'Admin' }] : []),
@@ -45,11 +45,12 @@ export function Navbar() {
   const photoURL = firebaseUser?.photoURL
 
   return (
+    <>
     <nav className="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg relative z-50">
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 h-14">
         <Link to="/" className="font-black text-lg tracking-tight hover:text-blue-200 transition-colors">
-          Bolero
+          Bolão do Bolero (Duda)
         </Link>
 
         {/* Desktop links + avatar */}
@@ -144,5 +145,7 @@ export function Navbar() {
         </div>
       </div>
     </nav>
+    <BannerLiberacao />
+    </>
   )
 }

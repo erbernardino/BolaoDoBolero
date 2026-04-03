@@ -89,15 +89,18 @@ export function PalpitesGrupos() {
     })
   }
 
+  const { usuario } = useAuth()
+  const naoLiberado = usuario?.liberado === false
   const prazoExpirado = config ? config.prazoLimitePalpites.toDate() < new Date() : false
 
   if (loading) {
     return <p className="text-gray-500">Carregando...</p>
   }
 
-  // Agrupa jogos por grupo
+  // Agrupa jogos por grupo, ordenados por data/hora
+  const jogosOrdenados = [...jogos].sort((a, b) => a.dataHora.toMillis() - b.dataHora.toMillis())
   const porGrupo: JogoPorGrupo = {}
-  for (const jogo of jogos) {
+  for (const jogo of jogosOrdenados) {
     const g = jogo.grupo ?? 'Sem Grupo'
     if (!porGrupo[g]) porGrupo[g] = []
     porGrupo[g].push(jogo)
@@ -125,6 +128,7 @@ export function PalpitesGrupos() {
               return (
                 <PalpiteInput
                   key={jogo.id}
+                  numero={jogo.numero}
                   timeCasa={timeCasa}
                   timeVisitante={timeVisitante}
                   golsCasa={palpite?.golsCasa ?? null}
@@ -134,7 +138,7 @@ export function PalpitesGrupos() {
                   resultado={jogo.resultado}
                   encerrado={jogo.encerrado}
                   ehMataMata={false}
-                  disabled={prazoExpirado || jogo.encerrado}
+                  disabled={prazoExpirado || jogo.encerrado || naoLiberado}
                   onChange={(gc, gv, cl) => handleChange(jogo, gc, gv, cl)}
                 />
               )

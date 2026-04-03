@@ -59,6 +59,7 @@ export interface Resultado {
 
 export interface Jogo {
   id: string
+  numero: number
   fase: Fase
   grupo: string | null
   timeCasa: string
@@ -104,13 +105,17 @@ export interface Usuario {
   email: string
   telefone: string
   role: Role
+  liberado: boolean
   conviteId: string
   criadoEm: Timestamp
 }
 
+export type TipoConvite = 'unico' | 'multiplo'
+
 export interface Convite {
   id: string
   criadoPor: string
+  tipo: TipoConvite
   usado: boolean
   usadoPor: string | null
   criadoEm: Timestamp

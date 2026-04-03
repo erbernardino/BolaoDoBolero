@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import type { Time, Config, PalpiteEspecial } from '../types'
 
 export function PalpitesEspeciais() {
-  const { firebaseUser } = useAuth()
+  const { firebaseUser, usuario } = useAuth()
   const [times, setTimes] = useState<Time[]>([])
   const [config, setConfig] = useState<Config | null>(null)
   const [campeao, setCampeao] = useState('')
@@ -49,6 +49,7 @@ export function PalpitesEspeciais() {
     load()
   }, [firebaseUser])
 
+  const naoLiberado = usuario?.liberado === false
   const prazoExpirado = config?.prazoLimitePalpites
     ? Timestamp.now().toMillis() > config.prazoLimitePalpites.toMillis()
     : false
@@ -144,7 +145,7 @@ export function PalpitesEspeciais() {
               <select
                 value={value}
                 onChange={e => setter(e.target.value)}
-                disabled={prazoExpirado}
+                disabled={prazoExpirado || naoLiberado}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
               >
                 <option value="">Selecione...</option>
@@ -174,7 +175,7 @@ export function PalpitesEspeciais() {
           <select
             value={paisArtilheiro}
             onChange={e => setPaisArtilheiro(e.target.value)}
-            disabled={prazoExpirado}
+            disabled={prazoExpirado || naoLiberado}
             className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           >
             <option value="">Selecione o pais...</option>
@@ -196,7 +197,7 @@ export function PalpitesEspeciais() {
           </p>
         )}
 
-        {!prazoExpirado && (
+        {!prazoExpirado && !naoLiberado && (
           <button
             type="submit"
             disabled={salvando}

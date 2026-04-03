@@ -25,6 +25,12 @@ export function GerenciarUsuarios() {
     setUsuarios(prev => prev.map(u => u.uid === uid ? { ...u, role: novaRole } : u))
   }
 
+  async function toggleLiberado(uid: string, atual: boolean) {
+    const novo = !atual
+    await updateDoc(doc(db, 'usuarios', uid), { liberado: novo })
+    setUsuarios(prev => prev.map(u => u.uid === uid ? { ...u, liberado: novo } : u))
+  }
+
   const filtrados = usuarios.filter(u => {
     const termo = filtro.toLowerCase()
     return (
@@ -42,7 +48,7 @@ export function GerenciarUsuarios() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-800">Usuários ({usuarios.length})</h2>
+        <h2 className="text-xl font-bold text-gray-800">Usuarios ({usuarios.length})</h2>
       </div>
 
       <input
@@ -63,6 +69,7 @@ export function GerenciarUsuarios() {
               <th className="px-4 py-3 font-medium">Email</th>
               <th className="px-4 py-3 font-medium">Telefone</th>
               <th className="px-4 py-3 font-medium">Role</th>
+              <th className="px-4 py-3 font-medium">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -86,6 +93,18 @@ export function GerenciarUsuarios() {
                     <option value="admin">Admin</option>
                   </select>
                 </td>
+                <td className="px-4 py-3">
+                  <button
+                    onClick={() => toggleLiberado(u.uid, u.liberado ?? false)}
+                    className={`text-xs font-semibold px-3 py-1 rounded-full transition-colors ${
+                      u.liberado !== false
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                        : 'bg-red-100 text-red-700 hover:bg-red-200'
+                    }`}
+                  >
+                    {u.liberado !== false ? 'Liberado' : 'Pendente'}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -94,21 +113,33 @@ export function GerenciarUsuarios() {
         {/* Mobile cards */}
         <div className="md:hidden divide-y divide-gray-100">
           {filtrados.map(u => (
-            <div key={u.uid} className="p-4 space-y-1">
+            <div key={u.uid} className="p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <p className="font-medium text-gray-800">{u.nome || u.apelido || 'Sem nome'}</p>
-                <select
-                  value={u.role}
-                  onChange={e => alterarRole(u.uid, e.target.value as Role)}
-                  className={`text-xs font-medium rounded-full px-3 py-1 border-0 cursor-pointer ${
-                    u.role === 'admin'
-                      ? 'bg-purple-100 text-purple-700'
-                      : 'bg-blue-100 text-blue-700'
-                  }`}
-                >
-                  <option value="participante">Participante</option>
-                  <option value="admin">Admin</option>
-                </select>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => toggleLiberado(u.uid, u.liberado ?? false)}
+                    className={`text-xs font-semibold px-3 py-1 rounded-full transition-colors ${
+                      u.liberado !== false
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                        : 'bg-red-100 text-red-700 hover:bg-red-200'
+                    }`}
+                  >
+                    {u.liberado !== false ? 'Liberado' : 'Pendente'}
+                  </button>
+                  <select
+                    value={u.role}
+                    onChange={e => alterarRole(u.uid, e.target.value as Role)}
+                    className={`text-xs font-medium rounded-full px-3 py-1 border-0 cursor-pointer ${
+                      u.role === 'admin'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-blue-100 text-blue-700'
+                    }`}
+                  >
+                    <option value="participante">Participante</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
               </div>
               {u.apelido && u.nome && (
                 <p className="text-xs text-gray-500">@{u.apelido}</p>
@@ -121,7 +152,7 @@ export function GerenciarUsuarios() {
 
         {filtrados.length === 0 && (
           <p className="text-center text-gray-400 py-8">
-            {filtro ? 'Nenhum usuário encontrado.' : 'Nenhum usuário cadastrado.'}
+            {filtro ? 'Nenhum usuario encontrado.' : 'Nenhum usuario cadastrado.'}
           </p>
         )}
       </div>

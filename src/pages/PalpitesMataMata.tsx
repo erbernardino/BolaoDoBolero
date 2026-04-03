@@ -82,7 +82,11 @@ export function PalpitesMataMata({ fase }: Props) {
         todos.push({ id: d.id, ...d.data() } as Jogo)
       })
       setTodosJogos(todos)
-      setJogos(todos.filter((j) => j.fase === fase))
+      setJogos(
+        todos
+          .filter((j) => j.fase === fase)
+          .sort((a, b) => a.dataHora.toMillis() - b.dataHora.toMillis())
+      )
 
       const timesMap = new Map<string, Time>()
       timesSnap.forEach((d) => {
@@ -196,6 +200,8 @@ export function PalpitesMataMata({ fase }: Props) {
     })
   }
 
+  const { usuario } = useAuth()
+  const naoLiberado = usuario?.liberado === false
   const prazoExpirado = config ? config.prazoLimitePalpites.toDate() < new Date() : false
 
   if (loading) {
@@ -224,9 +230,9 @@ export function PalpitesMataMata({ fase }: Props) {
         </div>
       )}
 
-      {fase === 'oitavas' && Object.keys(classificacoes).length === 0 && (
+      {fase === 'fase32' && Object.keys(classificacoes).length === 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 text-sm">
-          Preencha os palpites da fase de grupos primeiro. Os times das oitavas serão calculados automaticamente com base nos seus resultados.
+          Preencha os palpites da fase de grupos primeiro. Os times da fase eliminatória serão calculados automaticamente com base nos seus resultados.
         </div>
       )}
 
@@ -273,6 +279,7 @@ export function PalpitesMataMata({ fase }: Props) {
         return (
           <PalpiteInput
             key={jogo.id}
+            numero={jogo.numero}
             timeCasa={timeCasa}
             timeVisitante={timeVisitante}
             golsCasa={palpite?.golsCasa ?? null}
@@ -286,7 +293,7 @@ export function PalpitesMataMata({ fase }: Props) {
             labelCasa={!timeCasa ? descreverOrigem(jogo.origemCasa) : undefined}
             labelVisitante={!timeVisitante ? descreverOrigem(jogo.origemVisitante) : undefined}
             ehMataMata={true}
-            disabled={prazoExpirado || jogo.encerrado || !timeCasa || !timeVisitante}
+            disabled={prazoExpirado || jogo.encerrado || !timeCasa || !timeVisitante || naoLiberado}
             alerta={alerta}
             onChange={(gc, gv, cl) =>
               handleChange(jogo, resolvedCasaId, resolvedVisitanteId, gc, gv, cl)

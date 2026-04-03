@@ -1,50 +1,37 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import {
-  createUserWithEmailAndPassword,
-  PhoneAuthProvider,
-  linkWithCredential,
-  RecaptchaVerifier,
-} from 'firebase/auth'
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  serverTimestamp,
-  collection,
-  query,
-  where,
-  getDocs,
-} from 'firebase/firestore'
+import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import type { Convite } from '../types'
-
-type Step = 'form' | 'sms'
+import { PhoneInput } from '../components/PhoneInput'
 
 export function Cadastro() {
   const { conviteId } = useParams<{ conviteId: string }>()
   const navigate = useNavigate()
 
-  const [step, setStep] = useState<Step>('form')
   const [nome, setNome] = useState('')
   const [apelido, setApelido] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [telefone, setTelefone] = useState('')
-  const [smsCode, setSmsCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const [verificationId, setVerificationId] = useState('')
-  const recaptchaRef = useRef<RecaptchaVerifier | null>(null)
-  const recaptchaContainerRef = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
-    return () => {
-      recaptchaRef.current?.clear()
+    if (!conviteId) return
+    const id = conviteId
+    async function verificar() {
+      const conviteSnap = await getDoc(doc(db, 'convites', id))
+      if (!conviteSnap.exists()) return
+      const convite = conviteSnap.data() as Convite
+      // Convite único já usado → redireciona
+      if (convite.usado && convite.tipo !== 'multiplo') {
+        navigate('/login', { replace: true })
+      }
     }
-  }, [])
+    verificar()
+  }, [conviteId, navigate])
 
   if (!conviteId) {
     return (
@@ -59,112 +46,54 @@ export function Cadastro() {
     )
   }
 
-  const ensureRecaptcha = () => {
-    if (!recaptchaRef.current && recaptchaContainerRef.current) {
-      recaptchaRef.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
-        size: 'invisible',
+  const validateConvite = async (): Promise<boolean> => {
+    const conviteSnap = await getDoc(doc(db, 'convites', conviteId))
+    if (!conviteSnap.exists()) {
+      setError('Convite nao encontrado. Solicite um novo convite ao administrador.')
+      return false
+    }
+    const convite = { id: conviteSnap.id, ...conviteSnap.data() } as Convite
+    // Convite único já usado → bloqueia
+    if (convite.usado && convite.tipo !== 'multiplo') {
+      setError('Este convite ja foi utilizado.')
+      return false
+    }
+    return true
+  }
+
+  const createUsuarioAndMarkConvite = async (uid: string, data: { nome: string; apelido: string; email: string; telefone: string }) => {
+    await setDoc(doc(db, 'usuarios', uid), {
+      ...data,
+      role: 'participante',
+      liberado: false,
+      conviteId,
+      criadoEm: serverTimestamp(),
+    })
+    // Convite múltiplo não é marcado como usado
+    const conviteSnap = await getDoc(doc(db, 'convites', conviteId))
+    const convite = conviteSnap.data() as Convite
+    if (convite.tipo !== 'multiplo') {
+      await updateDoc(doc(db, 'convites', conviteId), {
+        usado: true,
+        usadoPor: uid,
       })
     }
   }
 
-  const checkDuplicates = async (): Promise<string | null> => {
-    const usuariosRef = collection(db, 'usuarios')
-
-    const emailQuery = query(usuariosRef, where('email', '==', email))
-    const emailSnap = await getDocs(emailQuery)
-    if (!emailSnap.empty) {
-      return 'Este e-mail já está cadastrado.'
-    }
-
-    const telefoneQuery = query(usuariosRef, where('telefone', '==', telefone))
-    const telefoneSnap = await getDocs(telefoneQuery)
-    if (!telefoneSnap.empty) {
-      return 'Este telefone já está cadastrado.'
-    }
-
-    return null
-  }
-
+  // Fluxo e-mail + senha
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     try {
-      // Validate invite
-      const conviteSnap = await getDoc(doc(db, 'convites', conviteId))
-      if (!conviteSnap.exists()) {
-        setError('Convite não encontrado. Solicite um novo convite ao administrador.')
+      if (!(await validateConvite())) {
         setLoading(false)
         return
       }
 
-      const convite = { id: conviteSnap.id, ...conviteSnap.data() } as Convite
-      if (convite.usado) {
-        setError('Este convite já foi utilizado.')
-        setLoading(false)
-        return
-      }
-
-      // Check duplicates in Firestore
-      const duplicateError = await checkDuplicates()
-      if (duplicateError) {
-        setError(duplicateError)
-        setLoading(false)
-        return
-      }
-
-      // Create Firebase Auth user with email/password
-      await createUserWithEmailAndPassword(auth, email, senha)
-
-      // Send SMS verification to link phone
-      ensureRecaptcha()
-      const provider = new PhoneAuthProvider(auth)
-      const vId = await provider.verifyPhoneNumber(telefone, recaptchaRef.current!)
-      setVerificationId(vId)
-      setStep('sms')
-    } catch (err: unknown) {
-      setError(getErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleConfirmSms = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    try {
-      const user = auth.currentUser
-      if (!user) {
-        setError('Sessão expirada. Tente novamente.')
-        setStep('form')
-        setLoading(false)
-        return
-      }
-
-      // Link phone credential to the user
-      const credential = PhoneAuthProvider.credential(verificationId, smsCode)
-      await linkWithCredential(user, credential)
-
-      // Create Firestore user document
-      await setDoc(doc(db, 'usuarios', user.uid), {
-        nome,
-        apelido,
-        email,
-        telefone,
-        role: 'participante',
-        conviteId,
-        criadoEm: serverTimestamp(),
-      })
-
-      // Mark invite as used
-      await updateDoc(doc(db, 'convites', conviteId), {
-        usado: true,
-        usadoPor: user.uid,
-      })
-
+      const credential = await createUserWithEmailAndPassword(auth, email, senha)
+      await createUsuarioAndMarkConvite(credential.user.uid, { nome, apelido, email, telefone })
       navigate('/')
     } catch (err: unknown) {
       setError(getErrorMessage(err))
@@ -177,11 +106,15 @@ export function Cadastro() {
     <div className="min-h-screen bg-blue-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
         <h1 className="text-2xl font-bold text-blue-800 text-center mb-2">
-          Bolão do Bolero
+          Bolão do Bolero (Duda)
         </h1>
         <p className="text-center text-gray-500 text-sm mb-6">Crie sua conta</p>
 
-        {step === 'form' && (
+        <div className="space-y-4">
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nome completo</label>
@@ -233,22 +166,13 @@ export function Cadastro() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Telefone (com DDI, ex: +5511999999999)
-              </label>
-              <input
-                type="tel"
-                required
+              <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+              <PhoneInput
                 value={telefone}
-                onChange={(e) => setTelefone(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="+5511999999999"
+                onChange={setTelefone}
+                required
               />
             </div>
-
-            {error && (
-              <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-            )}
 
             <button
               type="submit"
@@ -258,48 +182,7 @@ export function Cadastro() {
               {loading ? 'Criando conta...' : 'Criar conta'}
             </button>
           </form>
-        )}
-
-        {step === 'sms' && (
-          <form onSubmit={handleConfirmSms} className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
-                Enviamos um código SMS para <strong>{telefone}</strong>. Digite-o abaixo para
-                vincular seu telefone à conta.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Código de verificação
-              </label>
-              <input
-                type="text"
-                required
-                value={smsCode}
-                onChange={(e) => setSmsCode(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="123456"
-                maxLength={6}
-              />
-            </div>
-
-            {error && (
-              <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Confirmando...' : 'Confirmar e finalizar'}
-            </button>
-          </form>
-        )}
-
-        {/* Recaptcha container (invisible) */}
-        <div ref={recaptchaContainerRef} />
+        </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Já tem conta?{' '}
@@ -322,14 +205,6 @@ function getErrorMessage(err: unknown): string {
         return 'E-mail inválido.'
       case 'auth/weak-password':
         return 'Senha muito fraca. Use pelo menos 6 caracteres.'
-      case 'auth/invalid-phone-number':
-        return 'Número de telefone inválido. Use o formato +5511999999999.'
-      case 'auth/invalid-verification-code':
-        return 'Código de verificação inválido.'
-      case 'auth/credential-already-in-use':
-        return 'Este telefone já está vinculado a outra conta.'
-      case 'auth/too-many-requests':
-        return 'Muitas tentativas. Tente novamente mais tarde.'
       default:
         return 'Ocorreu um erro ao criar a conta. Tente novamente.'
     }
