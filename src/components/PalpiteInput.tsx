@@ -101,14 +101,19 @@ export function PalpiteInput({
       )}
       <div className="flex items-center justify-between gap-3">
         {/* Time Casa */}
-        <div className="flex items-center gap-2 flex-1 justify-end">
-          <span className={`font-semibold text-sm ${timeCasa ? 'text-gray-700' : 'text-gray-400 italic'}`}>
-            {timeCasa?.nome ?? labelCasa ?? '?'}
-          </span>
-          {timeCasa?.bandeira ? (
-            <img src={timeCasa.bandeira} alt={timeCasa.nome ?? timeCasa.sigla} className="w-8 h-6 object-cover rounded" />
-          ) : (
-            <div className="w-8 h-6 bg-gray-200 rounded" />
+        <div className="flex flex-col items-end flex-1 gap-0.5">
+          <div className="flex items-center gap-2">
+            <span className={`font-semibold text-sm ${timeCasa ? 'text-gray-700' : 'text-gray-400 italic'}`}>
+              {timeCasa?.nome ?? labelCasa ?? '?'}
+            </span>
+            {timeCasa?.bandeira ? (
+              <img src={timeCasa.bandeira} alt={timeCasa.nome ?? timeCasa.sigla} className="w-8 h-6 object-cover rounded" />
+            ) : (
+              <div className="w-8 h-6 bg-gray-200 rounded" />
+            )}
+          </div>
+          {labelCasa && timeCasa && (
+            <span className="text-xs text-gray-400">{labelCasa}</span>
           )}
         </div>
 
@@ -136,15 +141,20 @@ export function PalpiteInput({
         </div>
 
         {/* Time Visitante */}
-        <div className="flex items-center gap-2 flex-1">
-          {timeVisitante?.bandeira ? (
-            <img src={timeVisitante.bandeira} alt={timeVisitante.nome ?? timeVisitante.sigla} className="w-8 h-6 object-cover rounded" />
-          ) : (
-            <div className="w-8 h-6 bg-gray-200 rounded" />
+        <div className="flex flex-col items-start flex-1 gap-0.5">
+          <div className="flex items-center gap-2">
+            {timeVisitante?.bandeira ? (
+              <img src={timeVisitante.bandeira} alt={timeVisitante.nome ?? timeVisitante.sigla} className="w-8 h-6 object-cover rounded" />
+            ) : (
+              <div className="w-8 h-6 bg-gray-200 rounded" />
+            )}
+            <span className={`font-semibold text-sm ${timeVisitante ? 'text-gray-700' : 'text-gray-400 italic'}`}>
+              {timeVisitante?.nome ?? labelVisitante ?? '?'}
+            </span>
+          </div>
+          {labelVisitante && timeVisitante && (
+            <span className="text-xs text-gray-400">{labelVisitante}</span>
           )}
-          <span className={`font-semibold text-sm ${timeVisitante ? 'text-gray-700' : 'text-gray-400 italic'}`}>
-            {timeVisitante?.nome ?? labelVisitante ?? '?'}
-          </span>
         </div>
       </div>
 
