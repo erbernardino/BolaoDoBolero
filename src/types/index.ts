@@ -70,6 +70,8 @@ export interface Jogo {
   resultado: Resultado | null
   encerrado: boolean
   aoVivo?: boolean
+  labelCasa?: string
+  labelVisitante?: string
 }
 
 export interface Palpite {
