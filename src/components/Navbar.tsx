@@ -33,11 +33,16 @@ export function Navbar() {
 
   const isActive = (path: string) => location.pathname === path
 
+  const liberado = usuario?.liberado !== false
+
   const navLinks = [
     { to: '/palpites', label: 'Palpites' },
-    { to: '/todos-palpites', label: 'Geral' },
-    { to: '/ranking', label: 'Ranking' },
+    ...(liberado ? [
+      { to: '/todos-palpites', label: 'Geral' },
+      { to: '/ranking', label: 'Ranking' },
+    ] : []),
     { to: '/regulamento', label: 'Regulamento' },
+    { to: '/formato-copa', label: 'Formato Copa' },
     ...(usuario?.role === 'admin' ? [{ to: '/admin', label: 'Admin' }] : []),
   ]
 
