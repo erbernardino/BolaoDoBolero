@@ -1,9 +1,7 @@
-import { initializeApp, cert } from 'firebase-admin/app'
+import { initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const serviceAccount = require('../service-account.json')
-initializeApp({ credential: cert(serviceAccount) })
+initializeApp({ projectId: 'bolao-do-bolero' })
 const db = getFirestore()
 
 const labels: Record<string, { labelCasa: string; labelVisitante: string }> = {
@@ -52,8 +50,7 @@ async function run() {
   let updated = 0
 
   snap.forEach(docSnap => {
-    const data = docSnap.data()
-    const interno = data.id as string
+    const interno = docSnap.id
     if (labels[interno]) {
       batch.update(docSnap.ref, labels[interno])
       updated++
