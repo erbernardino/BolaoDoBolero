@@ -290,8 +290,8 @@ export function PalpitesMataMata({ fase }: Props) {
             encerrado={jogo.encerrado}
             realTimeCasa={realTimeCasa}
             realTimeVisitante={realTimeVisitante}
-            labelCasa={!timeCasa ? descreverOrigem(jogo.origemCasa) : undefined}
-            labelVisitante={!timeVisitante ? descreverOrigem(jogo.origemVisitante) : undefined}
+            labelCasa={jogo.labelCasa ?? (!timeCasa ? descreverOrigem(jogo.origemCasa) : undefined)}
+            labelVisitante={jogo.labelVisitante ?? (!timeVisitante ? descreverOrigem(jogo.origemVisitante) : undefined)}
             ehMataMata={true}
             disabled={prazoExpirado || jogo.encerrado || !timeCasa || !timeVisitante || naoLiberado}
             alerta={alerta}
