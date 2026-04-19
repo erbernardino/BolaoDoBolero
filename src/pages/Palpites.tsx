@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, onSnapshot } from 'firebase/firestore'
+import { collection, getCountFromServer, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
 import { PalpitesGrupos } from './PalpitesGrupos'
 import { PalpitesMataMata } from './PalpitesMataMata'
 import { PalpitesEspeciais } from './PalpitesEspeciais'
-import type { Fase, Palpite } from '../types'
+import type { Fase } from '../types'
 
 type Tab = Fase | 'especiais'
 
@@ -29,10 +29,9 @@ export function Palpites() {
 
   useEffect(() => {
     if (!firebaseUser) return
-    getDocs(collection(db, 'jogos')).then(snap => setTotalJogos(snap.size))
-    const unsubscribe = onSnapshot(collection(db, 'palpites'), (snap) => {
-      setTotalPalpites(snap.docs.filter(d => (d.data() as Palpite).uid === firebaseUser.uid).length)
-    })
+    getCountFromServer(collection(db, 'jogos')).then(res => setTotalJogos(res.data().count))
+    const q = query(collection(db, 'palpites'), where('uid', '==', firebaseUser.uid))
+    const unsubscribe = onSnapshot(q, (snap) => setTotalPalpites(snap.size))
     return () => unsubscribe()
   }, [firebaseUser])
 

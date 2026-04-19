@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { collection, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore'
+import { useState, useEffect, useMemo } from 'react'
+import { collection, getDocs, onSnapshot, doc, getDoc, query, where } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { calcularPontosPalpite } from '../lib/pontuacao'
 import type { Jogo, Time, Palpite, Config } from '../types'
@@ -20,46 +20,56 @@ const TIPO_LABEL: Record<string, string> = {
 }
 
 export function AoVivo({ uid }: { uid: string }) {
-  const [jogosAoVivo, setJogosAoVivo] = useState<JogoAoVivo[]>([])
+  const [jogosLive, setJogosLive] = useState<Jogo[]>([])
+  const [times, setTimes] = useState<Map<string, Time>>(new Map())
+  const [palpites, setPalpites] = useState<Map<string, Palpite>>(new Map())
+  const [config, setConfig] = useState<Config | null>(null)
 
+  // Times e config carregados uma unica vez (nao mudam com frequencia)
+  useEffect(() => {
+    getDocs(collection(db, 'times')).then(snap => {
+      const m = new Map<string, Time>()
+      snap.docs.forEach(d => m.set(d.id, { id: d.id, ...d.data() } as Time))
+      setTimes(m)
+    })
+    getDoc(doc(db, 'config', 'geral')).then(snap => {
+      if (snap.exists()) setConfig(snap.data() as Config)
+    })
+  }, [])
+
+  // Jogos ao vivo: subscribe apenas aos que estao com aoVivo=true (filtrado no servidor)
+  useEffect(() => {
+    const q = query(collection(db, 'jogos'), where('aoVivo', '==', true))
+    const unsub = onSnapshot(q, (snap) => {
+      setJogosLive(snap.docs.map(d => ({ id: d.id, ...d.data() } as Jogo)))
+    })
+    return () => unsub()
+  }, [])
+
+  // Palpites do usuario logado: subscribe filtrado por uid
   useEffect(() => {
     if (!uid) return
-
-    // Listener em tempo real nos jogos
-    const unsubscribe = onSnapshot(collection(db, 'jogos'), async (jogosSnap) => {
-      const jogosLive = jogosSnap.docs
-        .map(d => ({ id: d.id, ...d.data() } as Jogo))
-        .filter(j => j.aoVivo === true)
-
-      if (jogosLive.length === 0) {
-        setJogosAoVivo([])
-        return
-      }
-
-      // Buscar times, palpites do usuário e config em paralelo
-      const [timesSnap, palpitesSnap, configSnap] = await Promise.all([
-        getDocs(collection(db, 'times')),
-        getDocs(collection(db, 'palpites')),
-        getDoc(doc(db, 'config', 'geral')),
-      ])
-
-      const timesMap = new Map<string, Time>()
-      timesSnap.docs.forEach(d => timesMap.set(d.id, { id: d.id, ...d.data() } as Time))
-
-      const meusPalpites = new Map<string, Palpite>()
-      palpitesSnap.docs.forEach(d => {
+    const q = query(collection(db, 'palpites'), where('uid', '==', uid))
+    const unsub = onSnapshot(q, (snap) => {
+      const m = new Map<string, Palpite>()
+      snap.docs.forEach(d => {
         const p = { id: d.id, ...d.data() } as Palpite
-        if (p.uid === uid) meusPalpites.set(p.jogoId, p)
+        m.set(p.jogoId, p)
       })
+      setPalpites(m)
+    })
+    return () => unsub()
+  }, [uid])
 
-      const config = configSnap.exists() ? (configSnap.data() as Config) : null
-      const pontosCfg = config?.pontos ?? { placarExato: 10, colunaCerta: 3, totalGols: 1 }
-
-      const lista: JogoAoVivo[] = jogosLive.map(jogo => {
-        const palpite = meusPalpites.get(jogo.id) ?? null
+  const jogosAoVivo = useMemo<JogoAoVivo[]>(() => {
+    if (jogosLive.length === 0) return []
+    const pontosCfg = config?.pontos ?? { placarExato: 10, colunaCerta: 3, totalGols: 1 }
+    return [...jogosLive]
+      .sort((a, b) => a.dataHora.toMillis() - b.dataHora.toMillis())
+      .map(jogo => {
+        const palpite = palpites.get(jogo.id) ?? null
         let pontos = 0
         let tipoAcerto: string | null = null
-
         if (palpite && jogo.resultado) {
           const res = calcularPontosPalpite(
             { golsCasa: palpite.golsCasa, golsVisitante: palpite.golsVisitante },
@@ -69,23 +79,16 @@ export function AoVivo({ uid }: { uid: string }) {
           pontos = res.pontos
           tipoAcerto = res.tipo
         }
-
         return {
           jogo,
-          timeCasa: timesMap.get(jogo.timeCasa) ?? null,
-          timeVisitante: timesMap.get(jogo.timeVisitante) ?? null,
+          timeCasa: times.get(jogo.timeCasa) ?? null,
+          timeVisitante: times.get(jogo.timeVisitante) ?? null,
           palpite,
           pontos,
           tipoAcerto,
         }
       })
-
-      lista.sort((a, b) => a.jogo.dataHora.toMillis() - b.jogo.dataHora.toMillis())
-      setJogosAoVivo(lista)
-    })
-
-    return () => unsubscribe()
-  }, [uid])
+  }, [jogosLive, times, palpites, config])
 
   if (jogosAoVivo.length === 0) return null
 
