@@ -4,9 +4,10 @@ import { db } from '../../config/firebase'
 import type { Jogo, Time, Fase } from '../../types'
 
 const GRUPOS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
-const FASES: Fase[] = ['grupos', 'oitavas', 'quartas', 'semi', 'terceiro', 'final']
+const FASES: Fase[] = ['grupos', 'fase32', 'oitavas', 'quartas', 'semi', 'terceiro', 'final']
 const FASE_LABELS: Record<Fase, string> = {
   grupos: 'Fase de Grupos',
+  fase32: 'Segunda Fase',
   oitavas: 'Oitavas de Final',
   quartas: 'Quartas de Final',
   semi: 'Semifinal',
@@ -43,7 +44,9 @@ export function GerenciarJogos() {
       getDocs(collection(db, 'jogos')),
       getDocs(collection(db, 'times')),
     ])
-    setJogos(jogosSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Jogo)))
+    const listaJogos = jogosSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Jogo))
+    listaJogos.sort((a, b) => a.dataHora.toMillis() - b.dataHora.toMillis())
+    setJogos(listaJogos)
     setTimes(timesSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Time)))
   }
 
