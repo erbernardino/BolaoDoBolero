@@ -11,10 +11,10 @@ function firebaseMessagingSw(env: Record<string, string>): Plugin {
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js')
 
 firebase.initializeApp({
-  apiKey: '${env.VITE_FIREBASE_API_KEY || ''}',
-  projectId: '${env.VITE_FIREBASE_PROJECT_ID || ''}',
-  messagingSenderId: '${env.VITE_FIREBASE_MESSAGING_SENDER_ID || ''}',
-  appId: '${env.VITE_FIREBASE_APP_ID || ''}',
+  apiKey: ${JSON.stringify(env.VITE_FIREBASE_API_KEY || '')},
+  projectId: ${JSON.stringify(env.VITE_FIREBASE_PROJECT_ID || '')},
+  messagingSenderId: ${JSON.stringify(env.VITE_FIREBASE_MESSAGING_SENDER_ID || '')},
+  appId: ${JSON.stringify(env.VITE_FIREBASE_APP_ID || '')},
 })
 
 const messaging = firebase.messaging()

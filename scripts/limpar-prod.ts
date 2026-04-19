@@ -105,20 +105,36 @@ async function limparUsuarios(): Promise<{ firestore: number; auth: number; prot
     return { firestore: paraApagar.length, auth: paraApagar.length, protegidos }
   }
 
+  // Firestore: deletar em batch
   let firestoreDeleted = 0
-  let authDeleted = 0
+  let batch = db.batch()
+  let count = 0
   for (const { uid } of paraApagar) {
-    await db.doc(`usuarios/${uid}`).delete()
-    firestoreDeleted++
-    try {
-      await auth.deleteUser(uid)
-      authDeleted++
-    } catch (err: unknown) {
-      const code = (err as { code?: string })?.code
-      if (code === 'auth/user-not-found') {
-        // ok: nao tinha em Auth
-      } else {
-        console.warn(`  ! Falhou deletar Auth uid=${uid}: ${(err as Error).message}`)
+    batch.delete(db.doc(`usuarios/${uid}`))
+    count++
+    if (count >= 400) {
+      await batch.commit()
+      firestoreDeleted += count
+      batch = db.batch()
+      count = 0
+    }
+  }
+  if (count > 0) {
+    await batch.commit()
+    firestoreDeleted += count
+  }
+
+  // Auth: deletar em lotes de ate 1000 com auth.deleteUsers
+  let authDeleted = 0
+  const uids = paraApagar.map(u => u.uid)
+  for (let i = 0; i < uids.length; i += 1000) {
+    const lote = uids.slice(i, i + 1000)
+    const result = await auth.deleteUsers(lote)
+    authDeleted += result.successCount
+    for (const err of result.errors) {
+      const code = (err.error as { code?: string }).code
+      if (code !== 'auth/user-not-found') {
+        console.warn(`  ! Falhou deletar Auth uid=${lote[err.index]}: ${err.error.message}`)
       }
     }
   }

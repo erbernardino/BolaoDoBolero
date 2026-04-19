@@ -66,6 +66,7 @@ export function PalpitesMataMata({ fase }: Props) {
   const [melhoresTerceiros, setMelhoresTerceiros] = useState<ClassificacaoTime[]>([])
   const [classReais, setClassReais] = useState<Record<string, ClassificacaoTime[]>>({})
   const [melhoresTerceirosReais, setMelhoresTerceirosReais] = useState<ClassificacaoTime[]>([])
+  const [totalGrupos, setTotalGrupos] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -102,6 +103,7 @@ export function PalpitesMataMata({ fase }: Props) {
       gruposSnap.forEach((d) => {
         grupos.push({ id: d.id, ...d.data() } as Grupo)
       })
+      setTotalGrupos(grupos.length)
 
       // Load user palpites
       const palpitesMap = new Map<string, Palpite>()
@@ -249,7 +251,7 @@ export function PalpitesMataMata({ fase }: Props) {
         </div>
       )}
 
-      {fase !== 'grupos' && Object.keys(classificacoes).length === 0 && (
+      {fase !== 'grupos' && totalGrupos > 0 && Object.keys(classificacoes).length < totalGrupos && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 text-sm">
           Preencha os palpites da fase de grupos primeiro. Os times da fase eliminatória serão calculados automaticamente com base nos seus resultados.
         </div>
