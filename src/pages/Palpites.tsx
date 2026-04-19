@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { collection, getDocs, onSnapshot } from 'firebase/firestore'
+import { db } from '../config/firebase'
+import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
 import { PalpitesGrupos } from './PalpitesGrupos'
 import { PalpitesMataMata } from './PalpitesMataMata'
 import { PalpitesEspeciais } from './PalpitesEspeciais'
-import type { Fase } from '../types'
+import type { Fase, Palpite } from '../types'
 
 type Tab = Fase | 'especiais'
 
@@ -19,13 +22,51 @@ const TABS: { label: string; value: Tab }[] = [
 ]
 
 export function Palpites() {
+  const { firebaseUser } = useAuth()
   const [tabAtiva, setTabAtiva] = useState<Tab>('grupos')
+  const [totalJogos, setTotalJogos] = useState(0)
+  const [totalPalpites, setTotalPalpites] = useState(0)
+
+  useEffect(() => {
+    if (!firebaseUser) return
+    getDocs(collection(db, 'jogos')).then(snap => setTotalJogos(snap.size))
+    const unsubscribe = onSnapshot(collection(db, 'palpites'), (snap) => {
+      setTotalPalpites(snap.docs.filter(d => (d.data() as Palpite).uid === firebaseUser.uid).length)
+    })
+    return () => unsubscribe()
+  }, [firebaseUser])
+
+  const pct = totalJogos > 0 ? Math.round((totalPalpites / totalJogos) * 100) : 0
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <main className="max-w-3xl mx-auto px-6 py-10">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Palpites</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-gray-800">Palpites</h1>
+          {totalJogos > 0 && (
+            <span className="text-sm text-gray-500">
+              <span className="font-bold text-blue-700">{totalPalpites}</span>/{totalJogos} palpites
+            </span>
+          )}
+        </div>
+
+        {/* Barra de progresso */}
+        {totalJogos > 0 && (
+          <div className="mb-6">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  pct === 100 ? 'bg-green-500' : 'bg-blue-600'
+                }`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1">
+              {pct === 100 ? 'Todos os palpites preenchidos!' : `${pct}% preenchido`}
+            </p>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b border-gray-200 overflow-x-auto">
