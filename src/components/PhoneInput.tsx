@@ -41,24 +41,24 @@ interface PhoneInputProps {
   placeholder?: string
 }
 
-export function PhoneInput({ value, onChange, required, placeholder }: PhoneInputProps) {
-  // Parse initial value to extract DDI and local number
-  const parseValue = (val: string): { ddi: string; local: string } => {
-    if (!val) return { ddi: '+55', local: '' }
-    for (const country of countries) {
-      if (val.startsWith(country.ddi)) {
-        return { ddi: country.ddi, local: val.slice(country.ddi.length) }
-      }
+// Parse value (+<DDI><local>) em { code, local }. Com DDIs duplicados (+1 para US e CA),
+// retorna a primeira correspondencia na lista acima (BR tem prioridade para +55).
+function parseValue(val: string): { code: string; local: string } {
+  if (!val) return { code: 'BR', local: '' }
+  for (const country of countries) {
+    if (val.startsWith(country.ddi)) {
+      return { code: country.code, local: val.slice(country.ddi.length) }
     }
-    // If starts with + but no match, try to find best match
-    if (val.startsWith('+')) {
-      return { ddi: '+55', local: val.replace(/^\+\d+/, '') }
-    }
-    return { ddi: '+55', local: val }
   }
+  if (val.startsWith('+')) {
+    return { code: 'BR', local: val.replace(/^\+\d+/, '') }
+  }
+  return { code: 'BR', local: val }
+}
 
+export function PhoneInput({ value, onChange, required, placeholder }: PhoneInputProps) {
   const parsed = parseValue(value)
-  const [selectedDdi, setSelectedDdi] = useState(parsed.ddi)
+  const [selectedCode, setSelectedCode] = useState(parsed.code)
   const [localPhone, setLocalPhone] = useState(parsed.local)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -68,7 +68,7 @@ export function PhoneInput({ value, onChange, required, placeholder }: PhoneInpu
   // Sync from parent when value changes externally
   useEffect(() => {
     const p = parseValue(value)
-    setSelectedDdi(p.ddi)
+    setSelectedCode(p.code)
     setLocalPhone(p.local)
   }, [value])
 
@@ -91,7 +91,8 @@ export function PhoneInput({ value, onChange, required, placeholder }: PhoneInpu
     }
   }, [dropdownOpen])
 
-  const selectedCountry = countries.find((c) => c.ddi === selectedDdi) || countries[0]
+  const selectedCountry = countries.find((c) => c.code === selectedCode) || countries[0]
+  const selectedDdi = selectedCountry.ddi
 
   const filteredCountries = search
     ? countries.filter(
@@ -102,11 +103,11 @@ export function PhoneInput({ value, onChange, required, placeholder }: PhoneInpu
       )
     : countries
 
-  function handleDdiSelect(ddi: string) {
-    setSelectedDdi(ddi)
+  function handleCountrySelect(country: Country) {
+    setSelectedCode(country.code)
     setDropdownOpen(false)
     setSearch('')
-    onChange(ddi + localPhone)
+    onChange(country.ddi + localPhone)
   }
 
   function handleLocalChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -145,7 +146,7 @@ export function PhoneInput({ value, onChange, required, placeholder }: PhoneInpu
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full text-sm border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="Buscar pais..."
+                placeholder="Buscar país..."
               />
             </div>
             <div className="overflow-y-auto max-h-48">
@@ -153,9 +154,9 @@ export function PhoneInput({ value, onChange, required, placeholder }: PhoneInpu
                 <button
                   key={country.code}
                   type="button"
-                  onClick={() => handleDdiSelect(country.ddi)}
+                  onClick={() => handleCountrySelect(country)}
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-blue-50 transition-colors ${
-                    country.ddi === selectedDdi ? 'bg-blue-50 font-medium' : ''
+                    country.code === selectedCode ? 'bg-blue-50 font-medium' : ''
                   }`}
                 >
                   <span className="text-lg leading-none">{country.flag}</span>
@@ -164,7 +165,7 @@ export function PhoneInput({ value, onChange, required, placeholder }: PhoneInpu
                 </button>
               ))}
               {filteredCountries.length === 0 && (
-                <p className="text-sm text-gray-500 px-3 py-2">Nenhum pais encontrado</p>
+                <p className="text-sm text-gray-500 px-3 py-2">Nenhum país encontrado</p>
               )}
             </div>
           </div>
