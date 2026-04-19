@@ -12,7 +12,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Bolão do Bolero',
+        name: 'Bolão do Bolero (Duda)',
         short_name: 'Bolero',
         description: 'Bolão da Copa do Mundo 2026',
         lang: 'pt-BR',

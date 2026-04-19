@@ -12,7 +12,7 @@ const messaging = firebase.messaging()
 
 messaging.onBackgroundMessage((payload) => {
   const { title, body } = payload.notification || {}
-  self.registration.showNotification(title || 'Bolão do Bolero', {
+  self.registration.showNotification(title || 'Bolão do Bolero (Duda)', {
     body,
     icon: '/icon-192.png',
   })
