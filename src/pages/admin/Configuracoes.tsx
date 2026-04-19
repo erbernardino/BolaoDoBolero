@@ -34,7 +34,7 @@ const DEFAULTS: FormState = {
   premiacaoTerceiro: 10,
   premiacaoAntepenultimo: 5,
   premiacaoDoacao: 10,
-  taxaInscricao: 200,
+  taxaInscricao: 250,
   prazoLimitePalpites: '',
   visibilidadePalpites: 'apos_prazo',
   regrasPremiacao: '',

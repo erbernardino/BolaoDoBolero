@@ -38,7 +38,7 @@ export function Regulamento() {
           <section>
             <h2 className="font-bold text-lg mb-2">Inscrição</h2>
             <ul className="list-disc ml-5 space-y-1 text-sm">
-              <li>A inscrição será feita mediante preenchimento dos palpites no sistema e pagamento da taxa de inscrição de <strong>R$ {config?.premiacao?.taxaInscricao ?? 200},00</strong>.</li>
+              <li>A inscrição será feita mediante preenchimento dos palpites no sistema e pagamento da taxa de inscrição de <strong>R$ {config?.premiacao?.taxaInscricao ?? 250},00</strong>.</li>
               <li>Todos os palpites devem ser registrados antes do início da Copa.</li>
               {config?.prazoLimitePalpites && (
                 <li><strong>Prazo limite: {config.prazoLimitePalpites.toDate().toLocaleString('pt-BR')}</strong></li>
