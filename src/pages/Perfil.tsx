@@ -1,11 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  unlink,
-  signOut,
-  GoogleAuthProvider,
-  linkWithPopup,
-} from 'firebase/auth'
+import { unlink, signOut } from 'firebase/auth'
 import { doc, updateDoc } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
@@ -22,24 +17,22 @@ export function Perfil() {
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
   const [providerMsg, setProviderMsg] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
   const [unlinking, setUnlinking] = useState(false)
-  const [linkingGoogle, setLinkingGoogle] = useState(false)
 
   // Valor exibido: se editou usa o editado, senão usa do Firestore
   const nome = nomeEdit ?? usuario?.nome ?? ''
   const apelido = apelidoEdit ?? usuario?.apelido ?? ''
 
   const providers = useMemo(() => {
-    if (!firebaseUser) return { email: false, phone: false, google: false }
+    if (!firebaseUser) return { email: false, phone: false }
     const ids = firebaseUser.providerData.map((p) => p.providerId)
     return {
       email: ids.includes('password'),
       phone: ids.includes('phone'),
-      google: ids.includes('google.com'),
     }
   }, [firebaseUser])
 
   const totalProviders = useMemo(() => {
-    return [providers.email, providers.phone, providers.google].filter(Boolean).length
+    return [providers.email, providers.phone].filter(Boolean).length
   }, [providers])
 
   const emailFromProvider = useMemo(() => {
@@ -126,28 +119,6 @@ export function Perfil() {
     }
   }
 
-  async function handleLinkGoogle() {
-    setProviderMsg(null)
-    setLinkingGoogle(true)
-    try {
-      const result = await linkWithPopup(firebaseUser!, new GoogleAuthProvider())
-      const googleEmail = result.user.providerData.find(
-        (p) => p.providerId === 'google.com'
-      )?.email
-      if (googleEmail && !usuario!.email) {
-        await updateDoc(doc(db, 'usuarios', firebaseUser!.uid), {
-          email: googleEmail,
-        })
-      }
-      await refreshUsuario()
-      setProviderMsg({ tipo: 'sucesso', texto: 'Google vinculado com sucesso!' })
-    } catch {
-      setProviderMsg({ tipo: 'erro', texto: 'Erro ao vincular Google. Tente novamente.' })
-    } finally {
-      setLinkingGoogle(false)
-    }
-  }
-
   const isOnlyProvider = totalProviders <= 1
 
   return (
@@ -167,37 +138,6 @@ export function Perfil() {
           </button>
 
           <h1 className="text-2xl font-bold text-gray-800 text-center">Meu Perfil</h1>
-
-          {/* Debug: dados brutos */}
-          <details className="bg-gray-100 rounded-lg p-3 text-xs">
-            <summary className="font-bold text-gray-600 cursor-pointer">Debug: dados brutos</summary>
-            <div className="mt-2 space-y-2 overflow-auto max-h-64">
-              <div>
-                <p className="font-bold text-blue-600">Firebase Auth:</p>
-                <pre className="bg-white p-2 rounded text-[10px] overflow-auto">{JSON.stringify({
-                  uid: firebaseUser?.uid,
-                  email: firebaseUser?.email,
-                  phoneNumber: firebaseUser?.phoneNumber,
-                  displayName: firebaseUser?.displayName,
-                  providers: firebaseUser?.providerData.map(p => ({ id: p.providerId, email: p.email, phone: p.phoneNumber })),
-                }, null, 2)}</pre>
-              </div>
-              <div>
-                <p className="font-bold text-green-600">Firestore (usuario):</p>
-                <pre className="bg-white p-2 rounded text-[10px] overflow-auto">{JSON.stringify(usuario, null, 2)}</pre>
-              </div>
-              <div>
-                <p className="font-bold text-purple-600">State local:</p>
-                <pre className="bg-white p-2 rounded text-[10px] overflow-auto">{JSON.stringify({
-                  nomeEdit,
-                  apelidoEdit,
-                  nomeExibido: nome,
-                  apelidoExibido: apelido,
-                  loading,
-                }, null, 2)}</pre>
-              </div>
-            </div>
-          </details>
 
           {/* Seção 1: Dados Pessoais */}
           <section>
@@ -335,39 +275,6 @@ export function Perfil() {
                 )}
               </div>
 
-              {/* Google */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Google</p>
-                  {providers.google && (
-                    <p className="text-xs text-gray-500">Google conectado</p>
-                  )}
-                </div>
-                {providers.google ? (
-                  <div className="relative group">
-                    <button
-                      onClick={() => handleUnlink('google.com')}
-                      disabled={isOnlyProvider || unlinking}
-                      className="text-sm text-red-600 hover:text-red-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Desvincular
-                    </button>
-                    {isOnlyProvider && (
-                      <span className="absolute bottom-full right-0 mb-1 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
-                        Não é possível remover o único método de login
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleLinkGoogle}
-                    disabled={linkingGoogle}
-                    className="text-sm bg-blue-700 hover:bg-blue-800 text-white font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    {linkingGoogle ? 'Vinculando...' : 'Vincular Google'}
-                  </button>
-                )}
-              </div>
             </div>
           </section>
 

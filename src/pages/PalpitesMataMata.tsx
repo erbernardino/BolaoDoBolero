@@ -66,6 +66,7 @@ export function PalpitesMataMata({ fase }: Props) {
   const [melhoresTerceiros, setMelhoresTerceiros] = useState<ClassificacaoTime[]>([])
   const [classReais, setClassReais] = useState<Record<string, ClassificacaoTime[]>>({})
   const [melhoresTerceirosReais, setMelhoresTerceirosReais] = useState<ClassificacaoTime[]>([])
+  const [totalGrupos, setTotalGrupos] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -102,6 +103,7 @@ export function PalpitesMataMata({ fase }: Props) {
       gruposSnap.forEach((d) => {
         grupos.push({ id: d.id, ...d.data() } as Grupo)
       })
+      setTotalGrupos(grupos.length)
 
       // Load user palpites
       const palpitesMap = new Map<string, Palpite>()
@@ -119,6 +121,9 @@ export function PalpitesMataMata({ fase }: Props) {
       const jogosGrupos = todos.filter((j) => j.fase === 'grupos')
 
       // Classificação baseada nos PALPITES do usuário
+      // Só consideramos o grupo classificado quando TODOS os jogos do grupo
+      // foram palpitados — caso contrário a ordem seria arbitrária e confundiria
+      // com resultado previsto.
       const classPorGrupo: Record<string, ClassificacaoTime[]> = {}
       for (const grupo of grupos) {
         const letra = grupo.nome.replace('Grupo ', '')
@@ -126,11 +131,20 @@ export function PalpitesMataMata({ fase }: Props) {
         const palpitesGrupo = jogosDoGrupo
           .map((j) => palpitesMap.get(j.id))
           .filter((p): p is Palpite => p !== undefined)
-        classPorGrupo[letra] = calcularClassificacaoGrupo(palpitesGrupo, grupo.times)
+        if (palpitesGrupo.length === jogosDoGrupo.length && jogosDoGrupo.length > 0) {
+          classPorGrupo[letra] = calcularClassificacaoGrupo(palpitesGrupo, grupo.times)
+        }
       }
       setClassificacoes(classPorGrupo)
 
-      const terceiros = Object.values(classPorGrupo).map((cl) => cl[2]).filter(Boolean)
+      // Melhores terceiros só faz sentido quando TODOS os 12 grupos estao palpitados
+      const todosGruposCompletos = grupos.every((g) => {
+        const letra = g.nome.replace('Grupo ', '')
+        return classPorGrupo[letra] !== undefined
+      })
+      const terceiros = todosGruposCompletos
+        ? Object.values(classPorGrupo).map((cl) => cl[2]).filter(Boolean)
+        : []
       setMelhoresTerceiros(selecionarMelhoresTerceiros(terceiros))
 
       // Classificação baseada nos RESULTADOS REAIS
@@ -152,13 +166,20 @@ export function PalpitesMataMata({ fase }: Props) {
             classificado: j.resultado!.classificado,
             criadoEm: Timestamp.now(),
           }))
-        if (palpitesReais.length > 0) {
+        // So classificamos com resultados reais quando o grupo inteiro foi encerrado
+        if (palpitesReais.length === jogosDoGrupo.length && jogosDoGrupo.length > 0) {
           classReaisPorGrupo[letra] = calcularClassificacaoGrupo(palpitesReais, grupo.times)
         }
       }
       setClassReais(classReaisPorGrupo)
 
-      const terceirosReais = Object.values(classReaisPorGrupo).map((cl) => cl[2]).filter(Boolean)
+      const todosGruposReaisCompletos = grupos.every((g) => {
+        const letra = g.nome.replace('Grupo ', '')
+        return classReaisPorGrupo[letra] !== undefined
+      })
+      const terceirosReais = todosGruposReaisCompletos
+        ? Object.values(classReaisPorGrupo).map((cl) => cl[2]).filter(Boolean)
+        : []
       setMelhoresTerceirosReais(selecionarMelhoresTerceiros(terceirosReais))
 
       setLoading(false)
@@ -230,7 +251,7 @@ export function PalpitesMataMata({ fase }: Props) {
         </div>
       )}
 
-      {fase === 'fase32' && Object.keys(classificacoes).length === 0 && (
+      {fase !== 'grupos' && totalGrupos > 0 && Object.keys(classificacoes).length < totalGrupos && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 text-sm">
           Preencha os palpites da fase de grupos primeiro. Os times da fase eliminatória serão calculados automaticamente com base nos seus resultados.
         </div>

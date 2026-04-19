@@ -98,5 +98,5 @@ export async function notificarResultadoRegistrado(jogoId: string) {
 }
 
 export async function notificarRankingAtualizado() {
-  await enviarNotificacaoTodos('Ranking atualizado!', 'Confira sua posição no ranking do Bolão do Bolero.')
+  await enviarNotificacaoTodos('Ranking atualizado!', 'Confira sua posição no ranking do Bolão do Bolero (Duda).')
 }

@@ -22,6 +22,10 @@ service cloud.firestore {
         request.time < get(/databases/$(database)/documents/config/geral).data.prazoLimitePalpites;
     }
 
+    function isLiberado() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.liberado == true;
+    }
+
     // /config/{docId}: read by authenticated, write by admin
     // Inclui config/geral e config/resultado_especial
     match /config/{docId} {
@@ -50,16 +54,16 @@ service cloud.firestore {
     // /palpites/{palpiteId}: read by authenticated, create/update by owner before prazo, no delete
     match /palpites/{palpiteId} {
       allow read: if isAuthenticated();
-      allow create: if isOwner(request.resource.data.uid) && prazoAberto();
-      allow update: if isOwner(resource.data.uid) && prazoAberto();
+      allow create: if isOwner(request.resource.data.uid) && prazoAberto() && isLiberado();
+      allow update: if isOwner(resource.data.uid) && prazoAberto() && isLiberado();
       allow delete: if false;
     }
 
     // /palpites_especiais/{uid}: read by authenticated, write by owner before prazo
     match /palpites_especiais/{uid} {
       allow read: if isAuthenticated();
-      allow create: if isOwner(uid) && prazoAberto();
-      allow update: if isOwner(uid) && prazoAberto();
+      allow create: if isOwner(uid) && prazoAberto() && isLiberado();
+      allow update: if isOwner(uid) && prazoAberto() && isLiberado();
       allow delete: if false;
     }
 

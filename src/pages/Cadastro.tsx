@@ -108,7 +108,21 @@ export function Cadastro() {
         <h1 className="text-2xl font-bold text-blue-800 text-center mb-2">
           Bolão do Bolero (Duda)
         </h1>
-        <p className="text-center text-gray-500 text-sm mb-6">Crie sua conta</p>
+        <p className="text-center text-gray-500 text-sm mb-4">Crie sua conta</p>
+
+        <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-6">
+          <p className="text-xs text-gray-700 italic leading-relaxed">
+            Este bolão foi idealizado por nosso amigo Duda (Bolero), que desde 1994 manteve a tradição e nos proporcionou muita diversão acompanhando todos os jogos das copas. Em sua homenagem, manteremos a tradição do "Bolão do Bolero".
+          </p>
+          <a
+            href="/regulamento-publico"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-2 text-xs text-blue-700 hover:text-blue-900 hover:underline font-medium"
+          >
+            Ver regulamento completo →
+          </a>
+        </div>
 
         <div className="space-y-4">
           {error && (

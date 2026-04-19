@@ -30,6 +30,55 @@ describe('calcularClassificacaoGrupo', () => {
     expect(resultado[3].timeId).toBe('CAN')
   })
 
+  it('deve desempatar 3+ times empatados no geral usando mini-tabela (confronto entre empatados)', () => {
+    // Cenario construido para BRA, ALE, JAP ficarem IGUAIS no criterio geral
+    // (6 pts, saldo +2, 4 gols marcados cada) — somente a mini-tabela entre eles desempata:
+    //   BRA 0-1 ALE, BRA 2-0 JAP, ALE 0-2 JAP -> mini-tabela:
+    //     BRA: 3 pts, saldo +1 (2 gm, 1 gs)
+    //     JAP: 3 pts, saldo  0 (2 gm, 2 gs)
+    //     ALE: 3 pts, saldo -1 (1 gm, 2 gs)
+    //   Ordem final: BRA > JAP > ALE > CAN.
+    const palpites: Palpite[] = [
+      palpite('j1', 'BRA', 'ALE', 0, 1),
+      palpite('j2', 'JAP', 'CAN', 2, 0),
+      palpite('j3', 'BRA', 'JAP', 2, 0),
+      palpite('j4', 'ALE', 'CAN', 3, 0),
+      palpite('j5', 'BRA', 'CAN', 2, 1),
+      palpite('j6', 'ALE', 'JAP', 0, 2),
+    ]
+    const resultado = calcularClassificacaoGrupo(palpites, times)
+    expect(resultado.map(r => r.timeId)).toEqual(['BRA', 'JAP', 'ALE', 'CAN'])
+    for (let k = 0; k < 3; k++) {
+      expect(resultado[k].pontos).toBe(6)
+      expect(resultado[k].saldoGols).toBe(2)
+      expect(resultado[k].golsMarcados).toBe(4)
+    }
+  })
+
+  it('deve aplicar mini-tabela quando 3 times ficam totalmente empatados no geral', () => {
+    // Grupo construido para 3 times ficarem 100% empatados no geral e so a mini-tabela desempatar.
+    // BRA vs ALE 1-0, ALE vs JAP 1-0, JAP vs BRA 1-0
+    // BRA vs CAN 2-0, ALE vs CAN 2-0, JAP vs CAN 2-0
+    // Cada um: 6pts, gm 3, gs 1, saldo +2 -> empatados geralmente
+    // Mini-tabela entre BRA, ALE, JAP: cada um 3pts, 1gm, 1gs, saldo 0 -> ainda empatados
+    // Mantem ordem anterior (entrada) em caso de empate total
+    const palpites: Palpite[] = [
+      palpite('j1', 'BRA', 'ALE', 1, 0),
+      palpite('j2', 'ALE', 'JAP', 1, 0),
+      palpite('j3', 'JAP', 'BRA', 1, 0),
+      palpite('j4', 'BRA', 'CAN', 2, 0),
+      palpite('j5', 'ALE', 'CAN', 2, 0),
+      palpite('j6', 'JAP', 'CAN', 2, 0),
+    ]
+    const resultado = calcularClassificacaoGrupo(palpites, times)
+    expect(resultado[3].timeId).toBe('CAN')
+    for (let k = 0; k < 3; k++) {
+      expect(resultado[k].pontos).toBe(6)
+      expect(resultado[k].saldoGols).toBe(2)
+      expect(resultado[k].golsMarcados).toBe(3)
+    }
+  })
+
   it('deve desempatar por saldo de gols', () => {
     const palpites: Palpite[] = [
       palpite('j1', 'BRA', 'ALE', 3, 0),

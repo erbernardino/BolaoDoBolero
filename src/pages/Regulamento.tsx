@@ -4,20 +4,21 @@ import { db } from '../config/firebase'
 import { Navbar } from '../components/Navbar'
 import type { Config } from '../types'
 
-export function Regulamento() {
+export function Regulamento({ publico = false }: { publico?: boolean }) {
   const [config, setConfig] = useState<Config | null>(null)
 
   useEffect(() => {
+    if (publico) return
     async function carregar() {
       const snap = await getDoc(doc(db, 'config', 'geral'))
       if (snap.exists()) setConfig(snap.data() as Config)
     }
     carregar()
-  }, [])
+  }, [publico])
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar />
+      {!publico && <Navbar />}
       <div className="max-w-2xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">Regulamento</h1>
         <div className="bg-white p-6 rounded shadow space-y-6">
@@ -38,12 +39,21 @@ export function Regulamento() {
           <section>
             <h2 className="font-bold text-lg mb-2">Inscrição</h2>
             <ul className="list-disc ml-5 space-y-1 text-sm">
-              <li>A inscrição será feita mediante preenchimento dos palpites no sistema e pagamento da taxa de inscrição de <strong>R$ {config?.premiacao?.taxaInscricao ?? 200},00</strong>.</li>
+              <li>A inscrição será feita mediante preenchimento dos palpites no sistema e pagamento da taxa de inscrição de <strong>R$ {config?.premiacao?.taxaInscricao ?? 250},00</strong>.</li>
               <li>Todos os palpites devem ser registrados antes do início da Copa.</li>
               {config?.prazoLimitePalpites && (
                 <li><strong>Prazo limite: {config.prazoLimitePalpites.toDate().toLocaleString('pt-BR')}</strong></li>
               )}
             </ul>
+            {!publico && (
+              <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+                <p className="font-semibold text-blue-900 mb-1">Como pagar</p>
+                <p className="text-gray-700">
+                  Envio do comprovante de <strong>PIX</strong> para o celular{' '}
+                  <strong>(11) 97177-0713</strong> (chave PIX e WhatsApp).
+                </p>
+              </div>
+            )}
           </section>
 
           {/* Pontuação */}

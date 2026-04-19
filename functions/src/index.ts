@@ -3,6 +3,7 @@ import { onDocumentUpdated } from 'firebase-functions/v2/firestore'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { processarResultadoJogo } from './pontuacao'
 import { notificarResultadoRegistrado, notificarRankingAtualizado, enviarNotificacaoTodos, enviarNotificacaoParaUsuarios } from './notificacoes'
+export { backupFirestoreDiario } from './backup'
 
 admin.initializeApp()
 

@@ -44,7 +44,7 @@ async function main() {
   if (!configSnap.exists) {
     await configRef.set({
       pontos: { placarExato: 5, colunaCerta: 3, totalGols: 1, palpiteEspecial: 10 },
-      premiacao: { primeiro: 50, segundo: 25, terceiro: 10, antepenultimo: 5, doacao: 10, taxaInscricao: 200 },
+      premiacao: { primeiro: 50, segundo: 25, terceiro: 10, antepenultimo: 5, doacao: 10, taxaInscricao: 250 },
       prazoLimitePalpites: Timestamp.fromDate(new Date('2026-06-11T00:00:00Z')),
       visibilidadePalpites: 'apos_jogo',
       regrasPremiacao: '',
