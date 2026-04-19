@@ -16,6 +16,9 @@ dist-ssr
 .firebase/
 functions/lib/
 
+# Backups locais do Firestore
+backups/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
