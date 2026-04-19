@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore'
+import { collection, getDocs, doc, updateDoc, addDoc, Timestamp } from 'firebase/firestore'
 import { db } from '../../config/firebase'
 import type { Usuario, Role } from '../../types'
 
@@ -29,6 +29,17 @@ export function GerenciarUsuarios() {
     const novo = !atual
     await updateDoc(doc(db, 'usuarios', uid), { liberado: novo })
     setUsuarios(prev => prev.map(u => u.uid === uid ? { ...u, liberado: novo } : u))
+
+    // Notificar o usuário quando liberado
+    if (novo) {
+      await addDoc(collection(db, 'notificacoes_usuario', uid, 'items'), {
+        titulo: 'Conta liberada!',
+        corpo: 'Sua conta foi liberada pelo administrador. Agora você pode registrar seus palpites.',
+        lida: false,
+        link: '/palpites',
+        criadoEm: Timestamp.now(),
+      })
+    }
   }
 
   const filtrados = usuarios.filter(u => {

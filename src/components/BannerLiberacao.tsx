@@ -7,8 +7,8 @@ export function BannerLiberacao() {
 
   return (
     <div className="bg-amber-500 text-white px-4 py-3 text-center text-sm font-medium shadow-md">
-      <strong>Aguardando liberacao do administrador.</strong>{' '}
-      Sua conta sera liberada apos a confirmacao do pagamento (ate 48 horas).
+      <strong>Aguardando liberação do administrador.</strong>{' '}
+      Sua conta será liberada após a confirmação do pagamento (até 48 horas).
     </div>
   )
 }
