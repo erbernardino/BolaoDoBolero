@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "bolao-do-bolero"
+    "default": "bolao-do-bolero",
+    "prod": "bolao-do-bolero",
+    "teste": "bolao-do-bolero-teste"
   }
 }
