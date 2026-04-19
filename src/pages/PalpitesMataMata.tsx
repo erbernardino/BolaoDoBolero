@@ -249,7 +249,7 @@ export function PalpitesMataMata({ fase }: Props) {
         </div>
       )}
 
-      {fase === 'fase32' && Object.keys(classificacoes).length === 0 && (
+      {fase !== 'grupos' && Object.keys(classificacoes).length === 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 text-sm">
           Preencha os palpites da fase de grupos primeiro. Os times da fase eliminatória serão calculados automaticamente com base nos seus resultados.
         </div>
