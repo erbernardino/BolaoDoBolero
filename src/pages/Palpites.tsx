@@ -9,6 +9,7 @@ type Tab = Fase | 'especiais'
 
 const TABS: { label: string; value: Tab }[] = [
   { label: 'Grupos', value: 'grupos' },
+  { label: 'Segunda Fase', value: 'fase32' },
   { label: 'Oitavas', value: 'oitavas' },
   { label: 'Quartas', value: 'quartas' },
   { label: 'Semis', value: 'semi' },
