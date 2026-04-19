@@ -40,21 +40,37 @@ export function FormatoCopa() {
         <section className="bg-white rounded-lg shadow p-6 space-y-3">
           <h2 className="text-lg font-bold">Fase de Grupos</h2>
           <p className="text-sm text-gray-600">Cada grupo joga em formato <em>round-robin</em>: todos contra todos (6 jogos por grupo, cada seleção joga 3).</p>
-          <h3 className="font-semibold text-sm mt-3">Classificação dentro do grupo</h3>
+          <h3 className="font-semibold text-sm mt-3">Classificação dentro do grupo — critérios oficiais FIFA</h3>
           <ol className="text-sm list-decimal ml-5 space-y-0.5">
             <li>Maior número de pontos (vitória = 3, empate = 1, derrota = 0)</li>
             <li>Maior saldo de gols</li>
             <li>Maior número de gols marcados</li>
-            <li>Resultado do confronto direto</li>
-            <li>Fair play (cartões)</li>
-            <li>Sorteio</li>
+            <li>Maior número de pontos apenas nos jogos entre os times empatados</li>
+            <li>Maior saldo de gols apenas nos jogos entre os times empatados</li>
+            <li>Maior número de gols marcados apenas nos jogos entre os times empatados</li>
+            <li>Fair play (cartões: amarelo −1, 2º amarelo −3, vermelho direto −4, amarelo + vermelho −5)</li>
+            <li>Sorteio pela FIFA</li>
           </ol>
+          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 mt-2">
+            <strong>Como o Bolão trata esses critérios:</strong> usamos os critérios 1 a 6 exatamente como a FIFA (pontos → saldo → gols → mini-tabela entre empatados). Os critérios 7 (fair play) e 8 (sorteio) não se aplicam aqui porque o palpite não inclui cartões e o sorteio não é previsível. Em caso de empate total após os 6 primeiros critérios, o Bolão mantém a ordem atual da tabela.
+          </p>
           <h3 className="font-semibold text-sm mt-3">Quem avança?</h3>
           <ul className="text-sm list-disc ml-5 space-y-0.5">
             <li><strong>1º e 2º colocados</strong> de cada grupo avançam automaticamente (24 times)</li>
             <li><strong>Os 8 melhores 3ºs colocados</strong> entre os 12 grupos também avançam</li>
             <li>Total: <strong>32 times</strong> no mata-mata</li>
           </ul>
+          <h3 className="font-semibold text-sm mt-3">Ranking dos 3ºs colocados — critérios oficiais FIFA</h3>
+          <ol className="text-sm list-decimal ml-5 space-y-0.5">
+            <li>Maior número de pontos</li>
+            <li>Maior saldo de gols</li>
+            <li>Maior número de gols marcados</li>
+            <li>Fair play</li>
+            <li>Sorteio pela FIFA</li>
+          </ol>
+          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 mt-2">
+            <strong>Como o Bolão trata:</strong> usamos os 3 primeiros critérios. Não há confronto direto entre 3ºs (jogam em grupos diferentes). Se persistir empate, o Bolão mantém a ordem atual.
+          </p>
         </section>
 
         {/* Os 495 cenários */}
