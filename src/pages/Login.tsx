@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   signInWithEmailAndPassword,
   signInWithPhoneNumber,
+  sendPasswordResetEmail,
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink,
@@ -35,6 +36,7 @@ export function Login() {
   // email/password fields
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [resetSent, setResetSent] = useState(false)
 
   // email link fields
   const [emailLink, setEmailLink] = useState('')
@@ -107,6 +109,24 @@ export function Login() {
         return
       }
       navigate('/')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    setError('')
+    setResetSent(false)
+    if (!email) {
+      setError('Informe seu e-mail acima para receber o link de redefinição.')
+      return
+    }
+    setLoading(true)
+    try {
+      await sendPasswordResetEmail(auth, email)
+      setResetSent(true)
     } catch (err: unknown) {
       setError(getErrorMessage(err))
     } finally {
@@ -258,8 +278,23 @@ export function Login() {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
               />
+              <div className="mt-1 text-right">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={loading}
+                  className="text-xs text-blue-700 hover:text-blue-900 hover:underline disabled:opacity-50"
+                >
+                  Esqueci minha senha
+                </button>
+              </div>
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
+            {resetSent && (
+              <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                Enviamos um link de redefinição para <strong>{email}</strong>. Verifique sua caixa de entrada e o spam.
+              </p>
+            )}
             <button
               type="submit"
               disabled={loading}
