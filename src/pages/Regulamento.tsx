@@ -4,20 +4,21 @@ import { db } from '../config/firebase'
 import { Navbar } from '../components/Navbar'
 import type { Config } from '../types'
 
-export function Regulamento() {
+export function Regulamento({ publico = false }: { publico?: boolean }) {
   const [config, setConfig] = useState<Config | null>(null)
 
   useEffect(() => {
+    if (publico) return
     async function carregar() {
       const snap = await getDoc(doc(db, 'config', 'geral'))
       if (snap.exists()) setConfig(snap.data() as Config)
     }
     carregar()
-  }, [])
+  }, [publico])
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar />
+      {!publico && <Navbar />}
       <div className="max-w-2xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">Regulamento</h1>
         <div className="bg-white p-6 rounded shadow space-y-6">

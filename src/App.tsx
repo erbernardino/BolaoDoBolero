@@ -30,6 +30,7 @@ function AppContent() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/convite/:conviteId" element={<Cadastro />} />
+        <Route path="/regulamento-publico" element={<Regulamento publico />} />
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/palpites" element={<ProtectedRoute><Palpites /></ProtectedRoute>} />
         <Route path="/ranking" element={<LiberadoRoute><Ranking /></LiberadoRoute>} />
