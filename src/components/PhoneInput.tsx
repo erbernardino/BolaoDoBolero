@@ -56,6 +56,21 @@ function parseValue(val: string): { code: string; local: string } {
   return { code: 'BR', local: val }
 }
 
+// Formata telefone BR (celular 11 digitos) como "(99) 99999-9999" progressivamente.
+// Para outros paises, retorna so os digitos.
+function formatDisplay(digits: string, code: string): string {
+  if (code !== 'BR') return digits
+  const d = digits.slice(0, 11)
+  if (d.length === 0) return ''
+  if (d.length <= 2) return `(${d}`
+  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+}
+
+function maxDigits(code: string): number {
+  return code === 'BR' ? 11 : 15
+}
+
 export function PhoneInput({ value, onChange, required, placeholder }: PhoneInputProps) {
   const parsed = parseValue(value)
   const [selectedCode, setSelectedCode] = useState(parsed.code)
@@ -111,7 +126,7 @@ export function PhoneInput({ value, onChange, required, placeholder }: PhoneInpu
   }
 
   function handleLocalChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const val = e.target.value.replace(/[^\d]/g, '')
+    const val = e.target.value.replace(/[^\d]/g, '').slice(0, maxDigits(selectedCode))
     setLocalPhone(val)
     onChange(selectedDdi + val)
   }
@@ -175,11 +190,12 @@ export function PhoneInput({ value, onChange, required, placeholder }: PhoneInpu
       {/* Phone number input */}
       <input
         type="tel"
+        inputMode="numeric"
         required={required}
-        value={localPhone}
+        value={formatDisplay(localPhone, selectedCode)}
         onChange={handleLocalChange}
         className="flex-1 border border-gray-300 rounded-r-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-0"
-        placeholder={placeholder || '11999999999'}
+        placeholder={placeholder || (selectedCode === 'BR' ? '(99) 99999-9999' : 'Numero')}
       />
     </div>
   )
