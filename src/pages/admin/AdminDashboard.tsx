@@ -7,7 +7,6 @@ import { GerenciarConvites } from './GerenciarConvites'
 import { Configuracoes } from './Configuracoes'
 import { GerenciarUsuarios } from './GerenciarUsuarios'
 import { VerPalpites } from './VerPalpites'
-import { EnviarNotificacao } from './EnviarNotificacao'
 import { ResultadosEspeciais } from './ResultadosEspeciais'
 
 const NAV_LINKS = [
@@ -18,7 +17,6 @@ const NAV_LINKS = [
   { to: '/admin/palpites', label: 'Palpites' },
   { to: '/admin/convites', label: 'Convites' },
   { to: '/admin/usuarios', label: 'Usuários' },
-  { to: '/admin/notificacoes', label: 'Notificações' },
   { to: '/admin/config', label: 'Configurações' },
 ]
 
@@ -57,7 +55,6 @@ export function AdminDashboard() {
           <Route path="palpites" element={<VerPalpites />} />
           <Route path="convites" element={<GerenciarConvites />} />
           <Route path="usuarios" element={<GerenciarUsuarios />} />
-          <Route path="notificacoes" element={<EnviarNotificacao />} />
           <Route path="config" element={<Configuracoes />} />
         </Routes>
       </main>

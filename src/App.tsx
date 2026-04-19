@@ -1,12 +1,11 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthContext, useAuthProvider } from './hooks/useAuth'
-import { useNotifications } from './hooks/useNotifications'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminRoute } from './components/AdminRoute'
 import { LiberadoRoute } from './components/LiberadoRoute'
 import { OfflineBanner } from './components/OfflineBanner'
-import { PWAInstallPrompt } from './components/PWAInstallPrompt'
+import { AmbienteTesteBanner } from './components/AmbienteTesteBanner'
 
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })))
 const Cadastro = lazy(() => import('./pages/Cadastro').then(m => ({ default: m.Cadastro })))
@@ -22,9 +21,9 @@ const Perfil = lazy(() => import('./pages/Perfil').then(m => ({ default: m.Perfi
 const VerificarVinculo = lazy(() => import('./pages/VerificarVinculo').then(m => ({ default: m.VerificarVinculo })))
 
 function AppContent() {
-  useNotifications()
   return (
     <>
+    <AmbienteTesteBanner />
     <OfflineBanner />
     <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Carregando...</div>}>
       <Routes>
@@ -43,7 +42,6 @@ function AppContent() {
         <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       </Routes>
     </Suspense>
-    <PWAInstallPrompt />
     <footer className="fixed bottom-2 right-3 text-[10px] text-gray-400/60 pointer-events-auto z-10">
       Desenvolvido por{' '}
       <a href="https://allogic.com.br" target="_blank" rel="noopener noreferrer" className="text-blue-400/60 hover:text-blue-500 hover:underline transition-colors pointer-events-auto">
