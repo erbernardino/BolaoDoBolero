@@ -8,7 +8,7 @@ export function BannerLiberacao() {
   return (
     <div className="bg-amber-500 text-white px-4 py-3 text-center text-sm font-medium shadow-md">
       <strong>Aguardando liberação do administrador.</strong>{' '}
-      Sua conta será liberada após a confirmação do pagamento (até 48 horas).
+      Envie o comprovante de PIX para o celular <strong>(11) 97177-0713</strong> (chave PIX e WhatsApp).
     </div>
   )
 }

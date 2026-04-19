@@ -45,6 +45,15 @@ export function Regulamento({ publico = false }: { publico?: boolean }) {
                 <li><strong>Prazo limite: {config.prazoLimitePalpites.toDate().toLocaleString('pt-BR')}</strong></li>
               )}
             </ul>
+            {!publico && (
+              <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+                <p className="font-semibold text-blue-900 mb-1">Como pagar</p>
+                <p className="text-gray-700">
+                  Envio do comprovante de <strong>PIX</strong> para o celular{' '}
+                  <strong>(11) 97177-0713</strong> (chave PIX e WhatsApp).
+                </p>
+              </div>
+            )}
           </section>
 
           {/* Pontuação */}
