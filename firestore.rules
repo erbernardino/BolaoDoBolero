@@ -99,6 +99,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // /usuarios_excluidos/{uid}: backup de usuários excluídos, escrita só via Admin SDK
+    match /usuarios_excluidos/{uid} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // /convites/{conviteId}: read by anyone, create by admin, update restrito
     // Convite unico: transição usado=false→true com campos controlados
     // Convite multiplo: não precisa ser marcado como usado (admin pode atualizar)
