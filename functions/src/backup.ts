@@ -20,7 +20,7 @@ export const backupFirestoreDiario = onSchedule(
       throw new Error('projectId ausente')
     }
 
-    const bucket = `${projectId}.firebasestorage.app`
+    const bucket = process.env.BACKUP_BUCKET || `${projectId}-backups`
     const dataIso = new Date().toISOString().slice(0, 10)
     const outputUriPrefix = `gs://${bucket}/firestore-backups/${dataIso}`
 
