@@ -55,6 +55,26 @@ export const enviarNotificacao = onCall(async (request) => {
 })
 
 /**
+ * Cloud Function callable pública que verifica se um telefone (E.164)
+ * já está cadastrado em `usuarios`. Usada tanto no cadastro (para bloquear
+ * duplicatas) quanto no login por SMS (para não criar conta Auth órfã
+ * antes de saber se o usuário existe no bolão).
+ * Aceita: { telefone }
+ */
+export const telefoneJaCadastrado = onCall(async (request) => {
+  const { telefone } = request.data as { telefone?: string }
+  if (!telefone || typeof telefone !== 'string') {
+    throw new HttpsError('invalid-argument', 'telefone é obrigatório.')
+  }
+  const snap = await admin.firestore()
+    .collection('usuarios')
+    .where('telefone', '==', telefone)
+    .limit(1)
+    .get()
+  return { existe: !snap.empty }
+})
+
+/**
  * Cloud Function callable para admin excluir um usuário.
  * Faz backup completo em `usuarios_excluidos/{uid}` antes de remover.
  * Aceita: { uid }

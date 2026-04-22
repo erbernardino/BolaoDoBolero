@@ -3,7 +3,38 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { writeFileSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 import path from 'node:path'
+
+function resolveAppVersion(): string {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim()
+  } catch {
+    return `build-${Date.now()}`
+  }
+}
+
+function appVersionJson(version: string): Plugin {
+  const payload = JSON.stringify({ version, buildTime: new Date().toISOString() })
+  return {
+    name: 'app-version-json',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url?.split('?')[0] === '/version.json') {
+          res.setHeader('Content-Type', 'application/json')
+          res.setHeader('Cache-Control', 'no-cache, max-age=0, must-revalidate')
+          res.end(payload)
+          return
+        }
+        next()
+      })
+    },
+    writeBundle(options) {
+      const outDir = options.dir || 'dist'
+      writeFileSync(path.join(outDir, 'version.json'), payload)
+    },
+  }
+}
 
 function firebaseMessagingSw(env: Record<string, string>): Plugin {
   const buildContent = () => `importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js')
@@ -48,12 +79,17 @@ messaging.onBackgroundMessage((payload) => {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  const appVersion = resolveAppVersion()
   return {
     plugins: [
       react(),
       tailwindcss(),
       firebaseMessagingSw(env),
+      appVersionJson(appVersion),
     ],
+    define: {
+      __APP_VERSION__: JSON.stringify(appVersion),
+    },
     server: {
       headers: {
         'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',

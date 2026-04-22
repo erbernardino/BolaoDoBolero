@@ -6,6 +6,7 @@ import { AdminRoute } from './components/AdminRoute'
 import { LiberadoRoute } from './components/LiberadoRoute'
 import { OfflineBanner } from './components/OfflineBanner'
 import { AmbienteTesteBanner } from './components/AmbienteTesteBanner'
+import { NovaVersaoBanner } from './components/NovaVersaoBanner'
 
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })))
 const Cadastro = lazy(() => import('./pages/Cadastro').then(m => ({ default: m.Cadastro })))
@@ -25,6 +26,7 @@ function AppContent() {
     <>
     <AmbienteTesteBanner />
     <OfflineBanner />
+    <NovaVersaoBanner />
     <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Carregando...</div>}>
       <Routes>
         <Route path="/login" element={<Login />} />
