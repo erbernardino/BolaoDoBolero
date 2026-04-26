@@ -33,7 +33,7 @@ export function Navbar() {
 
   const isActive = (path: string) => location.pathname === path
 
-  const liberado = usuario?.liberado !== false
+  const liberado = usuario?.liberado === true
 
   const navLinks = [
     { to: '/palpites', label: 'Palpites' },

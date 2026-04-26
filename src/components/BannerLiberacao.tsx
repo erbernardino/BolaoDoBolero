@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth'
 export function BannerLiberacao() {
   const { usuario } = useAuth()
 
-  if (!usuario || usuario.liberado !== false || usuario.role === 'admin') return null
+  if (!usuario || usuario.liberado === true || usuario.role === 'admin') return null
 
   return (
     <div className="sticky top-0 z-40 bg-amber-500 text-white px-4 py-3 text-center text-sm font-medium shadow-md">
