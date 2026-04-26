@@ -12,8 +12,18 @@ import {
 } from 'firebase/auth'
 import type { ConfirmationResult } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
+import { getFunctions, httpsCallable } from 'firebase/functions'
 import { auth, db } from '../config/firebase'
 import { PhoneInput } from '../components/PhoneInput'
+
+async function registrarLoginNoServer(metodo: 'email_senha' | 'email_link' | 'telefone') {
+  try {
+    const fn = httpsCallable<{ metodo: string }, { ok: boolean }>(getFunctions(), 'registrarLogin')
+    await fn({ metodo })
+  } catch {
+    // Login ja foi bem-sucedido; falha de auditoria nao deve bloquear o usuario.
+  }
+}
 
 type Mode = 'email' | 'emailLink' | 'phone'
 type PhoneStep = 'input' | 'confirm'
@@ -77,6 +87,7 @@ export function Login() {
         setError('Você não tem cadastro no bolão. Solicite um convite ao administrador.')
         return
       }
+      await registrarLoginNoServer('email_link')
       navigate('/')
     } catch (err: unknown) {
       setError(getErrorMessage(err))
@@ -105,6 +116,7 @@ export function Login() {
         setError('Você não tem cadastro no bolão. Solicite um convite ao administrador.')
         return
       }
+      await registrarLoginNoServer('email_senha')
       navigate('/')
     } catch (err: unknown) {
       setError(getErrorMessage(err))
@@ -189,6 +201,7 @@ export function Login() {
         setError('Você não tem cadastro no bolão. Solicite um convite ao administrador.')
         return
       }
+      await registrarLoginNoServer('telefone')
       navigate('/')
     } catch (err: unknown) {
       setError(getErrorMessage(err))
