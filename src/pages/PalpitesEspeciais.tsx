@@ -49,7 +49,7 @@ export function PalpitesEspeciais() {
     load()
   }, [firebaseUser])
 
-  const naoLiberado = usuario?.liberado === false
+  const naoLiberado = usuario != null && usuario.liberado !== true
   const prazoExpirado = config?.prazoLimitePalpites
     ? Timestamp.now().toMillis() > config.prazoLimitePalpites.toMillis()
     : false

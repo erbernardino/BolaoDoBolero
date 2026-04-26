@@ -167,27 +167,27 @@ export function GerenciarUsuarios() {
                 <td className="px-4 py-3">
                   <span
                     className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                      u.liberado !== false
+                      u.liberado === true
                         ? 'bg-green-100 text-green-700'
                         : 'bg-red-100 text-red-700'
                     }`}
                   >
-                    {u.liberado !== false ? 'Liberado' : 'Pendente'}
+                    {u.liberado === true ? 'Liberado' : 'Pendente'}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => toggleLiberado(u.uid, u.liberado ?? false)}
-                      title={u.liberado !== false ? 'Deixar pendente' : 'Liberar'}
-                      aria-label={u.liberado !== false ? 'Deixar pendente' : 'Liberar'}
+                      title={u.liberado === true ? 'Deixar pendente' : 'Liberar'}
+                      aria-label={u.liberado === true ? 'Deixar pendente' : 'Liberar'}
                       className={`p-1.5 rounded-lg border transition-colors ${
-                        u.liberado !== false
+                        u.liberado === true
                           ? 'border-red-300 text-red-700 hover:bg-red-50'
                           : 'border-green-300 text-green-700 hover:bg-green-50'
                       }`}
                     >
-                      {u.liberado !== false ? iconClock : iconCheck}
+                      {u.liberado === true ? iconClock : iconCheck}
                     </button>
                     <button
                       onClick={() => excluirUsuario(u)}
@@ -214,24 +214,24 @@ export function GerenciarUsuarios() {
                 <div className="flex items-center gap-2">
                   <span
                     className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                      u.liberado !== false
+                      u.liberado === true
                         ? 'bg-green-100 text-green-700'
                         : 'bg-red-100 text-red-700'
                     }`}
                   >
-                    {u.liberado !== false ? 'Liberado' : 'Pendente'}
+                    {u.liberado === true ? 'Liberado' : 'Pendente'}
                   </span>
                   <button
                     onClick={() => toggleLiberado(u.uid, u.liberado ?? false)}
-                    title={u.liberado !== false ? 'Deixar pendente' : 'Liberar'}
-                    aria-label={u.liberado !== false ? 'Deixar pendente' : 'Liberar'}
+                    title={u.liberado === true ? 'Deixar pendente' : 'Liberar'}
+                    aria-label={u.liberado === true ? 'Deixar pendente' : 'Liberar'}
                     className={`p-1.5 rounded-lg border transition-colors ${
-                      u.liberado !== false
+                      u.liberado === true
                         ? 'border-red-300 text-red-700 hover:bg-red-50'
                         : 'border-green-300 text-green-700 hover:bg-green-50'
                     }`}
                   >
-                    {u.liberado !== false ? iconClock : iconCheck}
+                    {u.liberado === true ? iconClock : iconCheck}
                   </button>
                   <button
                     onClick={() => excluirUsuario(u)}

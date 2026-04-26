@@ -245,7 +245,7 @@ export function PalpitesMataMata({ fase }: Props) {
   }
 
   const { usuario } = useAuth()
-  const naoLiberado = usuario?.liberado === false
+  const naoLiberado = usuario != null && usuario.liberado !== true
   const prazoExpirado = config ? config.prazoLimitePalpites.toDate() < new Date() : false
 
   if (loading) {
