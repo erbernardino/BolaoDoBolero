@@ -185,6 +185,12 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // /audit_log/{logId}: leitura so admin, escrita so via Admin SDK (Cloud Functions)
+    match /audit_log/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // /ranking/{uid}: read by authenticated, write only by Cloud Functions via Admin SDK
     match /ranking/{uid} {
       allow read: if isAuthenticated();

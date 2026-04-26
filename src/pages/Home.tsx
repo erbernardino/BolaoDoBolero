@@ -6,6 +6,7 @@ import { auth, db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
 import { AoVivo } from '../components/AoVivo'
+import { useRemoteFlag } from '../hooks/useRemoteConfig'
 import type { Jogo, Time, Ranking as RankingType } from '../types'
 
 function ContagemRegressiva({ dataAlvo }: { dataAlvo: Date }) {
@@ -53,6 +54,7 @@ export function Home() {
   const perfilIncompleto = usuario &&
     ((usuario.nome?.trim()?.length ?? 0) < 2 || (usuario.apelido?.trim()?.length ?? 0) < 2)
   const liberado = usuario?.liberado === true
+  const homeEnriched = useRemoteFlag('feature_home_enriched', true)
 
   useEffect(() => {
     async function load() {
@@ -113,7 +115,7 @@ export function Home() {
         </h1>
         <p className="text-gray-500 mb-6">O que você quer fazer hoje?</p>
 
-        {usuario && <AoVivo uid={usuario.uid} />}
+        {homeEnriched && usuario && <AoVivo uid={usuario.uid} />}
 
         {perfilIncompleto && (
           <Link
@@ -124,14 +126,14 @@ export function Home() {
           </Link>
         )}
 
-        {dataCopa.getTime() > Date.now() && (
+        {homeEnriched && dataCopa.getTime() > Date.now() && (
           <div className="bg-white rounded-xl shadow border border-gray-100 p-5 mb-6 text-center">
             <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Copa do Mundo 2026</p>
             <ContagemRegressiva dataAlvo={dataCopa} />
           </div>
         )}
 
-        {liberado && (
+        {homeEnriched && liberado && (
           <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="bg-white rounded-xl shadow border border-gray-100 p-4 text-center">
               <p className="text-2xl font-black text-blue-700">{posicaoRanking ?? '-'}<span className="text-sm font-normal text-gray-400">/{totalParticipantes || '-'}</span></p>
@@ -148,7 +150,7 @@ export function Home() {
           </div>
         )}
 
-        {proximosJogos.length > 0 && (
+        {homeEnriched && proximosJogos.length > 0 && (
           <div className="bg-white rounded-xl shadow border border-gray-100 p-5 mb-6">
             <h2 className="text-sm font-bold text-gray-700 mb-3">Próximos jogos</h2>
             <div className="space-y-2">
