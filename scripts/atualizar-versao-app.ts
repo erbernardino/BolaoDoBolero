@@ -13,7 +13,7 @@
 // novo ja estiver disponivel).
 
 import { initializeApp } from 'firebase-admin/app'
-import { getFirestore, Timestamp } from 'firebase-admin/firestore'
+import { FieldValue, getFirestore } from 'firebase-admin/firestore'
 import { execSync } from 'node:child_process'
 
 function gitShortSha(): string {
@@ -40,18 +40,24 @@ async function main() {
   const db = getFirestore()
 
   const build = gitShortSha()
-  const deployedAt = Timestamp.now()
-  const atualizadoPor = process.env.USER || process.env.LOGNAME || 'desconhecido'
+  const atualizadoPor = process.env.USER || process.env.LOGNAME || process.env.USERNAME || 'desconhecido'
 
-  await db.doc('config/app_version').set({
-    build,
-    deployedAt,
-    atualizadoPor,
-  })
+  await db.doc('config/app_version').set(
+    {
+      build,
+      deployedAt: FieldValue.serverTimestamp(),
+      atualizadoPor,
+    },
+    { merge: true },
+  )
+
+  // Le de volta para logar o timestamp real do servidor
+  const snap = await db.doc('config/app_version').get()
+  const deployedAt = (snap.data()?.deployedAt as { toDate?: () => Date } | undefined)?.toDate?.()
 
   console.log(`OK: config/app_version atualizado em ${projectId}`)
   console.log(`     build=${build}`)
-  console.log(`     deployedAt=${deployedAt.toDate().toISOString()}`)
+  console.log(`     deployedAt=${deployedAt ? deployedAt.toISOString() : 'serverTimestamp pendente'}`)
   console.log(`     atualizadoPor=${atualizadoPor}`)
 }
 

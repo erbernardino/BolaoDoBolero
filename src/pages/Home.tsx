@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, getCountFromServer, query, where } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
 import { AoVivo } from '../components/AoVivo'
-import type { Jogo, Time, Ranking as RankingType, Palpite } from '../types'
+import type { Jogo, Time, Ranking as RankingType } from '../types'
 
 function ContagemRegressiva({ dataAlvo }: { dataAlvo: Date }) {
   const [agora, setAgora] = useState(new Date())
@@ -58,11 +58,17 @@ export function Home() {
     async function load() {
       if (!firebaseUser) return
 
-      const [rankingSnap, jogosSnap, timesSnap, palpitesSnap] = await Promise.all([
+      const [rankingSnap, jogosSnap, timesSnap, meusPalpitesCount] = await Promise.all([
         getDocs(collection(db, 'ranking')),
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
-        getDocs(collection(db, 'palpites')),
+        // Conta apenas palpites do proprio usuario (rules nao deixam ler de
+        // outros se visibilidadePalpites != 'sempre'; essa contagem e barata
+        // e nao baixa documentos).
+        getCountFromServer(query(
+          collection(db, 'palpites'),
+          where('uid', '==', firebaseUser.uid),
+        )),
       ])
 
       const rankings = rankingSnap.docs.map(d => ({ uid: d.id, ...d.data() } as RankingType))
@@ -91,8 +97,7 @@ export function Home() {
         }))
       setProximosJogos(proximos)
 
-      const meusPalpites = palpitesSnap.docs.filter(d => (d.data() as Palpite).uid === firebaseUser.uid)
-      setTotalPalpites(meusPalpites.length)
+      setTotalPalpites(meusPalpitesCount.data().count)
     }
     load()
   }, [firebaseUser])

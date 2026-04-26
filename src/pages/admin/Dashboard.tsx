@@ -38,7 +38,8 @@ export function Dashboard() {
 
       if (configSnap.exists()) {
         const cfg = configSnap.data() as Config
-        if (cfg.premiacao?.taxaInscricao) setTaxaInscricao(cfg.premiacao.taxaInscricao)
+        const taxaConfigurada = cfg.premiacao?.taxaInscricao
+        if (typeof taxaConfigurada === 'number') setTaxaInscricao(taxaConfigurada)
       }
 
       setLoading(false)

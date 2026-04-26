@@ -4,7 +4,7 @@
 
 Inclui qualquer variante: `git stash`, `git stash push|save|create|store|apply|pop|drop|clear`, e flags de auto-stash em outros comandos (`git pull --autostash`, `git rebase --autostash`).
 
-**Razao:** em 2026-04-26 o usuario descobriu um stash antigo contendo ~325 linhas de codigo critico (Home melhorada + admin Dashboard novo) que estava efetivamente perdido porque ninguem sabia que existia. Stash esconde trabalho. Reacao do usuario foi enfatica: "JAMAIS FACA STASH DE NADA SEM MEU CONCENTIMENTO EXPLICITO!!!!!!!!! COLOQUE EM TODAS AS MEMORIAS".
+**Razao:** em 2026-04-26 o usuario descobriu um stash antigo contendo ~325 linhas de codigo critico (Home melhorada + admin Dashboard novo) que estava efetivamente perdido porque ninguem sabia que existia. Stash esconde trabalho. Reacao do usuario foi enfatica: "JAMAIS FACA STASH DE NADA SEM MEU CONSENTIMENTO EXPLICITO!!!!!!!!! COLOQUE EM TODAS AS MEMORIAS".
 
 **Como aplicar:**
 
