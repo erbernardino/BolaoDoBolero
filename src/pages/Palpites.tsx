@@ -50,9 +50,9 @@ export function Palpites() {
           )}
         </div>
 
-        {/* Barra de progresso */}
+        {/* Barra de progresso (sticky) */}
         {totalJogos > 0 && (
-          <div className="mb-6">
+          <div className="sticky top-0 z-30 -mx-6 px-6 py-2 mb-4 bg-gray-50/95 backdrop-blur supports-[backdrop-filter]:bg-gray-50/80 border-b border-gray-200">
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all duration-500 ${
