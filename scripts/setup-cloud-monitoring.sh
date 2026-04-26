@@ -23,14 +23,14 @@ gcloud config set project "$PROJECT_ID" --quiet
 
 # 1) Notification channel (email) — cria se nao existe
 echo "==> Verificando canal de notificacao por email..."
-EXISTING=$(gcloud alpha monitoring channels list \
+EXISTING=$(gcloud beta monitoring channels list \
   --project "$PROJECT_ID" \
-  --filter="type=email AND labels.email_address=$EMAIL" \
-  --format="value(name)" 2>/dev/null | head -1)
+  --format="value(name,type,labels)" 2>/dev/null \
+  | { grep -F "$EMAIL" || true; } | { grep -F "email" || true; } | awk '{print $1}' | head -1)
 
 if [ -z "$EXISTING" ]; then
   echo "==> Criando canal email -> $EMAIL"
-  CHANNEL_NAME=$(gcloud alpha monitoring channels create \
+  CHANNEL_NAME=$(gcloud beta monitoring channels create \
     --project "$PROJECT_ID" \
     --display-name="Email - $EMAIL" \
     --type=email \
@@ -46,10 +46,10 @@ function criar_alerta() {
   local DISPLAY_NAME="$1"
   local YAML_FILE="$2"
 
-  EXISTING_POLICY=$(gcloud alpha monitoring policies list \
+  EXISTING_POLICY=$(gcloud beta monitoring policies list \
     --project "$PROJECT_ID" \
-    --filter="displayName=\"$DISPLAY_NAME\"" \
-    --format="value(name)" 2>/dev/null | head -1)
+    --format="value(name,displayName)" 2>/dev/null \
+    | { grep -F "$DISPLAY_NAME" || true; } | awk '{print $1}' | head -1)
 
   if [ -n "$EXISTING_POLICY" ]; then
     echo "==> Alerta '$DISPLAY_NAME' ja existe: $EXISTING_POLICY (skip)"
@@ -57,7 +57,7 @@ function criar_alerta() {
   fi
 
   echo "==> Criando alerta: $DISPLAY_NAME"
-  gcloud alpha monitoring policies create \
+  gcloud beta monitoring policies create \
     --project "$PROJECT_ID" \
     --policy-from-file="$YAML_FILE" \
     --notification-channels="$CHANNEL_NAME" >/dev/null
@@ -105,9 +105,9 @@ conditions:
         - alignmentPeriod: 60s
           perSeriesAligner: ALIGN_SUM
           crossSeriesReducer: REDUCE_SUM
-      duration: 93600s
+      duration: 84600s
 documentation:
-  content: "A funcao backupFirestoreDiario nao executou nas ultimas 26h. Esperado: 1x ao dia as 00:00 BRT (03:00 UTC)."
+  content: "A funcao backupFirestoreDiario nao executou nas ultimas 23h30. Esperado: 1x ao dia as 00:00 BRT (03:00 UTC)."
   mimeType: "text/markdown"
 alertStrategy:
   autoClose: 86400s
