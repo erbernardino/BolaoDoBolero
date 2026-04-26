@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { NotificacoesBell } from './NotificacoesBell'
 import { BannerLiberacao } from './BannerLiberacao'
 import { Avatar } from './Avatar'
 
@@ -52,7 +51,6 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
-          {firebaseUser && <NotificacoesBell />}
           {firebaseUser && (
             <Link
               to="/perfil"
@@ -70,7 +68,6 @@ export function Navbar() {
 
         {/* Mobile: avatar + hamburger */}
         <div className="md:hidden flex items-center gap-1">
-          {firebaseUser && <NotificacoesBell />}
           {firebaseUser && (
             <Link to="/perfil" onClick={() => setMenuOpen(false)}>
               <Avatar src={photoURL} nome={displayName} uid={firebaseUser?.uid} size="sm" />

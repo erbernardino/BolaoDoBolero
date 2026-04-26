@@ -185,16 +185,6 @@ service cloud.firestore {
       allow update: if false;
     }
 
-    // /notificacoes_usuario/{uid}/items — cliente só lê/atualiza as próprias; criações usam Admin SDK/Functions
-    match /notificacoes_usuario/{uid}/items/{notifId} {
-      allow read: if isOwner(uid);
-      allow update: if isOwner(uid)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lida'])
-        && request.resource.data.lida is bool;
-      allow create: if isAdmin();
-      allow delete: if false;
-    }
-
     // /ranking/{uid}: read by authenticated, write only by Cloud Functions via Admin SDK
     match /ranking/{uid} {
       allow read: if isAuthenticated();
