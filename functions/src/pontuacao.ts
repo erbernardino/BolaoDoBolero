@@ -157,6 +157,14 @@ export async function recalcularTodoRanking(): Promise<number> {
   const palpitesSnap = await db.collection('palpites').get()
   const palpites = palpitesSnap.docs.map(d => d.data() as PalpiteRanking)
 
+  // Indexar palpites por jogoId para evitar varredura O(N*M) dentro do loop de jogos.
+  const palpitesPorJogo = new Map<string, PalpiteRanking[]>()
+  for (const p of palpites) {
+    const lista = palpitesPorJogo.get(p.jogoId)
+    if (lista) lista.push(p)
+    else palpitesPorJogo.set(p.jogoId, [p])
+  }
+
   // Calcular ranking por usuário (pontos de jogos)
   const rankingMap = new Map<string, RankingData>()
 
@@ -171,7 +179,7 @@ export async function recalcularTodoRanking(): Promise<number> {
     const isJogoBrasil = brasilId != null &&
       (jogo.timeCasa === brasilId || jogo.timeVisitante === brasilId)
 
-    const palpitesDoJogo = palpites.filter(p => p.jogoId === jogo.id)
+    const palpitesDoJogo = palpitesPorJogo.get(jogo.id) ?? []
 
     for (const p of palpitesDoJogo) {
       const resultado = calcularPontos(

@@ -78,13 +78,22 @@ export function PalpitesGeral() {
         if (isAdmin || visibilidadeAtual === 'sempre' || (visibilidadeAtual === 'apos_prazo' && prazoJaExpirou)) {
           addPalpitesFromSnap(await getDocs(collection(db, 'palpites')))
         } else if (visibilidadeAtual === 'apos_jogo') {
-          const jogosEncerrados = jogosData.filter(j => j.encerrado)
-          for (const jogo of jogosEncerrados) {
-            addPalpitesFromSnap(await getDocs(query(
-              collection(db, 'palpites'),
-              where('jogoId', '==', jogo.id),
-            )))
+          // Firestore permite até 30 valores no operador `in`, mas a regra `canReadPalpite`
+          // faz `get(jogos/{jogoId})` por palpite e o limite cumulativo de get() em rules é
+          // 20 por query (mais 2 entradas fixas: config/geral e usuarios/{uid}). Para ficar
+          // dentro do orçamento com folga, usamos chunks de 10 (10 + 2 = 12 < 20).
+          const idsEncerrados = jogosData.filter(j => j.encerrado).map(j => j.id)
+          const chunks: string[][] = []
+          for (let i = 0; i < idsEncerrados.length; i += 10) {
+            chunks.push(idsEncerrados.slice(i, i + 10))
           }
+          const snapshots = await Promise.all(
+            chunks.map(chunk => getDocs(query(
+              collection(db, 'palpites'),
+              where('jogoId', 'in', chunk),
+            ))),
+          )
+          snapshots.forEach(addPalpitesFromSnap)
         }
 
         setPalpites(Array.from(palpitesMap.values()))
