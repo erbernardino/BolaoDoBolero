@@ -4,6 +4,7 @@ import type { QuerySnapshot, DocumentData } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
+import { Avatar } from '../components/Avatar'
 import type { Jogo, Time, Palpite, Usuario, Fase, Config } from '../types'
 
 const FASES: { id: Fase | 'todos'; label: string }[] = [
@@ -289,8 +290,17 @@ export function PalpitesGeral() {
                 return (
                   <tr key={u.uid} className={`hover:bg-blue-50/50 ${ehEu ? 'bg-blue-50/30' : ''}`}>
                     <td className={`px-3 py-2 font-medium sticky left-0 whitespace-nowrap ${ehEu ? 'text-blue-700 bg-blue-50/30' : 'text-gray-800 bg-white'}`}>
-                      {u.apelido || u.nome || 'Sem nome'}
-                      {ehEu && <span className="text-[10px] ml-1 text-blue-400">(eu)</span>}
+                      <div className="flex items-center gap-2">
+                        <Avatar
+                          src={u.fotoURL ?? null}
+                          nome={u.apelido || u.nome}
+                          uid={u.uid}
+                          size="sm"
+                          ring={false}
+                        />
+                        <span>{u.apelido || u.nome || 'Sem nome'}</span>
+                        {ehEu && <span className="text-[10px] text-blue-400">(eu)</span>}
+                      </div>
                     </td>
                     {jogosFiltrados.map(jogo => {
                       const p = palpiteMap.get(jogo.id)?.get(u.uid)

@@ -3,28 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { NotificacoesBell } from './NotificacoesBell'
 import { BannerLiberacao } from './BannerLiberacao'
-
-function Avatar({ src, nome, size = 'sm' }: { src?: string | null; nome?: string; size?: 'sm' | 'md' }) {
-  const dim = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
-  const inicial = (nome || '?')[0].toUpperCase()
-
-  if (src) {
-    return (
-      <img
-        src={src}
-        alt={nome || 'Perfil'}
-        className={`${dim} rounded-full object-cover ring-2 ring-white/30`}
-        referrerPolicy="no-referrer"
-      />
-    )
-  }
-
-  return (
-    <div className={`${dim} rounded-full bg-white/20 ring-2 ring-white/30 flex items-center justify-center font-bold text-white`}>
-      {inicial}
-    </div>
-  )
-}
+import { Avatar } from './Avatar'
 
 export function Navbar() {
   const { firebaseUser, usuario } = useAuth()
@@ -47,7 +26,7 @@ export function Navbar() {
   ]
 
   const displayName = usuario?.apelido || usuario?.nome || firebaseUser?.displayName || 'Perfil'
-  const photoURL = firebaseUser?.photoURL
+  const photoURL = usuario?.fotoURL ?? firebaseUser?.photoURL ?? null
 
   return (
     <>
@@ -83,7 +62,7 @@ export function Navbar() {
                   : 'hover:bg-white/10'
               }`}
             >
-              <Avatar src={photoURL} nome={displayName} size="sm" />
+              <Avatar src={photoURL} nome={displayName} uid={firebaseUser?.uid} size="sm" />
               <span className="text-sm font-medium max-w-24 truncate">{displayName}</span>
             </Link>
           )}
@@ -94,7 +73,7 @@ export function Navbar() {
           {firebaseUser && <NotificacoesBell />}
           {firebaseUser && (
             <Link to="/perfil" onClick={() => setMenuOpen(false)}>
-              <Avatar src={photoURL} nome={displayName} size="sm" />
+              <Avatar src={photoURL} nome={displayName} uid={firebaseUser?.uid} size="sm" />
             </Link>
           )}
           <button
@@ -125,7 +104,7 @@ export function Navbar() {
               onClick={() => setMenuOpen(false)}
               className="flex items-center gap-3 px-3 py-3 mb-1 rounded-lg hover:bg-white/10 transition-all"
             >
-              <Avatar src={photoURL} nome={displayName} size="md" />
+              <Avatar src={photoURL} nome={displayName} uid={firebaseUser?.uid} size="md" />
               <div className="min-w-0">
                 <p className="text-sm font-semibold truncate">{displayName}</p>
                 <p className="text-xs text-blue-200 truncate">{usuario?.email || firebaseUser.phoneNumber || ''}</p>

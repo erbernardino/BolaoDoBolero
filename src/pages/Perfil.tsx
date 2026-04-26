@@ -5,6 +5,8 @@ import { doc, updateDoc } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
+import { Avatar } from '../components/Avatar'
+import { UploadFotoPerfil } from '../components/UploadFotoPerfil'
 
 export function Perfil() {
   const { firebaseUser, usuario, loading, refreshUsuario } = useAuth()
@@ -17,6 +19,7 @@ export function Perfil() {
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
   const [providerMsg, setProviderMsg] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
   const [unlinking, setUnlinking] = useState(false)
+  const [editandoFoto, setEditandoFoto] = useState(false)
 
   // Valor exibido: se editou usa o editado, senão usa do Firestore
   const nome = nomeEdit ?? usuario?.nome ?? ''
@@ -138,6 +141,34 @@ export function Perfil() {
           </button>
 
           <h1 className="text-2xl font-bold text-gray-800 text-center">Meu Perfil</h1>
+
+          {/* Foto de perfil */}
+          <section className="flex flex-col items-center gap-3">
+            <Avatar
+              src={usuario?.fotoURL ?? firebaseUser?.photoURL ?? null}
+              nome={usuario?.apelido ?? usuario?.nome ?? firebaseUser?.displayName ?? '?'}
+              uid={firebaseUser?.uid}
+              size="xl"
+            />
+            <button
+              onClick={() => setEditandoFoto(true)}
+              className="text-sm text-blue-700 hover:text-blue-900 hover:underline font-medium"
+            >
+              {usuario?.fotoURL ? 'Trocar foto' : 'Adicionar foto'}
+            </button>
+          </section>
+
+          {editandoFoto && firebaseUser && (
+            <UploadFotoPerfil
+              uid={firebaseUser.uid}
+              onConcluido={async () => {
+                setEditandoFoto(false)
+                await refreshUsuario()
+                setMensagem({ tipo: 'sucesso', texto: 'Foto atualizada!' })
+              }}
+              onCancelar={() => setEditandoFoto(false)}
+            />
+          )}
 
           {/* Seção 1: Dados Pessoais */}
           <section>
