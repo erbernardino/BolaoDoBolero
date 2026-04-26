@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, doc, updateDoc, addDoc, Timestamp } from 'firebase/firestore'
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore'
 import { getFunctions, httpsCallable } from 'firebase/functions'
 import { db, auth } from '../../config/firebase'
 import type { Usuario, Role } from '../../types'
@@ -61,12 +61,14 @@ export function GerenciarUsuarios() {
 
     // Notificar o usuário quando liberado
     if (novo) {
-      await addDoc(collection(db, 'notificacoes_usuario', uid, 'items'), {
+      const fn = httpsCallable<{ titulo: string; corpo: string; uids: string[] }, { enviados: number }>(
+        functions,
+        'enviarNotificacao',
+      )
+      await fn({
         titulo: 'Conta liberada!',
         corpo: 'Sua conta foi liberada pelo administrador. Agora você pode registrar seus palpites.',
-        lida: false,
-        link: '/palpites',
-        criadoEm: Timestamp.now(),
+        uids: [uid],
       })
     }
   }

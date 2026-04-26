@@ -1,15 +1,29 @@
 import { useEffect, useState } from 'react'
-import { collection, getDocs, doc, setDoc, Timestamp } from 'firebase/firestore'
+import { collection, getDoc, getDocs, doc, setDoc, Timestamp, query, where } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { PalpiteInput } from '../components/PalpiteInput'
 import { calcularClassificacaoGrupo } from '../lib/classificacao'
 import { selecionarMelhoresTerceiros } from '../lib/melhoresTerceiros'
-import { resolverTimeMataMataPorPalpites } from '../lib/chaveamento'
+import {
+  montarTerceirosPorSlot,
+  resolverTimeMataMataPersonalizado,
+  resolverTimePorLabelFifa,
+} from '../lib/chaveamento'
 import type { Jogo, Time, Palpite, Config, ClassificacaoTime, Grupo, Fase, Origem } from '../types'
 
 interface Props {
   fase: Fase
+}
+
+function TimeResumo({ timeId, times }: { timeId: string; times: Map<string, Time> }) {
+  const time = times.get(timeId)
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      {time?.bandeira && <img src={time.bandeira} alt="" className="w-5 h-3.5 object-cover rounded-sm" />}
+      <span>{time?.nome ?? timeId}</span>
+    </span>
+  )
 }
 
 /**
@@ -107,15 +121,20 @@ export function PalpitesMataMata({ fase }: Props) {
 
       // Load user palpites
       const palpitesMap = new Map<string, Palpite>()
+      let pontosDisciplinaresCarregados: Record<string, number> = {}
       if (firebaseUser) {
-        const palpitesSnap = await getDocs(collection(db, 'palpites'))
+        const palpitesSnap = await getDocs(query(
+          collection(db, 'palpites'),
+          where('uid', '==', firebaseUser.uid),
+        ))
         palpitesSnap.forEach((d) => {
           const p = { id: d.id, ...d.data() } as Palpite
-          if (p.uid === firebaseUser.uid) {
-            palpitesMap.set(p.jogoId, p)
-          }
+          palpitesMap.set(p.jogoId, p)
         })
         setPalpites(palpitesMap)
+
+        const fairPlaySnap = await getDoc(doc(db, 'desempates_terceiros', firebaseUser.uid))
+        pontosDisciplinaresCarregados = (fairPlaySnap.data()?.pontosDisciplinares ?? {}) as Record<string, number>
       }
 
       const jogosGrupos = todos.filter((j) => j.fase === 'grupos')
@@ -143,9 +162,11 @@ export function PalpitesMataMata({ fase }: Props) {
         return classPorGrupo[letra] !== undefined
       })
       const terceiros = todosGruposCompletos
-        ? Object.values(classPorGrupo).map((cl) => cl[2]).filter(Boolean)
+        ? Object.entries(classPorGrupo)
+          .map(([grupo, cl]) => cl[2] ? { ...cl[2], grupo } : null)
+          .filter((item): item is ClassificacaoTime & { grupo: string } => item !== null)
         : []
-      setMelhoresTerceiros(selecionarMelhoresTerceiros(terceiros))
+      setMelhoresTerceiros(selecionarMelhoresTerceiros(terceiros, pontosDisciplinaresCarregados))
 
       // Classificação baseada nos RESULTADOS REAIS
       const classReaisPorGrupo: Record<string, ClassificacaoTime[]> = {}
@@ -178,7 +199,9 @@ export function PalpitesMataMata({ fase }: Props) {
         return classReaisPorGrupo[letra] !== undefined
       })
       const terceirosReais = todosGruposReaisCompletos
-        ? Object.values(classReaisPorGrupo).map((cl) => cl[2]).filter(Boolean)
+        ? Object.entries(classReaisPorGrupo)
+          .map(([grupo, cl]) => cl[2] ? { ...cl[2], grupo } : null)
+          .filter((item): item is ClassificacaoTime & { grupo: string } => item !== null)
         : []
       setMelhoresTerceirosReais(selecionarMelhoresTerceiros(terceirosReais))
 
@@ -234,6 +257,9 @@ export function PalpitesMataMata({ fase }: Props) {
     palpitesPorJogoId[jogoId] = p
   })
 
+  const jogosFase32 = todosJogos.filter(j => j.fase === 'fase32')
+  const terceirosPorSlot = montarTerceirosPorSlot(jogosFase32, classificacoes, melhoresTerceiros)
+
   function descreverOrigem(origem: Jogo['origemCasa']): string {
     if (!origem) return '?'
     if (origem.tipo === 'grupo') {
@@ -241,6 +267,61 @@ export function PalpitesMataMata({ fase }: Props) {
       return `${pos} Grupo ${origem.grupo}`
     }
     return `Venc. ${origem.jogoId.replace('_', ' ')}`
+  }
+
+  function resolverTimesDoJogo(jogo: Jogo): { casaId: string | null; visitanteId: string | null } {
+    return {
+      casaId: resolverTimeMataMataPersonalizado({
+        origem: jogo.origemCasa,
+        label: jogo.labelCasa,
+        slotKey: `${jogo.id}:casa`,
+        classificacoesPorGrupo: classificacoes,
+        palpitesPorJogoId,
+        melhoresTerceiros,
+        terceirosPorSlot,
+        jogos: todosJogos,
+        fallbackTimeId: jogo.timeCasa || undefined,
+      }),
+      visitanteId: resolverTimeMataMataPersonalizado({
+        origem: jogo.origemVisitante,
+        label: jogo.labelVisitante,
+        slotKey: `${jogo.id}:visitante`,
+        classificacoesPorGrupo: classificacoes,
+        palpitesPorJogoId,
+        melhoresTerceiros,
+        terceirosPorSlot,
+        jogos: todosJogos,
+        fallbackTimeId: jogo.timeVisitante || undefined,
+      }),
+    }
+  }
+
+  function vencedorDoPalpite(palpite: Palpite): string | null {
+    if (palpite.golsCasa > palpite.golsVisitante) return palpite.timeCasa
+    if (palpite.golsVisitante > palpite.golsCasa) return palpite.timeVisitante
+    return palpite.classificado
+  }
+
+  const todosJogosDaFasePreenchidos = jogos.length > 0 && jogos.every(j => palpites.has(j.id))
+  const classificadosDaFase = todosJogosDaFasePreenchidos
+    ? jogos.map(jogo => {
+      const palpite = palpites.get(jogo.id)!
+      return {
+        jogo,
+        vencedorId: vencedorDoPalpite(palpite),
+        placar: `${palpite.golsCasa}x${palpite.golsVisitante}`,
+      }
+    })
+    : []
+
+  const tituloResumoFase: Record<Fase, string> = {
+    grupos: 'Classificacao projetada',
+    fase32: 'Classificados para as oitavas',
+    oitavas: 'Classificados para as quartas',
+    quartas: 'Classificados para as semifinais',
+    semi: 'Finalistas projetados',
+    terceiro: '3o lugar projetado',
+    final: 'Campeao projetado',
   }
 
   return (
@@ -263,13 +344,7 @@ export function PalpitesMataMata({ fase }: Props) {
 
       {jogos.map((jogo) => {
         // Times baseados nos PALPITES do usuário
-        const resolvedCasaId = jogo.origemCasa
-          ? resolverTimeMataMataPorPalpites(jogo.origemCasa, classificacoes, palpitesPorJogoId, melhoresTerceiros)
-          : jogo.timeCasa || null
-
-        const resolvedVisitanteId = jogo.origemVisitante
-          ? resolverTimeMataMataPorPalpites(jogo.origemVisitante, classificacoes, palpitesPorJogoId, melhoresTerceiros)
-          : jogo.timeVisitante || null
+        const { casaId: resolvedCasaId, visitanteId: resolvedVisitanteId } = resolverTimesDoJogo(jogo)
 
         const timeCasa = resolvedCasaId ? (times.get(resolvedCasaId) ?? null) : null
         const timeVisitante = resolvedVisitanteId ? (times.get(resolvedVisitanteId) ?? null) : null
@@ -277,10 +352,10 @@ export function PalpitesMataMata({ fase }: Props) {
         // Times REAIS baseados nos resultados oficiais
         const realCasaId = jogo.origemCasa
           ? resolverTimeReal(jogo.origemCasa, classReais, todosJogos, melhoresTerceirosReais)
-          : null
+          : resolverTimePorLabelFifa(jogo.labelCasa, classReais, {}, todosJogos, {}, `${jogo.id}:casa`)
         const realVisitanteId = jogo.origemVisitante
           ? resolverTimeReal(jogo.origemVisitante, classReais, todosJogos, melhoresTerceirosReais)
-          : null
+          : resolverTimePorLabelFifa(jogo.labelVisitante, classReais, {}, todosJogos, {}, `${jogo.id}:visitante`)
 
         const realTimeCasa = realCasaId ? (times.get(realCasaId) ?? null) : null
         const realTimeVisitante = realVisitanteId ? (times.get(realVisitanteId) ?? null) : null
@@ -322,6 +397,30 @@ export function PalpitesMataMata({ fase }: Props) {
           />
         )
       })}
+
+      {todosJogosDaFasePreenchidos && (
+        <section className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden mt-8">
+          <div className="bg-blue-900 text-white px-4 py-3">
+            <h2 className="font-bold">{tituloResumoFase[fase]}</h2>
+            <p className="text-xs text-blue-100 mt-0.5">
+              Calculado somente a partir dos seus palpites desta fase.
+            </p>
+          </div>
+
+          <div className="p-4 grid sm:grid-cols-2 gap-3">
+            {classificadosDaFase.map(({ jogo, vencedorId, placar }) => (
+              <div key={jogo.id} className="border border-gray-100 rounded-lg p-3">
+                <p className="text-xs font-bold text-gray-500 mb-1">
+                  Jogo {jogo.numero} · {placar}
+                </p>
+                <p className="text-sm font-semibold text-gray-800">
+                  {vencedorId ? <TimeResumo timeId={vencedorId} times={times} /> : 'Classificado indefinido'}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }

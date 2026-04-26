@@ -26,6 +26,15 @@ export function FormatoCopa() {
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         <h1 className="text-2xl font-bold">Formato da Copa do Mundo FIFA 2026</h1>
 
+        <a
+          href="/FWC2026_regulations_EN.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 text-sm text-blue-700 hover:text-blue-900 hover:underline font-medium"
+        >
+          📄 Regulamento oficial da FIFA (PDF, em inglês) →
+        </a>
+
         {/* Visão Geral */}
         <section className="bg-white rounded-lg shadow p-6 space-y-3">
           <h2 className="text-lg font-bold">Visão Geral</h2>
@@ -60,16 +69,17 @@ export function FormatoCopa() {
             <li><strong>Os 8 melhores 3ºs colocados</strong> entre os 12 grupos também avançam</li>
             <li>Total: <strong>32 times</strong> no mata-mata</li>
           </ul>
-          <h3 className="font-semibold text-sm mt-3">Ranking dos 3ºs colocados — critérios oficiais FIFA</h3>
+          <h3 className="font-semibold text-sm mt-3">Ranking dos 3ºs colocados — critérios oficiais FIFA (Anexo C / Artigo 13)</h3>
           <ol className="text-sm list-decimal ml-5 space-y-0.5">
-            <li>Maior número de pontos</li>
-            <li>Maior saldo de gols</li>
-            <li>Maior número de gols marcados</li>
-            <li>Fair play</li>
-            <li>Sorteio pela FIFA</li>
+            <li>Maior número de pontos em todos os jogos do grupo</li>
+            <li>Melhor saldo de gols em todos os jogos do grupo</li>
+            <li>Maior número de gols marcados em todos os jogos do grupo</li>
+            <li>Conduta (cartões: amarelo −1, indireto por 2º amarelo −3, vermelho direto −4, amarelo + vermelho direto −5)</li>
+            <li>Posição na edição mais recente do FIFA/Coca‑Cola Men's World Ranking</li>
+            <li>Posição na edição anterior do FIFA/Coca‑Cola Men's World Ranking (e sucessivamente)</li>
           </ol>
           <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 mt-2">
-            <strong>Como o Bolão trata:</strong> usamos os 3 primeiros critérios. Não há confronto direto entre 3ºs (jogam em grupos diferentes). Se persistir empate, o Bolão mantém a ordem atual.
+            <strong>Como o Bolão trata:</strong> aplicamos os critérios 1 a 4 exatamente como a FIFA. O critério 4 (conduta) só intervém se houver registro de cartões — no fluxo de palpites esse valor fica em zero por padrão. Os critérios 5 e 6 (FIFA Ranking) não são aplicados porque o palpite não inclui ranking. Caso o empate persista, o Bolão usa um desempate determinístico (ordem alfabética por grupo, depois pelo id do time) para garantir que tabela e chaveamento não divirjam.
           </p>
         </section>
 
@@ -157,7 +167,15 @@ export function FormatoCopa() {
             <li>Quando há empate no mata-mata, o participante indica quem avança (para resolver o chaveamento das fases seguintes). Essa escolha não vale pontuação extra</li>
           </ul>
           <p className="text-xs text-gray-400 mt-2 pt-2 border-t">
-            Fonte: FIFA Competition Regulations Canada/Mexico/USA 2026
+            Fonte:{' '}
+            <a
+              href="/FWC2026_regulations_EN.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              FIFA Competition Regulations Canada/Mexico/USA 2026
+            </a>
           </p>
         </section>
       </div>

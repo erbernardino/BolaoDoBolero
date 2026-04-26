@@ -12,6 +12,27 @@ interface ResultadoPontuacao {
   tipo: 'placarExato' | 'colunaCerta' | 'totalGols' | null
 }
 
+interface ResultadoJogo {
+  golsCasa: number
+  golsVisitante: number
+  classificado?: string | null
+}
+
+interface JogoRanking {
+  id: string
+  fase?: string
+  timeCasa?: string
+  timeVisitante?: string
+  resultado?: ResultadoJogo | null
+}
+
+interface PalpiteRanking {
+  uid: string
+  jogoId: string
+  golsCasa: number
+  golsVisitante: number
+}
+
 export function calcularPontos(
   palpite: { golsCasa: number; golsVisitante: number },
   resultado: { golsCasa: number; golsVisitante: number },
@@ -112,12 +133,12 @@ function emptyRanking(): RankingData {
  * Recalcula o ranking inteiro do zero, considerando todos os jogos que têm resultado
  * e os palpites especiais. Usado a cada salvamento de resultado.
  */
-export async function recalcularTodoRanking() {
+export async function recalcularTodoRanking(): Promise<number> {
   const db = admin.firestore()
 
   const configSnap = await db.doc('config/geral').get()
   const config = configSnap.data()
-  if (!config) return
+  if (!config) return 0
 
   const pontos = config.pontos as ConfigPontos
   const ptsEspecial = pontos.palpiteEspecial ?? 10
@@ -129,30 +150,33 @@ export async function recalcularTodoRanking() {
   // Buscar todos os jogos com resultado
   const jogosSnap = await db.collection('jogos').get()
   const jogosComResultado = jogosSnap.docs
-    .map(d => ({ id: d.id, ...d.data() }))
-    .filter((j: any) => j.resultado)
+    .map(d => ({ id: d.id, ...d.data() } as JogoRanking))
+    .filter((j): j is JogoRanking & { resultado: ResultadoJogo } => j.resultado != null)
 
   // Buscar todos os palpites de jogos
   const palpitesSnap = await db.collection('palpites').get()
+  const palpites = palpitesSnap.docs.map(d => d.data() as PalpiteRanking)
 
   // Calcular ranking por usuário (pontos de jogos)
   const rankingMap = new Map<string, RankingData>()
 
+  // Todo usuário deve aparecer no ranking, mesmo antes de pontuar.
+  const usuariosSnap = await db.collection('usuarios').get()
+  for (const userDoc of usuariosSnap.docs) {
+    rankingMap.set(userDoc.id, emptyRanking())
+  }
+
   for (const jogo of jogosComResultado) {
-    const jogoData = jogo as any
-    const isFaseGrupos = jogoData.fase === 'grupos'
+    const isFaseGrupos = jogo.fase === 'grupos'
     const isJogoBrasil = brasilId != null &&
-      (jogoData.timeCasa === brasilId || jogoData.timeVisitante === brasilId)
+      (jogo.timeCasa === brasilId || jogo.timeVisitante === brasilId)
 
-    const palpitesDoJogo = palpitesSnap.docs
-      .map(d => d.data())
-      .filter((p: any) => p.jogoId === jogo.id)
+    const palpitesDoJogo = palpites.filter(p => p.jogoId === jogo.id)
 
-    for (const palpite of palpitesDoJogo) {
-      const p = palpite as any
+    for (const p of palpitesDoJogo) {
       const resultado = calcularPontos(
         { golsCasa: p.golsCasa, golsVisitante: p.golsVisitante },
-        { golsCasa: jogoData.resultado.golsCasa, golsVisitante: jogoData.resultado.golsVisitante },
+        { golsCasa: jogo.resultado.golsCasa, golsVisitante: jogo.resultado.golsVisitante },
         pontos,
       )
 
@@ -227,4 +251,6 @@ export async function recalcularTodoRanking() {
     }
     await batch.commit()
   }
+
+  return jogosComResultado.length
 }

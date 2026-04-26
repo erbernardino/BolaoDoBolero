@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
-import { collection, getDocs, doc, getDoc, Timestamp } from 'firebase/firestore'
+import { collection, getDocs, doc, getDoc, Timestamp, query, where } from 'firebase/firestore'
+import type { QuerySnapshot, DocumentData } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
@@ -31,10 +32,9 @@ export function PalpitesGeral() {
 
   useEffect(() => {
     async function load() {
-      const [jogosSnap, timesSnap, palpitesSnap, usuariosSnap, configSnap] = await Promise.all([
+      const [jogosSnap, timesSnap, usuariosSnap, configSnap] = await Promise.all([
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
-        getDocs(collection(db, 'palpites')),
         getDocs(collection(db, 'usuarios')),
         getDoc(doc(db, 'config', 'geral')),
       ])
@@ -47,20 +47,53 @@ export function PalpitesGeral() {
       timesSnap.docs.forEach(d => timesMap.set(d.id, { id: d.id, ...d.data() } as Time))
       setTimes(timesMap)
 
-      setPalpites(palpitesSnap.docs.map(d => ({ id: d.id, ...d.data() } as Palpite)))
-
       const usMap = new Map<string, Usuario>()
       usuariosSnap.docs.forEach(d => usMap.set(d.id, { uid: d.id, ...d.data() } as Usuario))
       setUsuarios(usMap)
 
+      const configData = configSnap.exists() ? configSnap.data() as Config : null
       if (configSnap.exists()) {
-        setConfig(configSnap.data() as Config)
+        setConfig(configData)
+      }
+
+      if (firebaseUser) {
+        const visibilidadeAtual = configData?.visibilidadePalpites ?? 'nunca'
+        const prazoJaExpirou = configData?.prazoLimitePalpites
+          ? Timestamp.now().toMillis() > configData.prazoLimitePalpites.toMillis()
+          : false
+        const palpitesMap = new Map<string, Palpite>()
+
+        function addPalpitesFromSnap(snap: QuerySnapshot<DocumentData>) {
+          snap.docs.forEach(d => {
+            palpitesMap.set(d.id, { id: d.id, ...d.data() } as Palpite)
+          })
+        }
+
+        const ownSnap = await getDocs(query(
+          collection(db, 'palpites'),
+          where('uid', '==', firebaseUser.uid),
+        ))
+        addPalpitesFromSnap(ownSnap)
+
+        if (isAdmin || visibilidadeAtual === 'sempre' || (visibilidadeAtual === 'apos_prazo' && prazoJaExpirou)) {
+          addPalpitesFromSnap(await getDocs(collection(db, 'palpites')))
+        } else if (visibilidadeAtual === 'apos_jogo') {
+          const jogosEncerrados = jogosData.filter(j => j.encerrado)
+          for (const jogo of jogosEncerrados) {
+            addPalpitesFromSnap(await getDocs(query(
+              collection(db, 'palpites'),
+              where('jogoId', '==', jogo.id),
+            )))
+          }
+        }
+
+        setPalpites(Array.from(palpitesMap.values()))
       }
 
       setLoading(false)
     }
     load()
-  }, [])
+  }, [firebaseUser, isAdmin])
 
   // Determinar se palpites de outros são visíveis
   const visibilidade = config?.visibilidadePalpites ?? 'nunca'

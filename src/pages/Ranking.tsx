@@ -10,6 +10,20 @@ import { useAuth } from '../hooks/useAuth'
 
 type RankingComUsuario = Ranking & { usuario: Usuario }
 
+function rankingZerado(uid: string): Ranking {
+  return {
+    uid,
+    pontosTotal: 0,
+    pontosJogos: 0,
+    pontosEspeciais: 0,
+    placaresExatos: 0,
+    colunasCertas: 0,
+    totalGolsAcertados: 0,
+    pontosFaseGrupos: 0,
+    pontosJogosBrasil: 0,
+  }
+}
+
 export function Ranking() {
   const { firebaseUser } = useAuth()
   const [ranking, setRanking] = useState<RankingComUsuario[]>([])
@@ -27,13 +41,16 @@ export function Ranking() {
         usuariosMap.set(doc.id, { uid: doc.id, ...doc.data() } as Usuario)
       })
 
-      const lista: RankingComUsuario[] = []
+      const rankingMap = new Map<string, Ranking>()
       rankingSnap.forEach((doc) => {
         const r = { uid: doc.id, ...doc.data() } as Ranking
-        const usuario = usuariosMap.get(r.uid)
-        if (usuario) {
-          lista.push({ ...r, usuario })
-        }
+        rankingMap.set(r.uid, r)
+      })
+
+      const lista: RankingComUsuario[] = []
+      usuariosMap.forEach((usuario, uid) => {
+        const r = rankingMap.get(uid) ?? rankingZerado(uid)
+        lista.push({ ...r, usuario })
       })
 
       // Desempate conforme regras originais:
@@ -48,7 +65,7 @@ export function Ranking() {
         if ((b.pontosJogos ?? 0) !== (a.pontosJogos ?? 0)) return (b.pontosJogos ?? 0) - (a.pontosJogos ?? 0)
         if ((b.pontosFaseGrupos ?? 0) !== (a.pontosFaseGrupos ?? 0)) return (b.pontosFaseGrupos ?? 0) - (a.pontosFaseGrupos ?? 0)
         if ((b.pontosJogosBrasil ?? 0) !== (a.pontosJogosBrasil ?? 0)) return (b.pontosJogosBrasil ?? 0) - (a.pontosJogosBrasil ?? 0)
-        return 0
+        return (a.usuario.apelido || a.usuario.nome || '').localeCompare(b.usuario.apelido || b.usuario.nome || '')
       })
 
       setRanking(lista)
