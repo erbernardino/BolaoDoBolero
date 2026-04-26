@@ -58,6 +58,8 @@ export function Configuracoes() {
   const [salvo, setSalvo] = useState(false)
   const [recalculando, setRecalculando] = useState(false)
   const [rankingMsg, setRankingMsg] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null)
+  const [resolvendoMataMata, setResolvendoMataMata] = useState(false)
+  const [mataMataMsg, setMataMataMsg] = useState<{ tipo: 'sucesso' | 'erro' | 'aviso'; texto: string } | null>(null)
 
   useEffect(() => {
     async function carregar() {
@@ -116,6 +118,28 @@ export function Configuracoes() {
     setLoading(false)
     setSalvo(true)
     setTimeout(() => setSalvo(false), 3000)
+  }
+
+  async function handleResolverMataMata() {
+    if (!confirm('Resolver mata-mata: vai preencher os times dos jogos do mata-mata baseado nos resultados reais. Idempotente — pode rodar mais de uma vez.')) return
+    setMataMataMsg(null)
+    setResolvendoMataMata(true)
+    try {
+      const fn = httpsCallable<unknown, { ok: boolean; motivo?: string; atualizados?: number; pendentes?: number; gruposEncerrados?: number; gruposTotal?: number }>(functions, 'resolverMataMata')
+      const result = await fn({})
+      const r = result.data
+      if (!r.ok && r.motivo === 'fase_grupos_incompleta') {
+        setMataMataMsg({ tipo: 'aviso', texto: `Fase de grupos ainda nao terminou (${r.gruposEncerrados}/${r.gruposTotal} jogos com resultado).` })
+      } else if (r.ok) {
+        setMataMataMsg({ tipo: 'sucesso', texto: `Mata-mata resolvido. ${r.atualizados} jogo(s) atualizado(s). ${r.pendentes} ainda dependem de jogos posteriores.` })
+      } else {
+        setMataMataMsg({ tipo: 'erro', texto: 'Falha ao resolver mata-mata.' })
+      }
+    } catch {
+      setMataMataMsg({ tipo: 'erro', texto: 'Erro ao chamar a funcao. Veja logs.' })
+    } finally {
+      setResolvendoMataMata(false)
+    }
   }
 
   async function handleRecalcularRanking() {
@@ -356,6 +380,30 @@ export function Configuracoes() {
           className="bg-amber-600 text-white px-5 py-2 rounded hover:bg-amber-700 disabled:opacity-50 transition-colors"
         >
           {recalculando ? 'Recalculando...' : 'Recalcular Ranking'}
+        </button>
+      </div>
+
+      {/* Resolver Mata-mata */}
+      <div className="bg-white shadow rounded-lg p-6 mt-6">
+        <h2 className="text-lg font-semibold mb-2">Resolver Mata-mata</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Apos o termino da fase de grupos (e a cada nova fase encerrada), preenche os times dos jogos do mata-mata
+          (1A, 2B, 3o melhor, vencedor de jogo X, etc.) baseado nos resultados reais. Idempotente.
+        </p>
+
+        {mataMataMsg && (
+          <p className={`text-sm mb-4 ${mataMataMsg.tipo === 'sucesso' ? 'text-green-600' : mataMataMsg.tipo === 'aviso' ? 'text-amber-600' : 'text-red-600'}`}>
+            {mataMataMsg.texto}
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={handleResolverMataMata}
+          disabled={resolvendoMataMata}
+          className="bg-purple-600 text-white px-5 py-2 rounded hover:bg-purple-700 disabled:opacity-50 transition-colors"
+        >
+          {resolvendoMataMata ? 'Resolvendo...' : 'Resolver Mata-mata'}
         </button>
       </div>
     </div>

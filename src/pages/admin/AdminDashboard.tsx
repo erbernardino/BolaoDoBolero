@@ -1,6 +1,7 @@
 import { NavLink, Routes, Route, Navigate } from 'react-router-dom'
 import { Navbar } from '../../components/Navbar'
 import { Dashboard } from './Dashboard'
+import { Auditoria } from './Auditoria'
 import { GerenciarTimes } from './GerenciarTimes'
 import { GerenciarJogos } from './GerenciarJogos'
 import { InserirResultados } from './InserirResultados'
@@ -19,6 +20,7 @@ const NAV_LINKS = [
   { to: '/admin/palpites', label: 'Palpites' },
   { to: '/admin/convites', label: 'Convites' },
   { to: '/admin/usuarios', label: 'Usuários' },
+  { to: '/admin/auditoria', label: 'Auditoria' },
   { to: '/admin/config', label: 'Configurações' },
 ]
 
@@ -58,6 +60,7 @@ export function AdminDashboard() {
           <Route path="palpites" element={<VerPalpites />} />
           <Route path="convites" element={<GerenciarConvites />} />
           <Route path="usuarios" element={<GerenciarUsuarios />} />
+          <Route path="auditoria" element={<Auditoria />} />
           <Route path="config" element={<Configuracoes />} />
         </Routes>
       </main>

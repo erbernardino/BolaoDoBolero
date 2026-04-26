@@ -4,6 +4,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { recalcularTodoRanking } from './pontuacao'
 export { backupFirestoreDiario } from './backup'
 export { auditPalpites, auditPalpitesEspeciais, auditUsuarios } from './audit'
+export { resolverMataMata } from './resolverMataMata'
 
 admin.initializeApp()
 
