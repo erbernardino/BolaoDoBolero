@@ -36,6 +36,49 @@ function appVersionJson(version: string): Plugin {
   }
 }
 
+// Tombstone do Service Worker antigo (firebase-messaging-sw.js do PWA legado).
+// Quando o navegador checa atualizacao do SW, recebe esta versao que se
+// desregistra e recarrega todas as abas abertas. Apos esse ciclo, o SW some
+// do navegador do usuario sem necessidade de F5 manual.
+function firebaseMessagingSwTombstone(): Plugin {
+  const content = `// Service Worker tombstone: desregistra e recarrega abas.
+self.addEventListener('install', (event) => {
+  self.skipWaiting()
+})
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    try {
+      await self.registration.unregister()
+      const clients = await self.clients.matchAll({ type: 'window' })
+      for (const client of clients) {
+        client.navigate(client.url)
+      }
+    } catch (err) {
+      // Falha silenciosa
+    }
+  })())
+})
+`
+  return {
+    name: 'firebase-messaging-sw-tombstone',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url?.split('?')[0] === '/firebase-messaging-sw.js') {
+          res.setHeader('Content-Type', 'application/javascript')
+          res.setHeader('Cache-Control', 'no-cache, max-age=0, must-revalidate')
+          res.end(content)
+          return
+        }
+        next()
+      })
+    },
+    writeBundle(options) {
+      const outDir = options.dir || 'dist'
+      writeFileSync(path.join(outDir, 'firebase-messaging-sw.js'), content)
+    },
+  }
+}
+
 export default defineConfig(() => {
   const appVersion = resolveAppVersion()
   return {
@@ -43,6 +86,7 @@ export default defineConfig(() => {
       react(),
       tailwindcss(),
       appVersionJson(appVersion),
+      firebaseMessagingSwTombstone(),
     ],
     define: {
       __APP_VERSION__: JSON.stringify(appVersion),
