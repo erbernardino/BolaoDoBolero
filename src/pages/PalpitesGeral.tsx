@@ -5,16 +5,20 @@ import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
 import { Avatar } from '../components/Avatar'
-import type { Jogo, Time, Palpite, Usuario, Fase, Config } from '../types'
+import type { Jogo, Time, Palpite, Usuario, Fase, Config, PalpiteEspecial, ResultadoEspecial } from '../types'
 
-const FASES: { id: Fase | 'todos'; label: string }[] = [
+type AbaId = Fase | 'todos' | 'especiais'
+
+const FASES: { id: AbaId; label: string }[] = [
   { id: 'todos', label: 'Todos' },
   { id: 'grupos', label: 'Grupos' },
+  { id: 'fase32', label: 'Segunda Fase' },
   { id: 'oitavas', label: 'Oitavas' },
   { id: 'quartas', label: 'Quartas' },
   { id: 'semi', label: 'Semis' },
   { id: 'terceiro', label: '3o Lugar' },
   { id: 'final', label: 'Final' },
+  { id: 'especiais', label: 'Especiais' },
 ]
 
 export function PalpitesGeral() {
@@ -22,10 +26,12 @@ export function PalpitesGeral() {
   const [jogos, setJogos] = useState<Jogo[]>([])
   const [times, setTimes] = useState<Map<string, Time>>(new Map())
   const [palpites, setPalpites] = useState<Palpite[]>([])
+  const [palpitesEspeciais, setPalpitesEspeciais] = useState<PalpiteEspecial[]>([])
+  const [resultadoEspecial, setResultadoEspecial] = useState<ResultadoEspecial | null>(null)
   const [usuarios, setUsuarios] = useState<Map<string, Usuario>>(new Map())
   const [config, setConfig] = useState<Config | null>(null)
   const [loading, setLoading] = useState(true)
-  const [faseAtiva, setFaseAtiva] = useState<Fase | 'todos'>('grupos')
+  const [faseAtiva, setFaseAtiva] = useState<AbaId>('grupos')
   const [usuarioFiltro, setUsuarioFiltro] = useState('')
   const [grupoFiltro, setGrupoFiltro] = useState('')
 
@@ -33,12 +39,17 @@ export function PalpitesGeral() {
 
   useEffect(() => {
     async function load() {
-      const [jogosSnap, timesSnap, usuariosSnap, configSnap] = await Promise.all([
+      const [jogosSnap, timesSnap, usuariosSnap, configSnap, resultadoEspecialSnap] = await Promise.all([
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
         getDocs(collection(db, 'usuarios')),
         getDoc(doc(db, 'config', 'geral')),
+        getDoc(doc(db, 'config', 'resultado_especial')),
       ])
+
+      if (resultadoEspecialSnap.exists()) {
+        setResultadoEspecial(resultadoEspecialSnap.data() as ResultadoEspecial)
+      }
 
       const jogosData = jogosSnap.docs.map(d => ({ id: d.id, ...d.data() } as Jogo))
       jogosData.sort((a, b) => a.dataHora.toMillis() - b.dataHora.toMillis())
@@ -98,6 +109,23 @@ export function PalpitesGeral() {
         }
 
         setPalpites(Array.from(palpitesMap.values()))
+
+        // Palpites especiais: regras permitem ler todos quando 'sempre' ou
+        // 'apos_prazo' (após prazo). Caso contrário, só o próprio.
+        const podeLerTodosEspeciais =
+          isAdmin ||
+          visibilidadeAtual === 'sempre' ||
+          (visibilidadeAtual === 'apos_prazo' && prazoJaExpirou)
+
+        if (podeLerTodosEspeciais) {
+          const especiaisSnap = await getDocs(collection(db, 'palpites_especiais'))
+          setPalpitesEspeciais(especiaisSnap.docs.map(d => ({ uid: d.id, ...d.data() } as PalpiteEspecial)))
+        } else {
+          const proprioSnap = await getDoc(doc(db, 'palpites_especiais', firebaseUser.uid))
+          if (proprioSnap.exists()) {
+            setPalpitesEspeciais([{ uid: firebaseUser.uid, ...proprioSnap.data() } as PalpiteEspecial])
+          }
+        }
       }
 
       setLoading(false)
@@ -180,6 +208,43 @@ export function PalpitesGeral() {
     return times.get(id)?.bandeira
   }
 
+  const palpiteEspecialMap = useMemo(() => {
+    const map = new Map<string, PalpiteEspecial>()
+    for (const pe of palpitesEspeciais) map.set(pe.uid, pe)
+    return map
+  }, [palpitesEspeciais])
+
+  function especialVisivel(uid: string): boolean {
+    if (uid === firebaseUser?.uid) return true
+    if (isAdmin) return true
+    switch (visibilidade) {
+      case 'sempre':
+        return true
+      case 'apos_prazo':
+        return prazoExpirado
+      case 'apos_jogo':
+      case 'nunca':
+      default:
+        return false
+    }
+  }
+
+  const COLUNAS_ESPECIAIS: { key: keyof Pick<PalpiteEspecial, 'campeao' | 'vice' | 'terceiro' | 'quarto' | 'paisArtilheiro'>; label: string; icone: string }[] = [
+    { key: 'campeao', label: 'Campeão', icone: '🏆' },
+    { key: 'vice', label: 'Vice', icone: '🥈' },
+    { key: 'terceiro', label: '3º', icone: '🥉' },
+    { key: 'quarto', label: '4º', icone: '4' },
+    { key: 'paisArtilheiro', label: 'Artilheiro', icone: '⚽' },
+  ]
+
+  function timeAcerta(coluna: typeof COLUNAS_ESPECIAIS[number]['key'], timeId: string): boolean {
+    if (!resultadoEspecial) return false
+    if (coluna === 'paisArtilheiro') {
+      return (resultadoEspecial.paisesArtilheiros ?? []).includes(timeId)
+    }
+    return resultadoEspecial[coluna] === timeId
+  }
+
   // Mensagem sobre visibilidade
   const visibilidadeLabel: Record<string, string> = {
     sempre: 'Todos os palpites estão visíveis.',
@@ -250,7 +315,89 @@ export function PalpitesGeral() {
           />
         </div>
 
-        {/* Tabela */}
+        {/* Tabela de Especiais (na aba Especiais) */}
+        {faseAtiva === 'especiais' && (
+          <div className="bg-white rounded-lg shadow overflow-auto max-h-[70vh]">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 sticky left-0 bg-gray-50 min-w-[140px]">
+                    Participante
+                  </th>
+                  {COLUNAS_ESPECIAIS.map(col => (
+                    <th key={col.key} className="px-3 py-2 text-center text-xs font-medium text-gray-600 min-w-[120px]">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-base">{col.icone}</span>
+                        <span>{col.label}</span>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {usuariosFiltrados.map(u => {
+                  const ehEu = u.uid === firebaseUser?.uid
+                  const pe = palpiteEspecialMap.get(u.uid)
+                  const visivel = especialVisivel(u.uid)
+                  return (
+                    <tr key={u.uid} className={`hover:bg-blue-50/50 ${ehEu ? 'bg-blue-50/30' : ''}`}>
+                      <td className={`px-3 py-2 font-medium sticky left-0 whitespace-nowrap ${ehEu ? 'text-blue-700 bg-blue-50/30' : 'text-gray-800 bg-white'}`}>
+                        <div className="flex items-center gap-2">
+                          <Avatar
+                            src={u.fotoURL ?? null}
+                            nome={u.apelido || u.nome}
+                            uid={u.uid}
+                            size="sm"
+                            ring={false}
+                          />
+                          <span>{u.apelido || u.nome || 'Sem nome'}</span>
+                          {ehEu && <span className="text-[10px] text-blue-400">(eu)</span>}
+                        </div>
+                      </td>
+                      {COLUNAS_ESPECIAIS.map(col => {
+                        if (!pe) {
+                          return <td key={col.key} className="px-3 py-2 text-center text-gray-300">-</td>
+                        }
+                        if (!visivel) {
+                          return (
+                            <td key={col.key} className="px-3 py-2 text-center text-gray-300">
+                              <span title="Palpite oculto">***</span>
+                            </td>
+                          )
+                        }
+                        const timeId = pe[col.key]
+                        if (!timeId) {
+                          return <td key={col.key} className="px-3 py-2 text-center text-gray-300">-</td>
+                        }
+                        const acerto = resultadoEspecial ? timeAcerta(col.key, timeId) : false
+                        const corClasse = acerto
+                          ? 'text-green-700 bg-green-50 font-bold'
+                          : (resultadoEspecial ? 'text-red-400' : 'text-gray-700')
+                        return (
+                          <td key={col.key} className={`px-3 py-2 text-center text-xs rounded ${corClasse}`}>
+                            <div className="flex items-center justify-center gap-1.5">
+                              {bandeiraUrl(timeId) && (
+                                <img src={bandeiraUrl(timeId)!} alt="" className="w-4 h-3 object-cover rounded" />
+                              )}
+                              <span className="font-mono">{sigla(timeId)}</span>
+                            </div>
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+
+            {usuariosFiltrados.length === 0 && (
+              <p className="text-center text-gray-400 py-8">Nenhum participante encontrado.</p>
+            )}
+          </div>
+        )}
+
+        {/* Tabela de jogos (todas as abas exceto Especiais) */}
+        {faseAtiva !== 'especiais' && (
         <div className="bg-white rounded-lg shadow overflow-auto max-h-[70vh]">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 sticky top-0 z-10">
@@ -356,9 +503,10 @@ export function PalpitesGeral() {
             <p className="text-center text-gray-400 py-8">Nenhum participante encontrado.</p>
           )}
         </div>
+        )}
 
         {/* Legenda */}
-        {jogosFiltrados.some(j => j.encerrado) && (
+        {faseAtiva !== 'especiais' && jogosFiltrados.some(j => j.encerrado) && (
           <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-500">
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-50 border border-green-200" /> Placar exato</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-50 border border-blue-200" /> Placar de 1 time</span>
