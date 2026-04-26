@@ -49,19 +49,27 @@ export function FormatoCopa() {
         <section className="bg-white rounded-lg shadow p-6 space-y-3">
           <h2 className="text-lg font-bold">Fase de Grupos</h2>
           <p className="text-sm text-gray-600">Cada grupo joga em formato <em>round-robin</em>: todos contra todos (6 jogos por grupo, cada seleção joga 3).</p>
-          <h3 className="font-semibold text-sm mt-3">Classificação dentro do grupo — critérios oficiais FIFA</h3>
+          <h3 className="font-semibold text-sm mt-3">Classificação dentro do grupo — critérios oficiais FIFA (Anexo C / Artigo 13)</h3>
+          <p className="text-xs text-gray-600 mt-1">A pontuação básica (3 por vitória, 1 por empate, 0 por derrota) é o ponto de partida. Quando 2 ou mais times terminam empatados em pontos, a FIFA aplica os critérios abaixo na ordem:</p>
+          <p className="text-xs text-gray-700 font-semibold mt-3">Step 1 — confronto direto entre os empatados:</p>
           <ol className="text-sm list-decimal ml-5 space-y-0.5">
-            <li>Maior número de pontos (vitória = 3, empate = 1, derrota = 0)</li>
-            <li>Maior saldo de gols</li>
-            <li>Maior número de gols marcados</li>
-            <li>Maior número de pontos apenas nos jogos entre os times empatados</li>
-            <li>Maior saldo de gols apenas nos jogos entre os times empatados</li>
-            <li>Maior número de gols marcados apenas nos jogos entre os times empatados</li>
-            <li>Fair play (cartões: amarelo −1, 2º amarelo −3, vermelho direto −4, amarelo + vermelho −5)</li>
-            <li>Sorteio pela FIFA</li>
+            <li>Maior número de pontos nos jogos entre os times empatados</li>
+            <li>Melhor saldo de gols nos jogos entre os times empatados</li>
+            <li>Maior número de gols marcados nos jogos entre os times empatados</li>
           </ol>
-          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 mt-2">
-            <strong>Como o Bolão trata esses critérios:</strong> usamos os critérios 1 a 6 exatamente como a FIFA (pontos → saldo → gols → mini-tabela entre empatados). Os critérios 7 (fair play) e 8 (sorteio) não se aplicam aqui porque o palpite não inclui cartões e o sorteio não é previsível. Em caso de empate total após os 6 primeiros critérios, o Bolão mantém a ordem atual da tabela.
+          <p className="text-xs text-gray-700 font-semibold mt-3">Step 2 — só se o Step 1 não resolver, parte para critérios gerais:</p>
+          <ol start={4} className="text-sm list-decimal ml-5 space-y-0.5">
+            <li>Melhor saldo de gols em todos os jogos do grupo</li>
+            <li>Maior número de gols marcados em todos os jogos do grupo</li>
+            <li>Conduta (cartões: amarelo −1, indireto por 2º amarelo −3, vermelho direto −4, amarelo + vermelho direto −5)</li>
+          </ol>
+          <p className="text-xs text-gray-700 font-semibold mt-3">Step 3 — FIFA Ranking:</p>
+          <ol start={7} className="text-sm list-decimal ml-5 space-y-0.5">
+            <li>Posição na edição mais recente do FIFA/Coca‑Cola Men's World Ranking</li>
+            <li>Posição na edição anterior do FIFA/Coca‑Cola Men's World Ranking (e sucessivamente)</li>
+          </ol>
+          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 mt-3">
+            <strong>Como o Bolão trata esses critérios:</strong> aplicamos exatamente o Step 1 (head-to-head) primeiro e o Step 2 (saldo e gols geral) depois, conforme o Anexo C. Se um sub-grupo continua empatado após o Step 1, re-aplicamos os critérios head-to-head restritos àqueles times — também conforme a FIFA. O critério 6 (conduta) não dispara hoje porque o palpite não inclui cartões. Os critérios 7 e 8 (FIFA Ranking) também não se aplicam. Em caso de empate total persistente, o Bolão usa um desempate determinístico (alfabético por id do time) para que a tabela e o chaveamento do mata-mata não divirjam.
           </p>
           <h3 className="font-semibold text-sm mt-3">Quem avança?</h3>
           <ul className="text-sm list-disc ml-5 space-y-0.5">
