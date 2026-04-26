@@ -89,7 +89,7 @@ export function PalpitesMataMata({ fase }: Props) {
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
         getDocs(collection(db, 'grupos')),
-        getDocs(collection(db, 'config')),
+        getDoc(doc(db, 'config', 'geral')),
       ])
 
       const todos: Jogo[] = []
@@ -109,8 +109,8 @@ export function PalpitesMataMata({ fase }: Props) {
       })
       setTimes(timesMap)
 
-      if (!configSnap.empty) {
-        setConfig(configSnap.docs[0].data() as Config)
+      if (configSnap.exists()) {
+        setConfig(configSnap.data() as Config)
       }
 
       const grupos: Grupo[] = []
