@@ -3,6 +3,7 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore'
 import { getFunctions, httpsCallable } from 'firebase/functions'
 import { db, auth } from '../../config/firebase'
 import type { Usuario, Role } from '../../types'
+import { Avatar } from '../../components/Avatar'
 
 const functions = getFunctions()
 
@@ -146,7 +147,18 @@ export function GerenciarUsuarios() {
           <tbody className="divide-y divide-gray-100">
             {filtrados.map(u => (
               <tr key={u.uid} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-gray-800">{u.nome || '-'}</td>
+                <td className="px-4 py-3 text-sm text-gray-800">
+                  <div className="flex items-center gap-2">
+                    <Avatar
+                      src={u.fotoURL ?? null}
+                      nome={u.nome || u.apelido}
+                      uid={u.uid}
+                      size="sm"
+                      ring={false}
+                    />
+                    <span>{u.nome || '-'}</span>
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-sm text-gray-600">{u.apelido || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-600">{u.email || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-600">{u.telefone || '-'}</td>
@@ -210,7 +222,16 @@ export function GerenciarUsuarios() {
           {filtrados.map(u => (
             <div key={u.uid} className="p-4 space-y-2">
               <div className="flex items-center justify-between">
-                <p className="font-medium text-gray-800">{u.nome || u.apelido || 'Sem nome'}</p>
+                <div className="flex items-center gap-2 min-w-0">
+                  <Avatar
+                    src={u.fotoURL ?? null}
+                    nome={u.nome || u.apelido}
+                    uid={u.uid}
+                    size="md"
+                    ring={false}
+                  />
+                  <p className="font-medium text-gray-800 truncate">{u.nome || u.apelido || 'Sem nome'}</p>
+                </div>
                 <div className="flex items-center gap-2">
                   <span
                     className={`text-xs font-semibold px-3 py-1 rounded-full ${

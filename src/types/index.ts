@@ -116,6 +116,7 @@ export interface Usuario {
   liberado: boolean
   conviteId: string
   criadoEm: Timestamp
+  fotoURL?: string
 }
 
 export type TipoConvite = 'unico' | 'multiplo'

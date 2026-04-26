@@ -90,7 +90,7 @@ service cloud.firestore {
     function isValidUsuarioCreate(data) {
       return data.keys().hasOnly([
           'uid', 'nome', 'apelido', 'email', 'telefone', 'role',
-          'liberado', 'conviteId', 'criadoEm', 'fcmToken'
+          'liberado', 'conviteId', 'criadoEm', 'fcmToken', 'fotoURL'
         ])
         && data.role == 'participante'
         && data.liberado == false
@@ -99,7 +99,7 @@ service cloud.firestore {
 
     function isValidUsuarioOwnerUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['nome', 'apelido', 'email', 'telefone', 'fcmToken'])
+        .hasOnly(['nome', 'apelido', 'email', 'telefone', 'fcmToken', 'fotoURL'])
         && request.resource.data.role == resource.data.role
         && request.resource.data.liberado == resource.data.liberado
         && request.resource.data.get('uid', request.auth.uid) == resource.data.get('uid', request.auth.uid)
