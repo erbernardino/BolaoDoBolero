@@ -78,11 +78,16 @@ export function PalpitesGeral() {
         if (isAdmin || visibilidadeAtual === 'sempre' || (visibilidadeAtual === 'apos_prazo' && prazoJaExpirou)) {
           addPalpitesFromSnap(await getDocs(collection(db, 'palpites')))
         } else if (visibilidadeAtual === 'apos_jogo') {
-          const jogosEncerrados = jogosData.filter(j => j.encerrado)
+          // Firestore aceita até 30 valores no operador `in` — agrupa para reduzir round-trips.
+          const idsEncerrados = jogosData.filter(j => j.encerrado).map(j => j.id)
+          const chunks: string[][] = []
+          for (let i = 0; i < idsEncerrados.length; i += 30) {
+            chunks.push(idsEncerrados.slice(i, i + 30))
+          }
           const snapshots = await Promise.all(
-            jogosEncerrados.map(jogo => getDocs(query(
+            chunks.map(chunk => getDocs(query(
               collection(db, 'palpites'),
-              where('jogoId', '==', jogo.id),
+              where('jogoId', 'in', chunk),
             ))),
           )
           snapshots.forEach(addPalpitesFromSnap)
