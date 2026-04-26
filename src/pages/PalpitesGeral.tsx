@@ -264,6 +264,86 @@ export function PalpitesGeral() {
     )
   }
 
+  const tabelaEspeciais = (
+    <div className="bg-white rounded-lg shadow overflow-auto max-h-[70vh]">
+      <table className="w-full text-sm">
+        <thead className="bg-gray-50 sticky top-0 z-10">
+          <tr>
+            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 sticky left-0 bg-gray-50 min-w-[140px]">
+              Participante
+            </th>
+            {COLUNAS_ESPECIAIS.map(col => (
+              <th key={col.key} className="px-3 py-2 text-center text-xs font-medium text-gray-600 min-w-[120px]">
+                <div className="flex flex-col items-center gap-0.5">
+                  <span className="text-base">{col.icone}</span>
+                  <span>{col.label}</span>
+                </div>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {usuariosFiltrados.map(u => {
+            const ehEu = u.uid === firebaseUser?.uid
+            const pe = palpiteEspecialMap.get(u.uid)
+            const visivel = especialVisivel(u.uid)
+            return (
+              <tr key={u.uid} className={`hover:bg-blue-50/50 ${ehEu ? 'bg-blue-50/30' : ''}`}>
+                <td className={`px-3 py-2 font-medium sticky left-0 whitespace-nowrap ${ehEu ? 'text-blue-700 bg-blue-50/30' : 'text-gray-800 bg-white'}`}>
+                  <div className="flex items-center gap-2">
+                    <Avatar
+                      src={u.fotoURL ?? null}
+                      nome={u.apelido || u.nome}
+                      uid={u.uid}
+                      size="sm"
+                      ring={false}
+                    />
+                    <span>{u.apelido || u.nome || 'Sem nome'}</span>
+                    {ehEu && <span className="text-[10px] text-blue-400">(eu)</span>}
+                  </div>
+                </td>
+                {COLUNAS_ESPECIAIS.map(col => {
+                  if (!pe) {
+                    return <td key={col.key} className="px-3 py-2 text-center text-gray-300">-</td>
+                  }
+                  if (!visivel) {
+                    return (
+                      <td key={col.key} className="px-3 py-2 text-center text-gray-300">
+                        <span title="Palpite oculto">***</span>
+                      </td>
+                    )
+                  }
+                  const timeId = pe[col.key]
+                  if (!timeId) {
+                    return <td key={col.key} className="px-3 py-2 text-center text-gray-300">-</td>
+                  }
+                  const acerto = resultadoEspecial ? timeAcerta(col.key, timeId) : false
+                  const corClasse = acerto
+                    ? 'text-green-700 bg-green-50 font-bold'
+                    : (resultadoEspecial ? 'text-red-400' : 'text-gray-700')
+                  return (
+                    <td key={col.key} className={`px-3 py-2 text-center text-xs rounded ${corClasse}`}>
+                      <div className="flex items-center justify-center gap-1.5">
+                        {bandeiraUrl(timeId) && (
+                          <img src={bandeiraUrl(timeId)!} alt="" className="w-4 h-3 object-cover rounded" />
+                        )}
+                        <span className="font-mono">{sigla(timeId)}</span>
+                      </div>
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+
+      {usuariosFiltrados.length === 0 && (
+        <p className="text-center text-gray-400 py-8">Nenhum participante encontrado.</p>
+      )}
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -316,85 +396,7 @@ export function PalpitesGeral() {
         </div>
 
         {/* Tabela de Especiais (na aba Especiais) */}
-        {faseAtiva === 'especiais' && (
-          <div className="bg-white rounded-lg shadow overflow-auto max-h-[70vh]">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 sticky top-0 z-10">
-                <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 sticky left-0 bg-gray-50 min-w-[140px]">
-                    Participante
-                  </th>
-                  {COLUNAS_ESPECIAIS.map(col => (
-                    <th key={col.key} className="px-3 py-2 text-center text-xs font-medium text-gray-600 min-w-[120px]">
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-base">{col.icone}</span>
-                        <span>{col.label}</span>
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {usuariosFiltrados.map(u => {
-                  const ehEu = u.uid === firebaseUser?.uid
-                  const pe = palpiteEspecialMap.get(u.uid)
-                  const visivel = especialVisivel(u.uid)
-                  return (
-                    <tr key={u.uid} className={`hover:bg-blue-50/50 ${ehEu ? 'bg-blue-50/30' : ''}`}>
-                      <td className={`px-3 py-2 font-medium sticky left-0 whitespace-nowrap ${ehEu ? 'text-blue-700 bg-blue-50/30' : 'text-gray-800 bg-white'}`}>
-                        <div className="flex items-center gap-2">
-                          <Avatar
-                            src={u.fotoURL ?? null}
-                            nome={u.apelido || u.nome}
-                            uid={u.uid}
-                            size="sm"
-                            ring={false}
-                          />
-                          <span>{u.apelido || u.nome || 'Sem nome'}</span>
-                          {ehEu && <span className="text-[10px] text-blue-400">(eu)</span>}
-                        </div>
-                      </td>
-                      {COLUNAS_ESPECIAIS.map(col => {
-                        if (!pe) {
-                          return <td key={col.key} className="px-3 py-2 text-center text-gray-300">-</td>
-                        }
-                        if (!visivel) {
-                          return (
-                            <td key={col.key} className="px-3 py-2 text-center text-gray-300">
-                              <span title="Palpite oculto">***</span>
-                            </td>
-                          )
-                        }
-                        const timeId = pe[col.key]
-                        if (!timeId) {
-                          return <td key={col.key} className="px-3 py-2 text-center text-gray-300">-</td>
-                        }
-                        const acerto = resultadoEspecial ? timeAcerta(col.key, timeId) : false
-                        const corClasse = acerto
-                          ? 'text-green-700 bg-green-50 font-bold'
-                          : (resultadoEspecial ? 'text-red-400' : 'text-gray-700')
-                        return (
-                          <td key={col.key} className={`px-3 py-2 text-center text-xs rounded ${corClasse}`}>
-                            <div className="flex items-center justify-center gap-1.5">
-                              {bandeiraUrl(timeId) && (
-                                <img src={bandeiraUrl(timeId)!} alt="" className="w-4 h-3 object-cover rounded" />
-                              )}
-                              <span className="font-mono">{sigla(timeId)}</span>
-                            </div>
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-
-            {usuariosFiltrados.length === 0 && (
-              <p className="text-center text-gray-400 py-8">Nenhum participante encontrado.</p>
-            )}
-          </div>
-        )}
+        {faseAtiva === 'especiais' && tabelaEspeciais}
 
         {/* Tabela de jogos (todas as abas exceto Especiais) */}
         {faseAtiva !== 'especiais' && (
@@ -503,6 +505,14 @@ export function PalpitesGeral() {
             <p className="text-center text-gray-400 py-8">Nenhum participante encontrado.</p>
           )}
         </div>
+        )}
+
+        {/* Especiais ao final da aba Todos */}
+        {faseAtiva === 'todos' && (
+          <div className="mt-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-2">Palpites Especiais</h2>
+            {tabelaEspeciais}
+          </div>
         )}
 
         {/* Legenda */}
