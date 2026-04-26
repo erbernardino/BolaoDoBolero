@@ -13,10 +13,12 @@ interface AuditDoc {
   after: Record<string, unknown> | null
   changedFields: string[]
   at: Timestamp
+  metadata?: Record<string, unknown>
 }
 
 const TIPOS_EVENTO = [
   { value: '', label: 'Todos os tipos' },
+  { value: 'login', label: 'Login' },
   { value: 'palpite_create', label: 'Palpite criado' },
   { value: 'palpite_update', label: 'Palpite atualizado' },
   { value: 'palpite_delete', label: 'Palpite excluído' },
@@ -43,6 +45,7 @@ function formatarValor(v: unknown): string {
 
 function CorEvento({ tipo }: { tipo: string }) {
   const map: Record<string, string> = {
+    login: 'bg-sky-100 text-sky-700',
     palpite_create: 'bg-green-100 text-green-700',
     palpite_update: 'bg-blue-100 text-blue-700',
     palpite_delete: 'bg-red-100 text-red-700',
@@ -55,6 +58,29 @@ function CorEvento({ tipo }: { tipo: string }) {
   }
   const cls = map[tipo] ?? 'bg-gray-100 text-gray-700'
   return <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${cls}`}>{tipo}</span>
+}
+
+function MetadataLogin({ metadata }: { metadata?: Record<string, unknown> }) {
+  if (!metadata) return null
+  const ip = (metadata.ip as string | undefined) ?? '—'
+  const userAgent = (metadata.userAgent as string | undefined) ?? '—'
+  const metodo = (metadata.metodo as string | undefined) ?? 'desconhecido'
+  return (
+    <div className="mt-2 text-xs space-y-0.5">
+      <div className="flex flex-wrap gap-1 items-center">
+        <span className="font-semibold text-gray-600">Método:</span>
+        <span className="text-gray-800">{metodo}</span>
+      </div>
+      <div className="flex flex-wrap gap-1 items-center">
+        <span className="font-semibold text-gray-600">IP:</span>
+        <span className="font-mono text-gray-800">{ip}</span>
+      </div>
+      <div className="flex flex-wrap gap-1 items-baseline">
+        <span className="font-semibold text-gray-600">User-Agent:</span>
+        <span className="text-gray-800 break-all">{userAgent}</span>
+      </div>
+    </div>
+  )
 }
 
 function Diff({ before, after, changedFields }: { before: AuditDoc['before']; after: AuditDoc['after']; changedFields: string[] }) {
@@ -181,7 +207,9 @@ export function Auditoria() {
                     <p className="text-[11px] text-gray-500 mt-1">{formatarTimestamp(log.at)}</p>
                   </div>
                 </div>
-                <Diff before={log.before} after={log.after} changedFields={log.changedFields} />
+                {log.eventType === 'login'
+                  ? <MetadataLogin metadata={log.metadata} />
+                  : <Diff before={log.before} after={log.after} changedFields={log.changedFields} />}
               </div>
             )
           })}
