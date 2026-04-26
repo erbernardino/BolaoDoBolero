@@ -69,16 +69,17 @@ export function FormatoCopa() {
             <li><strong>Os 8 melhores 3ºs colocados</strong> entre os 12 grupos também avançam</li>
             <li>Total: <strong>32 times</strong> no mata-mata</li>
           </ul>
-          <h3 className="font-semibold text-sm mt-3">Ranking dos 3ºs colocados — critérios oficiais FIFA</h3>
+          <h3 className="font-semibold text-sm mt-3">Ranking dos 3ºs colocados — critérios oficiais FIFA (Anexo C / Artigo 13)</h3>
           <ol className="text-sm list-decimal ml-5 space-y-0.5">
-            <li>Maior número de pontos</li>
-            <li>Maior saldo de gols</li>
-            <li>Maior número de gols marcados</li>
-            <li>Fair play</li>
-            <li>Sorteio pela FIFA</li>
+            <li>Maior número de pontos em todos os jogos do grupo</li>
+            <li>Melhor saldo de gols em todos os jogos do grupo</li>
+            <li>Maior número de gols marcados em todos os jogos do grupo</li>
+            <li>Conduta (cartões: amarelo −1, indireto por 2º amarelo −3, vermelho direto −4, amarelo + vermelho direto −5)</li>
+            <li>Posição na edição mais recente do FIFA/Coca‑Cola Men's World Ranking</li>
+            <li>Posição na edição anterior do FIFA/Coca‑Cola Men's World Ranking (e sucessivamente)</li>
           </ol>
           <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 mt-2">
-            <strong>Como o Bolão trata:</strong> usamos os 3 primeiros critérios. Não há confronto direto entre 3ºs (jogam em grupos diferentes). Se persistir empate, o Bolão mantém a ordem atual.
+            <strong>Como o Bolão trata:</strong> aplicamos os critérios 1 a 4 exatamente como a FIFA. O critério 4 (conduta) só intervém se houver registro de cartões — no fluxo de palpites esse valor fica em zero por padrão. Os critérios 5 e 6 (FIFA Ranking) não são aplicados porque o palpite não inclui ranking. Caso o empate persista, o Bolão usa um desempate determinístico (ordem alfabética por grupo, depois pelo id do time) para garantir que tabela e chaveamento não divirjam.
           </p>
         </section>
 
