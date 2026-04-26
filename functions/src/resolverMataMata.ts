@@ -47,6 +47,9 @@ interface ClassificacaoTime {
 
 // ---- Classificacao do grupo (criterios FIFA: pontos, saldo, gols, mini-tabela) ----
 
+// FIFA Article 13: pontos -> head-to-head (a/b/c) -> geral (d/e/f) -> ranking (skip).
+// Ver detalhes em src/lib/classificacao.ts (este arquivo replica a logica).
+
 function calcularClassificacaoGrupo(
   jogosGrupo: JogoData[],
   timesDoGrupo: string[],
@@ -75,63 +78,80 @@ function calcularClassificacaoGrupo(
   }
 
   const lista = Array.from(map.values())
-  lista.sort(compararCriteriosGerais)
-  return aplicarMiniTabelaEntreEmpatados(lista, jogosGrupo)
+  lista.sort((a, b) => b.pontos - a.pontos)
+
+  const resultado: ClassificacaoTime[] = []
+  let i = 0
+  while (i < lista.length) {
+    let j = i + 1
+    while (j < lista.length && lista[j].pontos === lista[i].pontos) j++
+    const cluster = lista.slice(i, j)
+    if (cluster.length === 1) resultado.push(cluster[0])
+    else resultado.push(...resolverEmpate(cluster, jogosGrupo))
+    i = j
+  }
+  return resultado
 }
 
-function compararCriteriosGerais(a: ClassificacaoTime, b: ClassificacaoTime): number {
-  if (b.pontos !== a.pontos) return b.pontos - a.pontos
-  if (b.saldoGols !== a.saldoGols) return b.saldoGols - a.saldoGols
-  if (b.golsMarcados !== a.golsMarcados) return b.golsMarcados - a.golsMarcados
-  return 0
+interface H2HStat { pontos: number; saldoGols: number; golsMarcados: number }
+
+function calcularH2H(timeIds: string[], jogos: JogoData[]): Map<string, H2HStat> {
+  const set = new Set(timeIds)
+  const map = new Map<string, H2HStat>()
+  for (const id of timeIds) map.set(id, { pontos: 0, saldoGols: 0, golsMarcados: 0 })
+  for (const j of jogos) {
+    if (!j.encerrado || !j.resultado || !j.timeCasa || !j.timeVisitante) continue
+    if (!set.has(j.timeCasa) || !set.has(j.timeVisitante)) continue
+    const c = map.get(j.timeCasa)!
+    const v = map.get(j.timeVisitante)!
+    c.golsMarcados += j.resultado.golsCasa
+    c.saldoGols += j.resultado.golsCasa - j.resultado.golsVisitante
+    v.golsMarcados += j.resultado.golsVisitante
+    v.saldoGols += j.resultado.golsVisitante - j.resultado.golsCasa
+    if (j.resultado.golsCasa > j.resultado.golsVisitante) c.pontos += 3
+    else if (j.resultado.golsCasa < j.resultado.golsVisitante) v.pontos += 3
+    else { c.pontos += 1; v.pontos += 1 }
+  }
+  return map
 }
 
-function mesmosCriteriosGerais(a: ClassificacaoTime, b: ClassificacaoTime): boolean {
+function mesmoH2H(a: H2HStat, b: H2HStat): boolean {
   return a.pontos === b.pontos && a.saldoGols === b.saldoGols && a.golsMarcados === b.golsMarcados
 }
 
-function aplicarMiniTabelaEntreEmpatados(
-  lista: ClassificacaoTime[],
-  jogosGrupo: JogoData[],
-): ClassificacaoTime[] {
-  const r = [...lista]
+function resolverEmpate(empatados: ClassificacaoTime[], jogos: JogoData[]): ClassificacaoTime[] {
+  if (empatados.length <= 1) return empatados
+  const h2h = calcularH2H(empatados.map(t => t.timeId), jogos)
+  const ord = [...empatados].sort((a, b) => {
+    const sa = h2h.get(a.timeId)!
+    const sb = h2h.get(b.timeId)!
+    if (sb.pontos !== sa.pontos) return sb.pontos - sa.pontos
+    if (sb.saldoGols !== sa.saldoGols) return sb.saldoGols - sa.saldoGols
+    if (sb.golsMarcados !== sa.golsMarcados) return sb.golsMarcados - sa.golsMarcados
+    return 0
+  })
+
+  const resultado: ClassificacaoTime[] = []
   let i = 0
-  while (i < r.length) {
+  while (i < ord.length) {
     let j = i + 1
-    while (j < r.length && mesmosCriteriosGerais(r[i], r[j])) j++
-    if (j - i > 1) {
-      const empatados = r.slice(i, j).map(t => t.timeId)
-      const ordemMini = ordenarPorMiniTabela(empatados, jogosGrupo)
-      const porId = new Map(r.map(t => [t.timeId, t]))
-      for (let k = 0; k < ordemMini.length; k++) {
-        const original = porId.get(ordemMini[k])
-        if (original) r[i + k] = original
-      }
-    }
+    const sa = h2h.get(ord[i].timeId)!
+    while (j < ord.length && mesmoH2H(h2h.get(ord[j].timeId)!, sa)) j++
+    const sub = ord.slice(i, j)
+    if (sub.length === 1) resultado.push(sub[0])
+    else if (sub.length === empatados.length) resultado.push(...aplicarCriteriosGerais(sub))
+    else resultado.push(...resolverEmpate(sub, jogos))
     i = j
   }
-  return r
+  return resultado
 }
 
-function ordenarPorMiniTabela(times: string[], jogos: JogoData[]): string[] {
-  const setT = new Set(times)
-  const stat = new Map<string, ClassificacaoTime>()
-  for (const t of times) stat.set(t, { timeId: t, pontos: 0, jogos: 0, vitorias: 0, empates: 0, derrotas: 0, golsMarcados: 0, golsSofridos: 0, saldoGols: 0, grupo: '' })
-
-  for (const j of jogos) {
-    if (!j.encerrado || !j.resultado || !j.timeCasa || !j.timeVisitante) continue
-    if (!setT.has(j.timeCasa) || !setT.has(j.timeVisitante)) continue
-    const c = stat.get(j.timeCasa)!; const v = stat.get(j.timeVisitante)!
-    c.golsMarcados += j.resultado.golsCasa; c.golsSofridos += j.resultado.golsVisitante
-    v.golsMarcados += j.resultado.golsVisitante; v.golsSofridos += j.resultado.golsCasa
-    if (j.resultado.golsCasa > j.resultado.golsVisitante) { c.pontos += 3 }
-    else if (j.resultado.golsCasa < j.resultado.golsVisitante) { v.pontos += 3 }
-    else { c.pontos++; v.pontos++ }
-    c.saldoGols = c.golsMarcados - c.golsSofridos
-    v.saldoGols = v.golsMarcados - v.golsSofridos
-  }
-
-  return Array.from(stat.values()).sort(compararCriteriosGerais).map(t => t.timeId)
+function aplicarCriteriosGerais(empatados: ClassificacaoTime[]): ClassificacaoTime[] {
+  return [...empatados].sort((a, b) => {
+    if (b.saldoGols !== a.saldoGols) return b.saldoGols - a.saldoGols
+    if (b.golsMarcados !== a.golsMarcados) return b.golsMarcados - a.golsMarcados
+    return a.timeId.localeCompare(b.timeId)
+  })
 }
 
 // ---- Comparador de 3os colocados (FIFA) ----

@@ -79,7 +79,34 @@ describe('calcularClassificacaoGrupo', () => {
     }
   })
 
-  it('deve desempatar por saldo de gols', () => {
+  it('deve aplicar head-to-head ANTES do saldo geral (FIFA Article 13 Step 1)', () => {
+    // Cenario chave que separa o algoritmo antigo do novo:
+    // BRA e ALE empatam em pontos. ALE tem saldo geral MAIOR.
+    // Mas BRA venceu ALE no confronto direto -> Article 13 da prioridade ao h2h.
+    // Pelo Article 13: BRA deve vir primeiro.
+    //
+    // BRA: vence ALE (1-0), perde JAP (0-3), vence CAN (1-0) -> 6 pts, gm 2, gs 3, saldo -1
+    // ALE: perde BRA (0-1), vence JAP (1-0), goleia CAN (5-0) -> 6 pts, gm 6, gs 1, saldo +5
+    // JAP: vence BRA, perde ALE, perde CAN -> 3 pts
+    // CAN: perde BRA, perde ALE, vence JAP -> 3 pts
+    const palpites: Palpite[] = [
+      palpite('j1', 'BRA', 'ALE', 1, 0),
+      palpite('j2', 'JAP', 'CAN', 0, 1),
+      palpite('j3', 'BRA', 'JAP', 0, 3),
+      palpite('j4', 'ALE', 'CAN', 5, 0),
+      palpite('j5', 'BRA', 'CAN', 1, 0),
+      palpite('j6', 'ALE', 'JAP', 1, 0),
+    ]
+    const resultado = calcularClassificacaoGrupo(palpites, times)
+    expect(resultado[0].timeId).toBe('BRA')
+    expect(resultado[1].timeId).toBe('ALE')
+    expect(resultado[0].pontos).toBe(6)
+    expect(resultado[1].pontos).toBe(6)
+    expect(resultado[0].saldoGols).toBe(-1)
+    expect(resultado[1].saldoGols).toBe(5)
+  })
+
+  it('deve desempatar por saldo de gols quando pontos diferentes', () => {
     const palpites: Palpite[] = [
       palpite('j1', 'BRA', 'ALE', 3, 0),
       palpite('j2', 'JAP', 'CAN', 1, 0),
