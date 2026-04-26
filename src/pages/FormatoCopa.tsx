@@ -26,6 +26,15 @@ export function FormatoCopa() {
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         <h1 className="text-2xl font-bold">Formato da Copa do Mundo FIFA 2026</h1>
 
+        <a
+          href="/FWC2026_regulations_EN.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 text-sm text-blue-700 hover:text-blue-900 hover:underline font-medium"
+        >
+          📄 Regulamento oficial da FIFA (PDF, em inglês) →
+        </a>
+
         {/* Visão Geral */}
         <section className="bg-white rounded-lg shadow p-6 space-y-3">
           <h2 className="text-lg font-bold">Visão Geral</h2>
@@ -157,7 +166,15 @@ export function FormatoCopa() {
             <li>Quando há empate no mata-mata, o participante indica quem avança (para resolver o chaveamento das fases seguintes). Essa escolha não vale pontuação extra</li>
           </ul>
           <p className="text-xs text-gray-400 mt-2 pt-2 border-t">
-            Fonte: FIFA Competition Regulations Canada/Mexico/USA 2026
+            Fonte:{' '}
+            <a
+              href="/FWC2026_regulations_EN.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              FIFA Competition Regulations Canada/Mexico/USA 2026
+            </a>
           </p>
         </section>
       </div>
