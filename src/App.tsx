@@ -7,6 +7,7 @@ import { LiberadoRoute } from './components/LiberadoRoute'
 import { OfflineBanner } from './components/OfflineBanner'
 import { AmbienteTesteBanner } from './components/AmbienteTesteBanner'
 import { NovaVersaoBanner } from './components/NovaVersaoBanner'
+import { useAnalyticsTracking } from './hooks/useAnalytics'
 
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })))
 const Cadastro = lazy(() => import('./pages/Cadastro').then(m => ({ default: m.Cadastro })))
@@ -22,6 +23,7 @@ const Perfil = lazy(() => import('./pages/Perfil').then(m => ({ default: m.Perfi
 const VerificarVinculo = lazy(() => import('./pages/VerificarVinculo').then(m => ({ default: m.VerificarVinculo })))
 
 function AppContent() {
+  useAnalyticsTracking()
   return (
     <>
     <AmbienteTesteBanner />
