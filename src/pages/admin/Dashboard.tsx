@@ -11,6 +11,7 @@ export function Dashboard() {
   const [palpitesPorUsuario, setPalpitesPorUsuario] = useState<Map<string, number>>(new Map())
   const [taxaInscricao, setTaxaInscricao] = useState(250)
   const [loading, setLoading] = useState(true)
+  const [pendentesVisiveis, setPendentesVisiveis] = useState(5)
 
   useEffect(() => {
     async function load() {
@@ -104,9 +105,11 @@ export function Dashboard() {
 
       {semPalpitesCompletos.length > 0 && (
         <div className="bg-white rounded-xl shadow border border-gray-100 p-5 mb-8">
-          <h3 className="text-sm font-bold text-gray-700 mb-3">Palpites pendentes</h3>
+          <h3 className="text-sm font-bold text-gray-700 mb-3">
+            Palpites pendentes ({semPalpitesCompletos.length})
+          </h3>
           <div className="space-y-2">
-            {semPalpitesCompletos.map(u => {
+            {semPalpitesCompletos.slice(0, pendentesVisiveis).map(u => {
               const pct = totalJogos > 0 ? Math.round((u.total / totalJogos) * 100) : 0
               return (
                 <div key={u.uid} className="flex items-center gap-3">
@@ -122,6 +125,15 @@ export function Dashboard() {
               )
             })}
           </div>
+          {pendentesVisiveis < semPalpitesCompletos.length && (
+            <button
+              type="button"
+              onClick={() => setPendentesVisiveis(v => v + 10)}
+              className="mt-3 text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              Mostrar mais ({semPalpitesCompletos.length - pendentesVisiveis} restantes)
+            </button>
+          )}
         </div>
       )}
 
