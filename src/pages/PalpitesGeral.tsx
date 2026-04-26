@@ -79,12 +79,13 @@ export function PalpitesGeral() {
           addPalpitesFromSnap(await getDocs(collection(db, 'palpites')))
         } else if (visibilidadeAtual === 'apos_jogo') {
           const jogosEncerrados = jogosData.filter(j => j.encerrado)
-          for (const jogo of jogosEncerrados) {
-            addPalpitesFromSnap(await getDocs(query(
+          const snapshots = await Promise.all(
+            jogosEncerrados.map(jogo => getDocs(query(
               collection(db, 'palpites'),
               where('jogoId', '==', jogo.id),
-            )))
-          }
+            ))),
+          )
+          snapshots.forEach(addPalpitesFromSnap)
         }
 
         setPalpites(Array.from(palpitesMap.values()))
