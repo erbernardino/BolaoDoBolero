@@ -26,6 +26,86 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.liberado == true;
     }
 
+    function isValidScore(value) {
+      return value is int && value >= 0 && value <= 99;
+    }
+
+    function canReadPalpite(uid, jogoId) {
+      return isOwner(uid) || isAdmin()
+        || get(/databases/$(database)/documents/config/geral).data.visibilidadePalpites == 'sempre'
+        || (
+          get(/databases/$(database)/documents/config/geral).data.visibilidadePalpites == 'apos_prazo'
+          && request.time >= get(/databases/$(database)/documents/config/geral).data.prazoLimitePalpites
+        )
+        || (
+          get(/databases/$(database)/documents/config/geral).data.visibilidadePalpites == 'apos_jogo'
+          && get(/databases/$(database)/documents/jogos/$(jogoId)).data.encerrado == true
+        );
+    }
+
+    function canReadPalpiteEspecial(uid) {
+      return isOwner(uid) || isAdmin()
+        || get(/databases/$(database)/documents/config/geral).data.visibilidadePalpites == 'sempre'
+        || (
+          get(/databases/$(database)/documents/config/geral).data.visibilidadePalpites == 'apos_prazo'
+          && request.time >= get(/databases/$(database)/documents/config/geral).data.prazoLimitePalpites
+        );
+    }
+
+    function isValidPalpite(data) {
+      return data.keys().hasOnly([
+          'id', 'uid', 'jogoId', 'timeCasa', 'timeVisitante',
+          'golsCasa', 'golsVisitante', 'classificado', 'criadoEm'
+        ])
+        && data.uid is string
+        && data.jogoId is string
+        && data.timeCasa is string
+        && data.timeVisitante is string
+        && isValidScore(data.golsCasa)
+        && isValidScore(data.golsVisitante)
+        && (data.classificado == null || data.classificado is string)
+        && data.criadoEm is timestamp;
+    }
+
+    function isValidPalpiteEspecial(data, uid) {
+      return data.keys().hasOnly([
+          'uid', 'campeao', 'vice', 'terceiro', 'quarto', 'paisArtilheiro', 'criadoEm'
+        ])
+        && data.uid == uid
+        && data.campeao is string
+        && data.vice is string
+        && data.terceiro is string
+        && data.quarto is string
+        && data.paisArtilheiro is string
+        && data.criadoEm is timestamp;
+    }
+
+    function isValidDesempateTerceiros(data, uid) {
+      return data.keys().hasOnly(['uid', 'pontosDisciplinares', 'criadoEm'])
+        && data.uid == uid
+        && data.pontosDisciplinares is map
+        && data.criadoEm is timestamp;
+    }
+
+    function isValidUsuarioCreate(data) {
+      return data.keys().hasOnly([
+          'uid', 'nome', 'apelido', 'email', 'telefone', 'role',
+          'liberado', 'conviteId', 'criadoEm', 'fcmToken'
+        ])
+        && data.role == 'participante'
+        && data.liberado == false
+        && (!('uid' in data) || data.uid == request.auth.uid);
+    }
+
+    function isValidUsuarioOwnerUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['nome', 'apelido', 'email', 'telefone', 'fcmToken'])
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.liberado == resource.data.liberado
+        && request.resource.data.get('uid', request.auth.uid) == resource.data.get('uid', request.auth.uid)
+        && request.resource.data.conviteId == resource.data.conviteId;
+    }
+
     // /config/{docId}: read by authenticated, write by admin
     // Inclui config/geral e config/resultado_especial
     match /config/{docId} {
@@ -51,19 +131,49 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // /palpites/{palpiteId}: read by authenticated, create/update by owner before prazo, no delete
+    // /palpites/{palpiteId}: leitura segue config de visibilidade; escrita só pelo dono liberado antes do prazo
     match /palpites/{palpiteId} {
-      allow read: if isAuthenticated();
-      allow create: if isOwner(request.resource.data.uid) && prazoAberto() && isLiberado();
-      allow update: if isOwner(resource.data.uid) && prazoAberto() && isLiberado();
+      allow read: if isAuthenticated() && canReadPalpite(resource.data.uid, resource.data.jogoId);
+      allow create: if isOwner(request.resource.data.uid)
+        && prazoAberto()
+        && isLiberado()
+        && isValidPalpite(request.resource.data);
+      allow update: if isOwner(resource.data.uid)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.jogoId == resource.data.jogoId
+        && prazoAberto()
+        && isLiberado()
+        && isValidPalpite(request.resource.data);
       allow delete: if false;
     }
 
-    // /palpites_especiais/{uid}: read by authenticated, write by owner before prazo
+    // /palpites_especiais/{uid}: leitura segue config de visibilidade geral; escrita só pelo dono antes do prazo
     match /palpites_especiais/{uid} {
-      allow read: if isAuthenticated();
-      allow create: if isOwner(uid) && prazoAberto() && isLiberado();
-      allow update: if isOwner(uid) && prazoAberto() && isLiberado();
+      allow read: if isAuthenticated() && canReadPalpiteEspecial(uid);
+      allow create: if isOwner(uid)
+        && prazoAberto()
+        && isLiberado()
+        && isValidPalpiteEspecial(request.resource.data, uid);
+      allow update: if isOwner(uid)
+        && request.resource.data.uid == resource.data.uid
+        && prazoAberto()
+        && isLiberado()
+        && isValidPalpiteEspecial(request.resource.data, uid);
+      allow delete: if false;
+    }
+
+    // /desempates_terceiros/{uid}: pontos disciplinares usados só para posicionar 3os colocados no chaveamento
+    match /desempates_terceiros/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid)
+        && prazoAberto()
+        && isLiberado()
+        && isValidDesempateTerceiros(request.resource.data, uid);
+      allow update: if isOwner(uid)
+        && prazoAberto()
+        && isLiberado()
+        && request.resource.data.uid == resource.data.uid
+        && isValidDesempateTerceiros(request.resource.data, uid);
       allow delete: if false;
     }
 
@@ -75,11 +185,13 @@ service cloud.firestore {
       allow update: if false;
     }
 
-    // /notificacoes_usuario/{uid}/items — dono lê/atualiza, autenticados criam (menções), Cloud Functions também criam
+    // /notificacoes_usuario/{uid}/items — cliente só lê/atualiza as próprias; criações usam Admin SDK/Functions
     match /notificacoes_usuario/{uid}/items/{notifId} {
       allow read: if isOwner(uid);
-      allow update: if isOwner(uid);
-      allow create: if isAuthenticated();
+      allow update: if isOwner(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lida'])
+        && request.resource.data.lida is bool;
+      allow create: if isAdmin();
       allow delete: if false;
     }
 
@@ -93,9 +205,9 @@ service cloud.firestore {
     // Usuário não pode alterar o próprio role (prevenção de escalação de privilégio)
     match /usuarios/{uid} {
       allow read: if isAuthenticated();
-      allow create: if isOwner(uid) && request.resource.data.role == 'participante';
+      allow create: if isOwner(uid) && isValidUsuarioCreate(request.resource.data);
       allow update: if isAdmin()
-        || (isOwner(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+        || (isOwner(uid) && isValidUsuarioOwnerUpdate());
       allow delete: if false;
     }
 

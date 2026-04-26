@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { selecionarMelhoresTerceiros } from '../melhoresTerceiros'
+import { compararTerceirosFifa, selecionarMelhoresTerceiros } from '../melhoresTerceiros'
 import type { ClassificacaoTime } from '../../types'
 
 function terceiro(timeId: string, pontos: number, saldoGols: number, golsMarcados: number): ClassificacaoTime {
@@ -30,5 +30,14 @@ describe('selecionarMelhoresTerceiros', () => {
     expect(ids).not.toContain('T_K')
     expect(ids).not.toContain('T_G')
     expect(ids).not.toContain('T_J')
+  })
+
+  it('deve manter ordem deterministica por grupo quando disciplina tambem empata', () => {
+    const paraguai = { ...terceiro('PAR', 3, -3, 1), grupo: 'D' }
+    const panama = { ...terceiro('PAN', 3, -3, 1), grupo: 'L' }
+
+    expect(compararTerceirosFifa(paraguai, panama, { PAR: -1, PAN: -1 })).toBeLessThan(0)
+    expect(selecionarMelhoresTerceiros([panama, paraguai], { PAR: -1, PAN: -1 }).map(t => t.timeId))
+      .toEqual(['PAR', 'PAN'])
   })
 })

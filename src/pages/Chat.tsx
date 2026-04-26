@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { collection, getDocs, addDoc, Timestamp } from 'firebase/firestore'
+import { collection, getDocs } from 'firebase/firestore'
+import { getFunctions, httpsCallable } from 'firebase/functions'
 import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { useChat } from '../hooks/useChat'
@@ -8,6 +9,8 @@ import { Navbar } from '../components/Navbar'
 import { ChatMessage } from '../components/ChatMessage'
 import { ChatInput } from '../components/ChatInput'
 import type { Usuario } from '../types'
+
+const functions = getFunctions()
 
 export function Chat() {
   const { firebaseUser, usuario } = useAuth()
@@ -76,22 +79,12 @@ export function Chat() {
   async function handleSend(texto: string, mencoes: string[]) {
     const msgId = await enviarMensagem(texto, mencoes)
 
-    // Save in-app notification for mentioned users
-    for (const uid of mencoes) {
-      if (uid === firebaseUser?.uid) continue
+    if (msgId && mencoes.some(uid => uid !== firebaseUser?.uid)) {
       try {
-        await addDoc(
-          collection(db, 'notificacoes_usuario', uid, 'items'),
-          {
-            titulo: 'Menção no chat',
-            corpo: `@${usuario?.apelido || usuario?.nome} mencionou você: "${texto.substring(0, 60)}${texto.length > 60 ? '...' : ''}"`,
-            lida: false,
-            link: msgId ? `/chat?msg=${msgId}` : '/chat',
-            criadoEm: Timestamp.now(),
-          }
-        )
+        const fn = httpsCallable<{ messageId: string }, { enviados: number }>(functions, 'notificarMencoesChat')
+        await fn({ messageId: msgId })
       } catch {
-        // Silently fail
+        // A mensagem já foi enviada; falha de notificação não deve bloquear o chat.
       }
     }
   }

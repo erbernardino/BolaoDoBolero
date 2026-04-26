@@ -86,6 +86,12 @@ export interface Palpite {
   criadoEm: Timestamp
 }
 
+export interface DesempateTerceiros {
+  uid: string
+  pontosDisciplinares: Record<string, number>
+  criadoEm: Timestamp
+}
+
 export interface Ranking {
   uid: string
   pontosTotal: number
@@ -152,6 +158,7 @@ export interface ResultadoEspecial {
 
 export interface ClassificacaoTime {
   timeId: string
+  grupo?: string
   pontos: number
   jogos: number
   vitorias: number
@@ -160,4 +167,5 @@ export interface ClassificacaoTime {
   golsMarcados: number
   golsSofridos: number
   saldoGols: number
+  fairPlayPontos?: number
 }
