@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { collection, getDocs } from 'firebase/firestore'
-import { getFunctions, httpsCallable } from 'firebase/functions'
 import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { useChat } from '../hooks/useChat'
@@ -9,8 +8,6 @@ import { Navbar } from '../components/Navbar'
 import { ChatMessage } from '../components/ChatMessage'
 import { ChatInput } from '../components/ChatInput'
 import type { Usuario } from '../types'
-
-const functions = getFunctions()
 
 export function Chat() {
   const { firebaseUser, usuario } = useAuth()
@@ -77,16 +74,7 @@ export function Chat() {
   }
 
   async function handleSend(texto: string, mencoes: string[]) {
-    const msgId = await enviarMensagem(texto, mencoes)
-
-    if (msgId && mencoes.some(uid => uid !== firebaseUser?.uid)) {
-      try {
-        const fn = httpsCallable<{ messageId: string }, { enviados: number }>(functions, 'notificarMencoesChat')
-        await fn({ messageId: msgId })
-      } catch {
-        // A mensagem já foi enviada; falha de notificação não deve bloquear o chat.
-      }
-    }
+    await enviarMensagem(texto, mencoes)
   }
 
   async function handleDelete(messageId: string) {

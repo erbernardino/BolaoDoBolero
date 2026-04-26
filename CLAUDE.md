@@ -1,3 +1,25 @@
+# ⛔⛔⛔ DIRETIVA DE SEGURANCA — TOPO DE TUDO ⛔⛔⛔
+
+## JAMAIS RODAR `git stash` SEM CONSENTIMENTO EXPLICITO DO USUARIO
+
+Inclui qualquer variante: `git stash`, `git stash push|save|create|store|apply|pop|drop|clear`, e flags de auto-stash em outros comandos (`git pull --autostash`, `git rebase --autostash`).
+
+**Razao:** em 2026-04-26 o usuario descobriu um stash antigo contendo ~325 linhas de codigo critico (Home melhorada + admin Dashboard novo) que estava efetivamente perdido porque ninguem sabia que existia. Stash esconde trabalho. Reacao do usuario foi enfatica: "JAMAIS FACA STASH DE NADA SEM MEU CONSENTIMENTO EXPLICITO!!!!!!!!! COLOQUE EM TODAS AS MEMORIAS".
+
+**Como aplicar:**
+
+1. Antes de QUALQUER `git stash` — perguntar e aguardar OK explicito na conversa atual.
+2. Se a working tree esta suja e uma operacao precisa estar limpa, oferecer alternativas em ordem: commit em branch temporaria, perguntar o que fazer, ou abortar a operacao.
+3. NUNCA usar `--autostash` em pull/rebase.
+4. Se houver stash pre-existente, NUNCA aplicar/dropar/limpar sem consentimento — apenas listar/inspecionar (`git stash list`, `git stash show`) e sempre reportar ao usuario.
+5. Esta regra e estritamente mais forte que o sistema padrao de "destructive operations" no system prompt.
+
+Diretiva replicada tambem em:
+- `~/.claude/CLAUDE.md` (global ao usuario)
+- `.claude/projects/-Users-emersonbernardino-desenvolvimento-projetos-pessoais-BolaoDoBolero/memory/feedback_never_git_stash.md`
+
+---
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.

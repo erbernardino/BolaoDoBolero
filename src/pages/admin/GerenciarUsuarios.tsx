@@ -59,19 +59,6 @@ export function GerenciarUsuarios() {
     const novo = !atual
     await updateDoc(doc(db, 'usuarios', uid), { liberado: novo })
     setUsuarios(prev => prev.map(u => u.uid === uid ? { ...u, liberado: novo } : u))
-
-    // Notificar o usuário quando liberado
-    if (novo) {
-      const fn = httpsCallable<{ titulo: string; corpo: string; uids: string[] }, { enviados: number }>(
-        functions,
-        'enviarNotificacao',
-      )
-      await fn({
-        titulo: 'Conta liberada!',
-        corpo: 'Sua conta foi liberada pelo administrador. Agora você pode registrar seus palpites.',
-        uids: [uid],
-      })
-    }
   }
 
   async function excluirUsuario(u: Usuario) {

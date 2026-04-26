@@ -42,7 +42,7 @@ export function PalpitesGrupos() {
       const [jogosSnap, timesSnap, configSnap] = await Promise.all([
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
-        getDocs(collection(db, 'config')),
+        getDoc(doc(db, 'config', 'geral')),
       ])
 
       const jogosGrupo: Jogo[] = []
@@ -58,9 +58,8 @@ export function PalpitesGrupos() {
       })
       setTimes(timesMap)
 
-      if (!configSnap.empty) {
-        const first = configSnap.docs[0]
-        setConfig(first.data() as Config)
+      if (configSnap.exists()) {
+        setConfig(configSnap.data() as Config)
       }
 
       if (firebaseUser) {
