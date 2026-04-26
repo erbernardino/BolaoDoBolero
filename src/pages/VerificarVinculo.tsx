@@ -10,6 +10,7 @@ import { doc, updateDoc } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
+import { PhoneInput } from '../components/PhoneInput'
 
 type PhoneStep = 'input' | 'confirm'
 
@@ -26,7 +27,7 @@ export function VerificarVinculo() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const [verificationId, setVerificationId] = useState('')
+  const verificationIdRef = useRef<string | null>(null)
   const recaptchaRef = useRef<RecaptchaVerifier | null>(null)
   const recaptchaContainerRef = useRef<HTMLDivElement>(null)
 
@@ -42,8 +43,19 @@ export function VerificarVinculo() {
     }
   }, [])
 
+  const resetRecaptcha = () => {
+    recaptchaRef.current?.clear()
+    recaptchaRef.current = null
+    if (recaptchaContainerRef.current) {
+      recaptchaContainerRef.current.innerHTML = ''
+    }
+  }
+
   const ensureRecaptcha = () => {
-    if (!recaptchaRef.current && recaptchaContainerRef.current) {
+    if (recaptchaRef.current) {
+      resetRecaptcha()
+    }
+    if (recaptchaContainerRef.current) {
       recaptchaRef.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
         size: 'invisible',
       })
@@ -76,13 +88,13 @@ export function VerificarVinculo() {
     try {
       ensureRecaptcha()
       const provider = new PhoneAuthProvider(auth)
-      const vId = await provider.verifyPhoneNumber(phone, recaptchaRef.current!)
-      setVerificationId(vId)
+      const verificationId = await provider.verifyPhoneNumber(phone, recaptchaRef.current!)
+      verificationIdRef.current = verificationId
       setPhoneStep('confirm')
     } catch (err: unknown) {
+      console.error('verifyPhoneNumber error:', JSON.stringify(err, Object.getOwnPropertyNames(err as object)))
       setError(getErrorMessage(err))
-      recaptchaRef.current?.clear()
-      recaptchaRef.current = null
+      resetRecaptcha()
     } finally {
       setLoading(false)
     }
@@ -90,11 +102,11 @@ export function VerificarVinculo() {
 
   const handleConfirmCode = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!firebaseUser) return
+    if (!firebaseUser || !verificationIdRef.current) return
     setError('')
     setLoading(true)
     try {
-      const credential = PhoneAuthProvider.credential(verificationId, smsCode)
+      const credential = PhoneAuthProvider.credential(verificationIdRef.current, smsCode)
       await linkWithCredential(firebaseUser, credential)
       await updateDoc(doc(db, 'usuarios', firebaseUser.uid), { telefone: phone })
       await refreshUsuario()
@@ -160,15 +172,12 @@ export function VerificarVinculo() {
                 <form onSubmit={handleSendSms} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Telefone (com DDI, ex: +5511999999999)
+                      Telefone
                     </label>
-                    <input
-                      type="tel"
-                      required
+                    <PhoneInput
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="+5511999999999"
+                      onChange={setPhone}
+                      required
                     />
                   </div>
                   {error && <p className="text-sm text-red-600">{error}</p>}

@@ -272,23 +272,59 @@ export function InserirResultados() {
           {/* Inputs de placar */}
           {editable ? (
             <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={0}
-                value={form.golsCasa}
-                onChange={(e) => setResultado(jogo.id, 'golsCasa', e.target.value)}
-                className="border rounded px-2 py-1 w-14 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="-"
-              />
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setResultado(jogo.id, 'golsCasa', String(Math.max(0, (Number(form.golsCasa) || 0) - 1)))}
+                  className="w-7 h-7 flex items-center justify-center rounded bg-gray-200 text-gray-600 hover:bg-gray-300 text-sm font-bold transition-colors"
+                  aria-label="Diminuir gols casa"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.golsCasa}
+                  onChange={(e) => setResultado(jogo.id, 'golsCasa', e.target.value)}
+                  className="border rounded px-2 py-1 w-14 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="-"
+                />
+                <button
+                  type="button"
+                  onClick={() => setResultado(jogo.id, 'golsCasa', String((Number(form.golsCasa) || 0) + 1))}
+                  className="w-7 h-7 flex items-center justify-center rounded bg-gray-200 text-gray-600 hover:bg-gray-300 text-sm font-bold transition-colors"
+                  aria-label="Aumentar gols casa"
+                >
+                  +
+                </button>
+              </div>
               <span className="font-bold text-gray-400">x</span>
-              <input
-                type="number"
-                min={0}
-                value={form.golsVisitante}
-                onChange={(e) => setResultado(jogo.id, 'golsVisitante', e.target.value)}
-                className="border rounded px-2 py-1 w-14 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="-"
-              />
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setResultado(jogo.id, 'golsVisitante', String(Math.max(0, (Number(form.golsVisitante) || 0) - 1)))}
+                  className="w-7 h-7 flex items-center justify-center rounded bg-gray-200 text-gray-600 hover:bg-gray-300 text-sm font-bold transition-colors"
+                  aria-label="Diminuir gols visitante"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.golsVisitante}
+                  onChange={(e) => setResultado(jogo.id, 'golsVisitante', e.target.value)}
+                  className="border rounded px-2 py-1 w-14 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="-"
+                />
+                <button
+                  type="button"
+                  onClick={() => setResultado(jogo.id, 'golsVisitante', String((Number(form.golsVisitante) || 0) + 1))}
+                  className="w-7 h-7 flex items-center justify-center rounded bg-gray-200 text-gray-600 hover:bg-gray-300 text-sm font-bold transition-colors"
+                  aria-label="Aumentar gols visitante"
+                >
+                  +
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-2">
