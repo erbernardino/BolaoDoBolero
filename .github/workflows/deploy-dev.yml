@@ -56,3 +56,13 @@ jobs:
 
       - name: Deploy Firebase (hosting + rules + indexes + functions)
         run: firebase deploy --only hosting,firestore,functions --project ${{ secrets.VITE_FIREBASE_PROJECT_ID }} --non-interactive --force
+
+      - name: Atualizar config/app_version no Firestore
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          TOKEN=$(gcloud auth print-access-token)
+          curl -s -X PATCH \
+            "https://firestore.googleapis.com/v1/projects/${{ secrets.VITE_FIREBASE_PROJECT_ID }}/databases/(default)/documents/config/app_version?updateMask.fieldPaths=build" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"fields\":{\"build\":{\"stringValue\":\"$SHA\"}}}"
