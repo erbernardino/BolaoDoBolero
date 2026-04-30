@@ -52,7 +52,7 @@ export function Dashboard() {
     return <div className="max-w-5xl mx-auto px-4 py-8"><p className="text-gray-500">Carregando...</p></div>
   }
 
-  const liberados = usuarios.filter(u => u.liberado === true && u.role !== 'admin')
+  const liberados = usuarios.filter(u => u.liberado === true)
   const pendentes = usuarios.filter(u => u.role !== 'admin' && u.liberado !== true)
   const totalArrecadado = liberados.length * taxaInscricao
 
