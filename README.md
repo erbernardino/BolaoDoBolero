@@ -24,7 +24,7 @@ Os valores sao configuraveis pelo administrador. No mata-mata, em caso de empate
 
 O bolao tambem tem palpites especiais: campeao, vice e artilheiro.
 
-Premiacao para 1o, 2o, 3o lugar e o antipenultimo — porque como o Bolero dizia: *"ficar em ultimo e facil, quero ver ficar em antipenultimo"*.
+Premiacao para 1º, 2º, 3º lugar e o antipenultimo — porque como o Bolero dizia: *"ficar em ultimo e facil, quero ver ficar em antipenultimo"*.
 
 ## Cadastro
 
