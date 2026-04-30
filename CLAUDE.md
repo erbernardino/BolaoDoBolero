@@ -1,5 +1,13 @@
 # ⛔⛔⛔ DIRETIVA DE SEGURANCA — TOPO DE TUDO ⛔⛔⛔
 
+## JAMAIS CRIAR DOCUMENTOS NA COLECAO `config` DO FIRESTORE
+
+A colecao `config` so pode ter os documentos `geral` e `resultado_especial`. Qualquer outro documento nessa colecao quebra leituras que dependem da estrutura conhecida. Em 2026-04-30 foi criado `config/app_version` e isso quebrou a pagina de palpites em producao com erro `Cannot read properties of undefined (reading 'toDate')`.
+
+**Regra:** Se precisar armazenar qualquer outro dado de sistema no Firestore, usar uma colecao separada (ex: `_system/versao`, `meta/app_version`). NUNCA adicionar documentos a colecao `config`.
+
+---
+
 ## JAMAIS RODAR `git stash` SEM CONSENTIMENTO EXPLICITO DO USUARIO
 
 Inclui qualquer variante: `git stash`, `git stash push|save|create|store|apply|pop|drop|clear`, e flags de auto-stash em outros comandos (`git pull --autostash`, `git rebase --autostash`).

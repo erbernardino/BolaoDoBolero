@@ -106,12 +106,6 @@ export interface Ranking {
 
 export type Role = 'admin' | 'participante'
 
-export interface AppVersion {
-  build: string
-  deployedAt: Timestamp
-  atualizadoPor?: string
-}
-
 export interface Usuario {
   uid: string
   nome: string
