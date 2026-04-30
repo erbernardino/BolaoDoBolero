@@ -47,6 +47,7 @@ function AppContent() {
       </Routes>
     </Suspense>
     <footer className="fixed bottom-2 right-3 text-[10px] text-gray-400/60 pointer-events-auto z-10">
+      <span className="mr-2">v{__APP_VERSION__}</span>
       Desenvolvido por{' '}
       <a href="https://allogic.com.br" target="_blank" rel="noopener noreferrer" className="text-blue-400/60 hover:text-blue-500 hover:underline transition-colors pointer-events-auto">
         Allogic
