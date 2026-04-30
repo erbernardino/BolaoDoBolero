@@ -42,7 +42,7 @@ export function AoVivo({ uid }: { uid: string }) {
     const q = query(collection(db, 'jogos'), where('aoVivo', '==', true))
     const unsub = onSnapshot(q, (snap) => {
       setJogosLive(snap.docs.map(d => ({ id: d.id, ...d.data() } as Jogo)))
-    })
+    }, () => { /* sem jogos ao vivo ou sem permissão — ignora */ })
     return () => unsub()
   }, [])
 
@@ -57,7 +57,7 @@ export function AoVivo({ uid }: { uid: string }) {
         m.set(p.jogoId, p)
       })
       setPalpites(m)
-    })
+    }, () => { /* sem permissão ou offline — ignora */ })
     return () => unsub()
   }, [uid])
 
