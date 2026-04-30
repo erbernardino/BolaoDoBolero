@@ -17,10 +17,10 @@ export function RankingDestaques({ ranking }: Props) {
 
   const antepenultimoIdx = ranking.length - 3
   const destaques: Destaque[] = [
-    { posicao: 0, label: '1o', cor: 'text-yellow-700', bgCor: 'bg-yellow-50', bordaCor: 'border-yellow-400' },
-    { posicao: 1, label: '2o', cor: 'text-gray-500', bgCor: 'bg-gray-50', bordaCor: 'border-gray-300' },
-    { posicao: 2, label: '3o', cor: 'text-amber-700', bgCor: 'bg-amber-50', bordaCor: 'border-amber-400' },
-    { posicao: 3, label: '4o', cor: 'text-blue-700', bgCor: 'bg-blue-50', bordaCor: 'border-blue-300' },
+    { posicao: 0, label: '1º', cor: 'text-yellow-700', bgCor: 'bg-yellow-50', bordaCor: 'border-yellow-400' },
+    { posicao: 1, label: '2º', cor: 'text-gray-500', bgCor: 'bg-gray-50', bordaCor: 'border-gray-300' },
+    { posicao: 2, label: '3º', cor: 'text-amber-700', bgCor: 'bg-amber-50', bordaCor: 'border-amber-400' },
+    { posicao: 3, label: '4º', cor: 'text-blue-700', bgCor: 'bg-blue-50', bordaCor: 'border-blue-300' },
   ]
 
   // Só mostra antepenúltimo se não já estiver entre os 4 primeiros
