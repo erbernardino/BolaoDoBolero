@@ -21,7 +21,6 @@ const PalpitesGeral = lazy(() => import('./pages/PalpitesGeral').then(m => ({ de
 const Chat = lazy(() => import('./pages/Chat').then(m => ({ default: m.Chat })))
 const Perfil = lazy(() => import('./pages/Perfil').then(m => ({ default: m.Perfil })))
 const VerificarVinculo = lazy(() => import('./pages/VerificarVinculo').then(m => ({ default: m.VerificarVinculo })))
-const SentryTest = lazy(() => import('./pages/SentryTest'))
 
 function AppContent() {
   useAnalyticsTracking()
@@ -45,7 +44,6 @@ function AppContent() {
         <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
         <Route path="/perfil/verificar/:tipo" element={<ProtectedRoute><VerificarVinculo /></ProtectedRoute>} />
         <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-        <Route path="/sentry-test" element={<SentryTest />} />
       </Routes>
     </Suspense>
     <footer className="fixed bottom-2 right-3 text-[10px] text-gray-400/60 pointer-events-auto z-10">
