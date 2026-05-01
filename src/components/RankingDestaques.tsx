@@ -12,22 +12,24 @@ interface Destaque {
   bordaCor: string
 }
 
+const DESTAQUES: Destaque[] = [
+  { posicao: 0, label: '1º', cor: 'text-yellow-700', bgCor: 'bg-yellow-50', bordaCor: 'border-yellow-400' },
+  { posicao: 1, label: '2º', cor: 'text-gray-500', bgCor: 'bg-gray-50', bordaCor: 'border-gray-300' },
+  { posicao: 2, label: '3º', cor: 'text-amber-700', bgCor: 'bg-amber-50', bordaCor: 'border-amber-400' },
+]
+
 export function RankingDestaques({ ranking }: Props) {
   if (ranking.length < 3) return null
 
   const antepenultimoIdx = ranking.length - 3
-  const destaques: Destaque[] = [
-    { posicao: 0, label: '1º', cor: 'text-yellow-700', bgCor: 'bg-yellow-50', bordaCor: 'border-yellow-400' },
-    { posicao: 1, label: '2º', cor: 'text-gray-500', bgCor: 'bg-gray-50', bordaCor: 'border-gray-300' },
-    { posicao: 2, label: '3º', cor: 'text-amber-700', bgCor: 'bg-amber-50', bordaCor: 'border-amber-400' },
-  ]
-
   // Só mostra antepenúltimo se não já estiver entre os 3 primeiros
   const mostrarAntepenultimo = antepenultimoIdx > 2
 
+  const lgCols = mostrarAntepenultimo ? 'lg:grid-cols-4' : 'lg:grid-cols-3'
+
   return (
-    <div className="mb-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-      {destaques.map(({ posicao, label, cor, bgCor, bordaCor }) => {
+    <div className={`mb-8 grid grid-cols-2 sm:grid-cols-3 ${lgCols} gap-3`}>
+      {DESTAQUES.map(({ posicao, label, cor, bgCor, bordaCor }) => {
         const r = ranking[posicao]
         return (
           <div key={r.uid} className={`${bgCor} border-2 ${bordaCor} rounded-lg p-3 text-center`}>
