@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { signOut } from 'firebase/auth'
 import { collection, getDocs, getCountFromServer, query, where } from 'firebase/firestore'
-import { auth, db } from '../config/firebase'
+import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
 import { AoVivo } from '../components/AoVivo'
@@ -16,7 +15,6 @@ const FONT_MONO = "'JetBrains Mono', ui-monospace, monospace"
 
 const BG = '#fbf8f3'
 const SURFACE = '#ffffff'
-const SURFACE_2 = '#f3ede2'
 const INK = '#0d1620'
 const INK_2 = '#2c3540'
 const MUTED = '#5d6573'
@@ -534,7 +532,7 @@ export function Home() {
           </div>
         </section>
 
-        <div className="mt-16 flex items-center justify-between">
+        <div className="mt-16 text-center">
           <span
             style={{
               fontFamily: FONT_SERIF,
@@ -545,24 +543,6 @@ export function Home() {
           >
             Bolão do Bolero · Copa do Mundo 2026
           </span>
-          <button
-            onClick={() => signOut(auth)}
-            className="transition-colors"
-            style={{
-              fontFamily: FONT_BODY,
-              fontWeight: 600,
-              fontSize: '1rem',
-              color: INK_2,
-              padding: '8px 18px',
-              borderRadius: '6px',
-              background: SURFACE_2,
-              border: `1px solid ${RULE}`,
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.background = SURFACE }}
-            onMouseOut={(e) => { e.currentTarget.style.background = SURFACE_2 }}
-          >
-            Sair
-          </button>
         </div>
       </main>
     </div>
