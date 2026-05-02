@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, getDoc, doc } from 'firebase/firestore'
 import { db } from '../../config/firebase'
-import type { Jogo, Time, Palpite, Usuario, Fase } from '../../types'
+import type { Jogo, Time, Palpite, Usuario, Fase, PalpiteEspecial, ResultadoEspecial } from '../../types'
 
-const FASES: { id: Fase | 'todos'; label: string }[] = [
+const FASES: { id: Fase | 'todos' | 'especiais'; label: string }[] = [
   { id: 'todos', label: 'Todos' },
   { id: 'grupos', label: 'Grupos' },
   { id: 'fase32', label: 'Segunda Fase' },
@@ -12,6 +12,15 @@ const FASES: { id: Fase | 'todos'; label: string }[] = [
   { id: 'semi', label: 'Semis' },
   { id: 'terceiro', label: '3o Lugar' },
   { id: 'final', label: 'Final' },
+  { id: 'especiais', label: 'Especiais' },
+]
+
+const COLUNAS_ESPECIAIS: { key: keyof Pick<PalpiteEspecial, 'campeao' | 'vice' | 'terceiro' | 'quarto' | 'paisArtilheiro'>; label: string; icone: string }[] = [
+  { key: 'campeao', label: 'Campeão', icone: '🏆' },
+  { key: 'vice', label: 'Vice', icone: '🥈' },
+  { key: 'terceiro', label: '3º Lugar', icone: '🥉' },
+  { key: 'quarto', label: '4º Lugar', icone: '4️⃣' },
+  { key: 'paisArtilheiro', label: 'País Artilheiro', icone: '⚽' },
 ]
 
 export function VerPalpites() {
@@ -20,17 +29,21 @@ export function VerPalpites() {
   const [palpites, setPalpites] = useState<Palpite[]>([])
   const [usuarios, setUsuarios] = useState<Map<string, Usuario>>(new Map())
   const [loading, setLoading] = useState(true)
-  const [faseAtiva, setFaseAtiva] = useState<Fase | 'todos'>('grupos')
+  const [faseAtiva, setFaseAtiva] = useState<Fase | 'todos' | 'especiais'>('grupos')
   const [usuarioFiltro, setUsuarioFiltro] = useState('')
   const [grupoFiltro, setGrupoFiltro] = useState('')
+  const [palpitesEspeciais, setPalpitesEspeciais] = useState<PalpiteEspecial[]>([])
+  const [resultadoEspecial, setResultadoEspecial] = useState<ResultadoEspecial | null>(null)
 
   useEffect(() => {
     async function load() {
-      const [jogosSnap, timesSnap, palpitesSnap, usuariosSnap] = await Promise.all([
+      const [jogosSnap, timesSnap, palpitesSnap, usuariosSnap, especiaisSnap, resultadoEspecialSnap] = await Promise.all([
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
         getDocs(collection(db, 'palpites')),
         getDocs(collection(db, 'usuarios')),
+        getDocs(collection(db, 'palpites_especiais')),
+        getDoc(doc(db, 'config', 'resultado_especial')),
       ])
 
       const jogosData = jogosSnap.docs.map(d => ({ id: d.id, ...d.data() } as Jogo))
@@ -46,6 +59,12 @@ export function VerPalpites() {
       const usMap = new Map<string, Usuario>()
       usuariosSnap.docs.forEach(d => usMap.set(d.id, { uid: d.id, ...d.data() } as Usuario))
       setUsuarios(usMap)
+
+      setPalpitesEspeciais(especiaisSnap.docs.map(d => ({ uid: d.id, ...d.data() } as PalpiteEspecial)))
+
+      if (resultadoEspecialSnap.exists()) {
+        setResultadoEspecial(resultadoEspecialSnap.data() as ResultadoEspecial)
+      }
 
       setLoading(false)
     }
@@ -117,6 +136,26 @@ export function VerPalpites() {
     return Array.from(grupoSet).sort()
   }, [jogos])
 
+  const palpiteEspecialMap = useMemo(() => {
+    const map = new Map<string, PalpiteEspecial>()
+    for (const pe of palpitesEspeciais) map.set(pe.uid, pe)
+    return map
+  }, [palpitesEspeciais])
+
+  function timeAcerta(coluna: typeof COLUNAS_ESPECIAIS[number]['key'], timeId: string): boolean {
+    if (!resultadoEspecial) return false
+    if (coluna === 'paisArtilheiro') return (resultadoEspecial.paisesArtilheiros ?? []).includes(timeId)
+    return resultadoEspecial[coluna] === timeId
+  }
+
+  function sigla(id: string): string {
+    return times.get(id)?.sigla ?? '?'
+  }
+
+  function bandeiraUrl(id: string): string | undefined {
+    return times.get(id)?.bandeira
+  }
+
   function nome(id: string): string | undefined {
     return times.get(id)?.nome
   }
@@ -171,8 +210,65 @@ export function VerPalpites() {
         />
       </div>
 
-      {/* Tabela */}
-      <div className="bg-white rounded-lg shadow overflow-auto max-h-[70vh]">
+      {/* Tabela Especiais */}
+      {faseAtiva === 'especiais' && (
+        <div className="bg-white rounded-lg shadow overflow-auto max-h-[70vh]">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 sticky top-0 z-10">
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 sticky left-0 bg-gray-50 min-w-[140px]">
+                  Participante
+                </th>
+                {COLUNAS_ESPECIAIS.map(col => (
+                  <th key={col.key} className="px-3 py-2 text-center text-xs font-medium text-gray-600 min-w-[120px]">
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-base">{col.icone}</span>
+                      <span>{col.label}</span>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {usuariosFiltrados.map(u => {
+                const pe = palpiteEspecialMap.get(u.uid)
+                return (
+                  <tr key={u.uid} className="hover:bg-blue-50/50">
+                    <td className="px-3 py-2 font-medium text-gray-800 sticky left-0 bg-white whitespace-nowrap">
+                      {u.apelido || u.nome || 'Sem nome'}
+                    </td>
+                    {COLUNAS_ESPECIAIS.map(col => {
+                      if (!pe) return <td key={col.key} className="px-3 py-2 text-center text-gray-300">-</td>
+                      const timeId = pe[col.key]
+                      if (!timeId) return <td key={col.key} className="px-3 py-2 text-center text-gray-300">-</td>
+                      const acerto = timeAcerta(col.key, timeId)
+                      const corClasse = acerto
+                        ? 'text-green-700 bg-green-50 font-bold'
+                        : (resultadoEspecial ? 'text-red-400' : 'text-gray-700')
+                      return (
+                        <td key={col.key} className={`px-3 py-2 text-center text-xs rounded ${corClasse}`}>
+                          <div className="flex items-center justify-center gap-1.5">
+                            {bandeiraUrl(timeId) && (
+                              <img src={bandeiraUrl(timeId)!} alt="" className="w-4 h-3 object-cover rounded" />
+                            )}
+                            <span className="font-mono">{sigla(timeId)}</span>
+                          </div>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+          {usuariosFiltrados.length === 0 && (
+            <p className="text-center text-gray-400 py-8">Nenhum participante encontrado.</p>
+          )}
+        </div>
+      )}
+
+      {/* Tabela de jogos */}
+      {faseAtiva !== 'especiais' && <div className="bg-white rounded-lg shadow overflow-auto max-h-[70vh]">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 sticky top-0 z-10">
             {/* Linha de fases */}
@@ -281,10 +377,10 @@ export function VerPalpites() {
         {usuariosFiltrados.length === 0 && (
           <p className="text-center text-gray-400 py-8">Nenhum participante encontrado.</p>
         )}
-      </div>
+      </div>}
 
       {/* Legenda */}
-      {jogosFiltrados.some(j => j.encerrado) && (
+      {faseAtiva !== 'especiais' && jogosFiltrados.some(j => j.encerrado) && (
         <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-500">
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-50 border border-green-200" /> Placar exato (5 pts)</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-50 border border-yellow-200" /> Coluna certa (3 pts)</span>
