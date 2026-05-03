@@ -116,9 +116,9 @@ export function PalpitesGrupos() {
     })
   }
 
-  async function handlePontosDisciplinaresChange(timeId: string, valor: string) {
+  async function handlePontosDisciplinaresChange(timeId: string, novoValor: number) {
     if (!firebaseUser) return
-    const numero = normalizarPontosDisciplinares(Number(valor) || 0)
+    const numero = normalizarPontosDisciplinares(novoValor)
     const proximo = {
       ...pontosDisciplinares,
       [timeId]: numero,
@@ -317,19 +317,32 @@ export function PalpitesGrupos() {
                     </div>
                     {terceirosComEmpateFifa.has(item.timeId) && (
                       <div className="mt-2">
-                        <label className="text-[10px] text-gray-500">
-                          Pontos disciplinares
-                          <input
-                            type="number"
-                            max={0}
-                            step={1}
-                            placeholder="0, -1, -3..."
+                        <span className="text-[10px] text-gray-500">Pontos disciplinares</span>
+                        <div className="mt-1 flex items-center gap-2">
+                          <button
+                            type="button"
+                            aria-label="Subtrair 1 ponto disciplinar"
                             disabled={prazoExpirado || naoLiberado}
-                            value={normalizarPontosDisciplinares(pontosDisciplinares[item.timeId])}
-                            onChange={e => handlePontosDisciplinaresChange(item.timeId, e.target.value)}
-                            className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1 text-xs disabled:bg-gray-100"
-                          />
-                        </label>
+                            onClick={() => handlePontosDisciplinaresChange(item.timeId, normalizarPontosDisciplinares(pontosDisciplinares[item.timeId]) - 1)}
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-base font-bold text-gray-700 active:bg-gray-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                          >
+                            −
+                          </button>
+                          <span className="min-w-[2.5rem] text-center text-sm font-semibold tabular-nums text-gray-900">
+                            {normalizarPontosDisciplinares(pontosDisciplinares[item.timeId])}
+                          </span>
+                          {normalizarPontosDisciplinares(pontosDisciplinares[item.timeId]) < 0 && (
+                            <button
+                              type="button"
+                              aria-label="Somar 1 ponto disciplinar"
+                              disabled={prazoExpirado || naoLiberado}
+                              onClick={() => handlePontosDisciplinaresChange(item.timeId, normalizarPontosDisciplinares(pontosDisciplinares[item.timeId]) + 1)}
+                              className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-base font-bold text-gray-700 active:bg-gray-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                            >
+                              +
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
                   </li>
