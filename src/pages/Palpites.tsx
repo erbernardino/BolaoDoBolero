@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getCountFromServer, onSnapshot, query, where } from 'firebase/firestore'
+import { collection, doc, getCountFromServer, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
@@ -26,44 +26,64 @@ export function Palpites() {
   const [tabAtiva, setTabAtiva] = useState<Tab>('grupos')
   const [totalJogos, setTotalJogos] = useState(0)
   const [totalPalpites, setTotalPalpites] = useState(0)
+  const [totalEspeciais, setTotalEspeciais] = useState(0)
 
   useEffect(() => {
     if (!firebaseUser) return
     getCountFromServer(collection(db, 'jogos')).then(res => setTotalJogos(res.data().count))
     const q = query(collection(db, 'palpites'), where('uid', '==', firebaseUser.uid))
-    const unsubscribe = onSnapshot(q, (snap) => setTotalPalpites(snap.size))
-    return () => unsubscribe()
+    const unsubPalpites = onSnapshot(q, (snap) => setTotalPalpites(snap.size))
+    const unsubEspeciais = onSnapshot(doc(db, 'palpites_especiais', firebaseUser.uid), (snap) => {
+      if (!snap.exists()) { setTotalEspeciais(0); return }
+      const d = snap.data()
+      const count = ['campeao', 'vice', 'terceiro', 'quarto', 'paisArtilheiro'].filter(k => d[k]).length
+      setTotalEspeciais(count)
+    })
+    return () => { unsubPalpites(); unsubEspeciais() }
   }, [firebaseUser])
 
   const pct = totalJogos > 0 ? Math.round((totalPalpites / totalJogos) * 100) : 0
+  const pctEspeciais = Math.round((totalEspeciais / 5) * 100)
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <main className="max-w-3xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">Palpites</h1>
-          {totalJogos > 0 && (
-            <span className="text-sm text-gray-500">
-              <span className="font-bold text-blue-700">{totalPalpites}</span>/{totalJogos} palpites
-            </span>
-          )}
-        </div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">Palpites</h1>
 
-        {/* Barra de progresso (sticky) */}
+        {/* Barras de progresso (sticky) */}
         {totalJogos > 0 && (
-          <div className="sticky top-0 z-30 -mx-6 px-6 py-2 mb-4 bg-gray-50/95 backdrop-blur supports-[backdrop-filter]:bg-gray-50/80 border-b border-gray-200">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className={`h-2 rounded-full transition-all duration-500 ${
-                  pct === 100 ? 'bg-green-500' : 'bg-blue-600'
-                }`}
-                style={{ width: `${pct}%` }}
-              />
+          <div className="sticky top-0 z-30 -mx-6 px-6 py-2 mb-4 bg-gray-50/95 backdrop-blur supports-[backdrop-filter]:bg-gray-50/80 border-b border-gray-200 space-y-2">
+            {/* Jogos */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[11px] text-gray-500 font-medium">Jogos</span>
+                <span className="text-[11px] text-gray-500">
+                  <span className={`font-bold ${pct === 100 ? 'text-green-600' : 'text-blue-600'}`}>{totalPalpites}</span>/{totalJogos}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all duration-500 ${pct === 100 ? 'bg-green-500' : 'bg-blue-600'}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">
-              {pct === 100 ? 'Todos os palpites preenchidos!' : `${pct}% preenchido`}
-            </p>
+            {/* Especiais */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[11px] text-gray-500 font-medium">Especiais</span>
+                <span className="text-[11px] text-gray-500">
+                  <span className={`font-bold ${pctEspeciais === 100 ? 'text-green-600' : 'text-amber-600'}`}>{totalEspeciais}</span>/5
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all duration-500 ${pctEspeciais === 100 ? 'bg-green-500' : 'bg-amber-500'}`}
+                  style={{ width: `${pctEspeciais}%` }}
+                />
+              </div>
+            </div>
           </div>
         )}
 
