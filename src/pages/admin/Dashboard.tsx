@@ -67,7 +67,6 @@ export function Dashboard() {
   const totalArrecadado = liberados.length * taxaInscricao
 
   const semPalpitesCompletos = usuarios
-    .filter(u => u.role !== 'admin')
     .map(u => ({
       ...u,
       total: palpitesPorUsuario.get(u.uid) ?? 0,
