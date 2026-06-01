@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPhoneNumber,
   sendPasswordResetEmail,
+  fetchSignInMethodsForEmail,
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink,
@@ -11,7 +12,7 @@ import {
   RecaptchaVerifier,
 } from 'firebase/auth'
 import type { ConfirmationResult } from 'firebase/auth'
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { getFunctions, httpsCallable } from 'firebase/functions'
 import { auth, db } from '../config/firebase'
 import { PhoneInput } from '../components/PhoneInput'
@@ -134,9 +135,9 @@ export function Login() {
     }
     setLoading(true)
     try {
-      const snap = await getDocs(query(collection(db, 'usuarios'), where('email', '==', email)))
-      if (snap.empty) {
-        setError('E-mail não cadastrado no bolão.')
+      const methods = await fetchSignInMethodsForEmail(auth, email)
+      if (methods.length === 0) {
+        setError('Usuário não encontrado.')
         return
       }
       await sendPasswordResetEmail(auth, email)
