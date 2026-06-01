@@ -55,6 +55,28 @@ export const telefoneJaCadastrado = onCall(async (request) => {
 })
 
 /**
+ * Cloud Function callable para admin definir a senha de um usuário.
+ * Aceita: { uid, novaSenha }
+ */
+export const definirSenhaUsuario = onCall(async (request) => {
+  const callerUid = request.auth?.uid
+  if (!callerUid) throw new HttpsError('unauthenticated', 'Não autenticado.')
+
+  const db = admin.firestore()
+  const callerSnap = await db.doc(`usuarios/${callerUid}`).get()
+  if (callerSnap.data()?.role !== 'admin') {
+    throw new HttpsError('permission-denied', 'Apenas administradores podem redefinir senhas.')
+  }
+
+  const { uid, novaSenha } = request.data as { uid?: string; novaSenha?: string }
+  if (!uid) throw new HttpsError('invalid-argument', 'uid é obrigatório.')
+  if (!novaSenha || novaSenha.length < 6) throw new HttpsError('invalid-argument', 'A senha deve ter pelo menos 6 caracteres.')
+
+  await admin.auth().updateUser(uid, { password: novaSenha })
+  return { ok: true }
+})
+
+/**
  * Cloud Function callable para admin excluir um usuário.
  * Faz backup completo em `usuarios_excluidos/{uid}` antes de remover.
  * Aceita: { uid }
