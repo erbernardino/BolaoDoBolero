@@ -25,6 +25,12 @@ const iconTrash = (
   </svg>
 )
 
+const iconKey = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+    <path fillRule="evenodd" d="M8 7a5 5 0 1 1 3.61 4.804l-.122.04L10 13H8v2H6v2H3a1 1 0 0 1-1-1v-2.586a1 1 0 0 1 .293-.707l5.414-5.414A5.016 5.016 0 0 1 8 7Zm5-3a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" clipRule="evenodd" />
+  </svg>
+)
+
 const iconSpinner = (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-4 h-4 animate-spin">
     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
@@ -37,6 +43,10 @@ export function GerenciarUsuarios() {
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState('')
   const [excluindoUid, setExcluindoUid] = useState<string | null>(null)
+  const [senhaUid, setSenhaUid] = useState<string | null>(null)
+  const [novaSenha, setNovaSenha] = useState('')
+  const [senhaMsg, setSenhaMsg] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null)
+  const [salvandoSenha, setSalvandoSenha] = useState(false)
 
   useEffect(() => {
     carregarUsuarios()
@@ -59,6 +69,38 @@ export function GerenciarUsuarios() {
     const novo = !atual
     await updateDoc(doc(db, 'usuarios', uid), { liberado: novo })
     setUsuarios(prev => prev.map(u => u.uid === uid ? { ...u, liberado: novo } : u))
+  }
+
+  function abrirModalSenha(u: Usuario) {
+    setSenhaUid(u.uid)
+    setNovaSenha('')
+    setSenhaMsg(null)
+  }
+
+  function fecharModalSenha() {
+    setSenhaUid(null)
+    setNovaSenha('')
+    setSenhaMsg(null)
+  }
+
+  async function salvarSenha() {
+    if (!senhaUid || novaSenha.length < 6) {
+      setSenhaMsg({ tipo: 'erro', texto: 'A senha deve ter pelo menos 6 caracteres.' })
+      return
+    }
+    setSalvandoSenha(true)
+    setSenhaMsg(null)
+    try {
+      const fn = httpsCallable<{ uid: string; novaSenha: string }, { ok: boolean }>(functions, 'definirSenhaUsuario')
+      await fn({ uid: senhaUid, novaSenha })
+      setSenhaMsg({ tipo: 'ok', texto: 'Senha definida com sucesso.' })
+      setNovaSenha('')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao definir senha.'
+      setSenhaMsg({ tipo: 'erro', texto: msg })
+    } finally {
+      setSalvandoSenha(false)
+    }
   }
 
   async function excluirUsuario(u: Usuario) {
@@ -103,8 +145,50 @@ export function GerenciarUsuarios() {
     return <div className="max-w-5xl mx-auto px-4 py-8"><p className="text-gray-500">Carregando...</p></div>
   }
 
+  const usuarioSenha = senhaUid ? usuarios.find(u => u.uid === senhaUid) : null
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+
+      {/* Modal definir senha */}
+      {senhaUid && usuarioSenha && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+            <h3 className="text-lg font-bold text-gray-800">Definir nova senha</h3>
+            <p className="text-sm text-gray-600">
+              Usuário: <strong>{usuarioSenha.apelido || usuarioSenha.nome || usuarioSenha.email}</strong>
+            </p>
+            <input
+              type="password"
+              placeholder="Nova senha (mín. 6 caracteres)"
+              value={novaSenha}
+              onChange={e => setNovaSenha(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              minLength={6}
+            />
+            {senhaMsg && (
+              <p className={`text-sm ${senhaMsg.tipo === 'ok' ? 'text-green-700' : 'text-red-600'}`}>
+                {senhaMsg.texto}
+              </p>
+            )}
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={fecharModalSenha}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={salvarSenha}
+                disabled={salvandoSenha || novaSenha.length < 6}
+                className="px-4 py-2 rounded-lg bg-blue-700 text-white text-sm font-semibold hover:bg-blue-800 disabled:opacity-50"
+              >
+                {salvandoSenha ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-800">Usuarios ({usuarios.length})</h2>
       </div>
@@ -189,6 +273,14 @@ export function GerenciarUsuarios() {
                       {u.liberado === true ? iconClock : iconCheck}
                     </button>
                     <button
+                      onClick={() => abrirModalSenha(u)}
+                      title="Definir nova senha"
+                      aria-label="Definir nova senha"
+                      className="p-1.5 rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50"
+                    >
+                      {iconKey}
+                    </button>
+                    <button
                       onClick={() => excluirUsuario(u)}
                       disabled={excluindoUid === u.uid || u.uid === auth.currentUser?.uid}
                       title={u.uid === auth.currentUser?.uid ? 'Não é possível excluir sua própria conta' : 'Excluir usuário'}
@@ -240,6 +332,14 @@ export function GerenciarUsuarios() {
                     }`}
                   >
                     {u.liberado === true ? iconClock : iconCheck}
+                  </button>
+                  <button
+                    onClick={() => abrirModalSenha(u)}
+                    title="Definir nova senha"
+                    aria-label="Definir nova senha"
+                    className="p-1.5 rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50"
+                  >
+                    {iconKey}
                   </button>
                   <button
                     onClick={() => excluirUsuario(u)}
