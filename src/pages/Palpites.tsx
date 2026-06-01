@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { collection, doc, getCountFromServer, onSnapshot, query, where } from 'firebase/firestore'
+import { collection, doc, getDocs, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
 import { PalpitesGrupos } from './PalpitesGrupos'
 import { PalpitesMataMata } from './PalpitesMataMata'
 import { PalpitesEspeciais } from './PalpitesEspeciais'
-import type { Fase } from '../types'
+import type { Fase, Jogo } from '../types'
 
 type Tab = Fase | 'especiais'
 
@@ -27,23 +27,62 @@ export function Palpites() {
   const [totalJogos, setTotalJogos] = useState(0)
   const [totalPalpites, setTotalPalpites] = useState(0)
   const [totalEspeciais, setTotalEspeciais] = useState(0)
+  const [jogosPorFase, setJogosPorFase] = useState<Map<string, number>>(new Map())
+  const [palpitesPorFase, setPalpitesPorFase] = useState<Map<string, number>>(new Map())
 
   useEffect(() => {
     if (!firebaseUser) return
-    getCountFromServer(collection(db, 'jogos')).then(res => setTotalJogos(res.data().count))
-    const q = query(collection(db, 'palpites'), where('uid', '==', firebaseUser.uid))
-    const unsubPalpites = onSnapshot(q, (snap) => setTotalPalpites(snap.size))
+
+    let unsubPalpites: (() => void) | undefined
+
+    getDocs(collection(db, 'jogos')).then(snap => {
+      const porFase = new Map<string, number>()
+      const faseMap = new Map<string, string>()
+      snap.docs.forEach(d => {
+        const j = d.data() as Jogo
+        porFase.set(j.fase, (porFase.get(j.fase) ?? 0) + 1)
+        faseMap.set(d.id, j.fase)
+      })
+      setJogosPorFase(porFase)
+      setTotalJogos(snap.size)
+
+      const q = query(collection(db, 'palpites'), where('uid', '==', firebaseUser.uid))
+      unsubPalpites = onSnapshot(q, (pSnap) => {
+        setTotalPalpites(pSnap.size)
+        const pFase = new Map<string, number>()
+        pSnap.docs.forEach(d => {
+          const fase = faseMap.get(d.data().jogoId as string)
+          if (fase) pFase.set(fase, (pFase.get(fase) ?? 0) + 1)
+        })
+        setPalpitesPorFase(pFase)
+      })
+    })
+
     const unsubEspeciais = onSnapshot(doc(db, 'palpites_especiais', firebaseUser.uid), (snap) => {
       if (!snap.exists()) { setTotalEspeciais(0); return }
       const d = snap.data()
       const count = ['campeao', 'vice', 'terceiro', 'quarto', 'paisArtilheiro'].filter(k => d[k]).length
       setTotalEspeciais(count)
     })
-    return () => { unsubPalpites(); unsubEspeciais() }
+
+    return () => { unsubPalpites?.(); unsubEspeciais() }
   }, [firebaseUser])
 
   const pct = totalJogos > 0 ? Math.round((totalPalpites / totalJogos) * 100) : 0
   const pctEspeciais = Math.round((totalEspeciais / 5) * 100)
+
+  function statusFase(fase: string): 'vazio' | 'parcial' | 'completo' {
+    if (fase === 'especiais') {
+      if (totalEspeciais === 0) return 'vazio'
+      if (totalEspeciais === 5) return 'completo'
+      return 'parcial'
+    }
+    const total = jogosPorFase.get(fase) ?? 0
+    const feitos = palpitesPorFase.get(fase) ?? 0
+    if (total === 0 || feitos === 0) return 'vazio'
+    if (feitos >= total) return 'completo'
+    return 'parcial'
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,19 +128,29 @@ export function Palpites() {
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b border-gray-200 overflow-x-auto">
-          {TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setTabAtiva(tab.value)}
-              className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
-                tabAtiva === tab.value
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {TABS.map((tab) => {
+            const status = statusFase(tab.value)
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setTabAtiva(tab.value)}
+                className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                  tabAtiva === tab.value
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full shrink-0 ${
+                    status === 'completo' ? 'bg-green-500' :
+                    status === 'parcial'  ? 'bg-amber-400' :
+                                           'bg-red-400'
+                  }`}
+                />
+                {tab.label}
+              </button>
+            )
+          })}
         </div>
 
         {tabAtiva === 'grupos' ? (
