@@ -9,7 +9,7 @@ export function Dashboard() {
   const [jogosEncerrados, setJogosEncerrados] = useState(0)
   const [jogosAoVivo, setJogosAoVivo] = useState(0)
   const [palpitesPorUsuario, setPalpitesPorUsuario] = useState<Map<string, number>>(new Map())
-  const [especiaisUids, setEspeciaisUids] = useState<Set<string>>(new Set())
+  const [especiaisPorUsuario, setEspeciaisPorUsuario] = useState<Map<string, number>>(new Map())
   const [taxaInscricao, setTaxaInscricao] = useState(250)
   const [loading, setLoading] = useState(true)
   const [pendentesVisiveis, setPendentesVisiveis] = useState(5)
@@ -39,14 +39,13 @@ export function Dashboard() {
       })
       setPalpitesPorUsuario(pMap)
 
-      const eSet = new Set<string>()
+      const eMap = new Map<string, number>()
       especiaisSnap.docs.forEach(d => {
         const pe = d.data() as PalpiteEspecial
-        if (pe.campeao && pe.vice && pe.terceiro && pe.quarto && pe.paisArtilheiro) {
-          eSet.add(d.id)
-        }
+        const count = [pe.campeao, pe.vice, pe.terceiro, pe.quarto, pe.paisArtilheiro].filter(Boolean).length
+        eMap.set(d.id, count)
       })
-      setEspeciaisUids(eSet)
+      setEspeciaisPorUsuario(eMap)
 
       if (configSnap.exists()) {
         const cfg = configSnap.data() as Config
@@ -72,9 +71,9 @@ export function Dashboard() {
     .map(u => ({
       ...u,
       total: palpitesPorUsuario.get(u.uid) ?? 0,
-      temEspeciais: especiaisUids.has(u.uid),
+      totalEspeciais: especiaisPorUsuario.get(u.uid) ?? 0,
     }))
-    .filter(u => u.total < totalJogos || !u.temEspeciais)
+    .filter(u => u.total < totalJogos || u.totalEspeciais < 5)
     .sort((a, b) => a.total - b.total)
 
   return (
@@ -132,9 +131,9 @@ export function Dashboard() {
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-500 w-20 text-right">
-                    {u.total}/{totalJogos}
-                    {!u.temEspeciais && <span className="ml-1 text-amber-600" title="Palpites especiais pendentes">★</span>}
+                  <span className="text-xs text-gray-500 w-12 text-right">{u.total}/{totalJogos}</span>
+                  <span className={`text-xs w-10 text-right font-mono ${u.totalEspeciais < 5 ? 'text-amber-600' : 'text-green-600'}`}>
+                    {u.totalEspeciais}/5
                   </span>
                 </div>
               )
