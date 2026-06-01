@@ -299,75 +299,70 @@ export function GerenciarUsuarios() {
         {/* Mobile cards */}
         <div className="md:hidden divide-y divide-gray-100">
           {filtrados.map(u => (
-            <div key={u.uid} className="p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Avatar
-                    src={u.fotoURL ?? null}
-                    nome={u.nome || u.apelido}
-                    uid={u.uid}
-                    size="md"
-                    ring={false}
-                  />
+            <div key={u.uid} className="p-4 space-y-3">
+              {/* Linha 1: avatar + nome + status */}
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar
+                  src={u.fotoURL ?? null}
+                  nome={u.nome || u.apelido}
+                  uid={u.uid}
+                  size="md"
+                  ring={false}
+                />
+                <div className="min-w-0 flex-1">
                   <p className="font-medium text-gray-800 truncate">{u.nome || u.apelido || 'Sem nome'}</p>
+                  {u.apelido && u.nome && <p className="text-xs text-gray-500 truncate">@{u.apelido}</p>}
+                  {u.email && <p className="text-xs text-gray-500 truncate">{u.email}</p>}
                 </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                      u.liberado === true
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {u.liberado === true ? 'Liberado' : 'Pendente'}
-                  </span>
-                  <button
-                    onClick={() => toggleLiberado(u.uid, u.liberado ?? false)}
-                    title={u.liberado === true ? 'Deixar pendente' : 'Liberar'}
-                    aria-label={u.liberado === true ? 'Deixar pendente' : 'Liberar'}
-                    className={`p-1.5 rounded-lg border transition-colors ${
-                      u.liberado === true
-                        ? 'border-red-300 text-red-700 hover:bg-red-50'
-                        : 'border-green-300 text-green-700 hover:bg-green-50'
-                    }`}
-                  >
-                    {u.liberado === true ? iconClock : iconCheck}
-                  </button>
-                  <button
-                    onClick={() => abrirModalSenha(u)}
-                    title="Definir nova senha"
-                    aria-label="Definir nova senha"
-                    className="p-1.5 rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50"
-                  >
-                    {iconKey}
-                  </button>
-                  <button
-                    onClick={() => excluirUsuario(u)}
-                    disabled={excluindoUid === u.uid || u.uid === auth.currentUser?.uid}
-                    title={u.uid === auth.currentUser?.uid ? 'Não é possível excluir sua própria conta' : 'Excluir usuário'}
-                    aria-label="Excluir usuário"
-                    className="p-1.5 rounded-lg border border-red-400 text-red-700 bg-red-50 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {excluindoUid === u.uid ? iconSpinner : iconTrash}
-                  </button>
-                  <select
-                    value={u.role}
-                    onChange={e => alterarRole(u.uid, e.target.value as Role)}
-                    className={`text-xs font-medium rounded-full px-3 py-1 border-0 cursor-pointer ${
-                      u.role === 'admin'
-                        ? 'bg-purple-100 text-purple-700'
-                        : 'bg-blue-100 text-blue-700'
-                    }`}
-                  >
-                    <option value="participante">Participante</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
+                <span className={`shrink-0 text-xs font-semibold px-2 py-1 rounded-full ${
+                  u.liberado === true ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                }`}>
+                  {u.liberado === true ? 'Liberado' : 'Pendente'}
+                </span>
               </div>
-              {u.apelido && u.nome && (
-                <p className="text-xs text-gray-500">@{u.apelido}</p>
-              )}
-              {u.email && <p className="text-xs text-gray-500">{u.email}</p>}
+              {/* Linha 2: ações */}
+              <div className="flex items-center gap-2">
+                <select
+                  value={u.role}
+                  onChange={e => alterarRole(u.uid, e.target.value as Role)}
+                  className={`text-xs font-medium rounded-full px-3 py-1 border-0 cursor-pointer ${
+                    u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                  }`}
+                >
+                  <option value="participante">Participante</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <div className="flex-1" />
+                <button
+                  onClick={() => toggleLiberado(u.uid, u.liberado ?? false)}
+                  title={u.liberado === true ? 'Deixar pendente' : 'Liberar'}
+                  aria-label={u.liberado === true ? 'Deixar pendente' : 'Liberar'}
+                  className={`p-1.5 rounded-lg border transition-colors ${
+                    u.liberado === true
+                      ? 'border-red-300 text-red-700 hover:bg-red-50'
+                      : 'border-green-300 text-green-700 hover:bg-green-50'
+                  }`}
+                >
+                  {u.liberado === true ? iconClock : iconCheck}
+                </button>
+                <button
+                  onClick={() => abrirModalSenha(u)}
+                  title="Definir nova senha"
+                  aria-label="Definir nova senha"
+                  className="p-1.5 rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  {iconKey}
+                </button>
+                <button
+                  onClick={() => excluirUsuario(u)}
+                  disabled={excluindoUid === u.uid || u.uid === auth.currentUser?.uid}
+                  title={u.uid === auth.currentUser?.uid ? 'Não é possível excluir sua própria conta' : 'Excluir usuário'}
+                  aria-label="Excluir usuário"
+                  className="p-1.5 rounded-lg border border-red-400 text-red-700 bg-red-50 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {excluindoUid === u.uid ? iconSpinner : iconTrash}
+                </button>
+              </div>
               {u.telefone && <p className="text-xs text-gray-500">{u.telefone}</p>}
             </div>
           ))}
