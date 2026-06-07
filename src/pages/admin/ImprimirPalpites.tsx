@@ -203,52 +203,41 @@ export function ImprimirPalpites() {
     const casaId = jogo.timeCasa || p?.timeCasa || null
     const visitanteId = jogo.timeVisitante || p?.timeVisitante || null
 
+    const dataHoraStr = jogo.dataHora
+      ? `${jogo.dataHora.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })} ${jogo.dataHora.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}`
+      : ''
+
     return (
       <div
         style={{
           border: '1px solid #e5e7eb',
           borderLeft: cor ? `3px solid ${cor}` : '3px solid #e5e7eb',
           borderRadius: 2,
-          padding: '1px 2px',
+          padding: '1px 3px',
           backgroundColor: '#fff',
           pageBreakInside: 'avoid',
           overflow: 'hidden',
         }}
       >
-        {/* Linha 1: #N + data/hora */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, fontSize: 9, lineHeight: 1.1, whiteSpace: 'nowrap', color: '#6b7280' }}>
+        {/* Linha 1: #N - DD/MM HH:MM */}
+        <div style={{ fontSize: 8, lineHeight: 1.2, color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center' }}>
           <span style={{ fontWeight: 700, color: '#374151' }}>#{jogo.numero}</span>
-          {jogo.dataHora && (
-            <span>
-              {jogo.dataHora.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })}
-              {' '}
-              {jogo.dataHora.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
-            </span>
-          )}
+          {dataHoraStr && <span> - {dataHoraStr}</span>}
         </div>
-        {/* Linha 2: confronto */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, fontSize: 9, lineHeight: 1.1, whiteSpace: 'nowrap' }}>
-          {casaId
-            ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(casaId)} />{sigla(casaId)}</span>
-            : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
-          <span style={{ color: '#9ca3af' }}>×</span>
-          {visitanteId
-            ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(visitanteId)} />{sigla(visitanteId)}</span>
-            : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
+        {/* Linha 2: Nome [flag] gols–gols [flag] Nome — centralizado, sem sigla */}
+        <div style={{ fontSize: 8, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+          {casaId ? <Flag url={bandeira(casaId)} /> : null}
+          <span style={{ fontWeight: 600, color: '#111827' }}>{casaId ? sigla(casaId) : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}</span>
+          {p
+            ? <span style={{ fontWeight: 700, fontFamily: 'monospace', color: '#111827' }}>{p.golsCasa}–{p.golsVisitante}</span>
+            : <span style={{ color: '#9ca3af' }}>×</span>
+          }
+          <span style={{ fontWeight: 600, color: '#111827' }}>{visitanteId ? sigla(visitanteId) : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}</span>
+          {visitanteId ? <Flag url={bandeira(visitanteId)} /> : null}
         </div>
-        {/* Linha 3: Palpite com nomes dos países */}
-        <div style={{ fontSize: 9, lineHeight: 1.2, color: '#111827', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {p ? (
-            <>
-              <span style={{ fontSize: 8, color: '#6b7280' }}>{casaId ? (t(casaId)?.nome ?? sigla(casaId)) : ''} </span>
-              <span style={{ fontWeight: 700, fontFamily: 'monospace', fontSize: 10 }}>{p.golsCasa}–{p.golsVisitante}</span>
-              <span style={{ fontSize: 8, color: '#6b7280' }}> {visitanteId ? (t(visitanteId)?.nome ?? sigla(visitanteId)) : ''}</span>
-            </>
-          ) : <span style={{ color: '#d1d5db' }}>–</span>}
-        </div>
-        {/* Linha 4: Resultado (se encerrado) */}
+        {/* Linha 3: Resultado real (se encerrado) */}
         {resultado && (
-          <div style={{ fontSize: 9, fontFamily: 'monospace', lineHeight: 1.1, color: '#6b7280', textAlign: 'center' }}>
+          <div style={{ fontSize: 8, fontFamily: 'monospace', lineHeight: 1.1, color: '#6b7280' }}>
             R: {resultado}
           </div>
         )}
@@ -266,7 +255,7 @@ export function ImprimirPalpites() {
         const nomeExib = u.apelido || u.nome || 'Sem nome'
 
         return (
-          <div key={u.uid} style={{ pageBreakAfter: uIdx < usuarios.length - 1 ? 'always' : 'auto', marginBottom: 16 }}>
+          <div key={u.uid} style={{ pageBreakBefore: uIdx > 0 ? 'always' : 'auto', marginBottom: 16 }}>
             {/* Cabeçalho do usuário */}
             <div style={{ borderBottom: '2px solid #111827', display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'baseline', marginBottom: 3, paddingBottom: 1 }}>
               <span style={{ fontSize: 15, fontWeight: 900, color: '#111827' }}>{nomeExib}</span>
@@ -276,15 +265,14 @@ export function ImprimirPalpites() {
               <span style={{ fontSize: 10, color: '#9ca3af' }}>Bolão do Bolero — Copa 2026</span>
             </div>
 
-            {/* Jogos por fase — grids de cards */}
-            {FASES_ORDEM.map(fase => {
+            {/* Jogos por fase — grids de cards (4 colunas em todas as fases) */}
+            {FASES_ORDEM.filter(f => f !== 'terceiro' && f !== 'final').map(fase => {
               const jogsFase = jogosPorFase.get(fase) ?? []
               if (!jogsFase.length) return null
-              const cols = fase === 'grupos' ? 4 : 3
               return (
                 <div key={fase}>
                   <span style={faseBg}>{FASE_LABELS[fase] ?? fase}</span>
-                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 3 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 3 }}>
                     {jogsFase.map(jogo => (
                       <CardJogo key={jogo.id} jogo={jogo} uid={u.uid} />
                     ))}
@@ -292,6 +280,25 @@ export function ImprimirPalpites() {
                 </div>
               )
             })}
+
+            {/* 3º Lugar + Final — mesma linha */}
+            {(() => {
+              const jogsT = jogosPorFase.get('terceiro') ?? []
+              const jogsF = jogosPorFase.get('final') ?? []
+              if (!jogsT.length && !jogsF.length) return null
+              return (
+                <div>
+                  <div style={{ display: 'inline-flex', gap: 4, marginBottom: 2 }}>
+                    {jogsT.length > 0 && <span style={faseBg}>{FASE_LABELS['terceiro']}</span>}
+                    {jogsF.length > 0 && <span style={{ ...faseBg, backgroundColor: '#7c3aed' }}>{FASE_LABELS['final']}</span>}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 3 }}>
+                    {jogsT.map(jogo => <CardJogo key={jogo.id} jogo={jogo} uid={u.uid} />)}
+                    {jogsF.map(jogo => <CardJogo key={jogo.id} jogo={jogo} uid={u.uid} />)}
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* Especiais — 5 cards inline em 1 linha */}
             <span style={especiaisBg}>Palpites Especiais</span>
