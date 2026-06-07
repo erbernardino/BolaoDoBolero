@@ -236,9 +236,15 @@ export function ImprimirPalpites() {
             ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(visitanteId)} />{sigla(visitanteId)}</span>
             : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
         </div>
-        {/* Linha 3: Palpite */}
-        <div style={{ fontSize: 10, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1.1, color: '#111827', textAlign: 'center' }}>
-          {p ? `${p.golsCasa}–${p.golsVisitante}` : <span style={{ color: '#d1d5db', fontWeight: 400 }}>–</span>}
+        {/* Linha 3: Palpite com nomes dos países */}
+        <div style={{ fontSize: 9, lineHeight: 1.2, color: '#111827', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {p ? (
+            <>
+              <span style={{ fontSize: 8, color: '#6b7280' }}>{casaId ? (t(casaId)?.nome ?? sigla(casaId)) : ''} </span>
+              <span style={{ fontWeight: 700, fontFamily: 'monospace', fontSize: 10 }}>{p.golsCasa}–{p.golsVisitante}</span>
+              <span style={{ fontSize: 8, color: '#6b7280' }}> {visitanteId ? (t(visitanteId)?.nome ?? sigla(visitanteId)) : ''}</span>
+            </>
+          ) : <span style={{ color: '#d1d5db' }}>–</span>}
         </div>
         {/* Linha 4: Resultado (se encerrado) */}
         {resultado && (
