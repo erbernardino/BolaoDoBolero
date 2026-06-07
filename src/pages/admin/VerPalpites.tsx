@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, getDoc, doc } from 'firebase/firestore'
 import { db } from '../../config/firebase'
 import type { Jogo, Time, Palpite, Usuario, Fase, PalpiteEspecial, ResultadoEspecial } from '../../types'
@@ -24,6 +25,7 @@ const COLUNAS_ESPECIAIS: { key: keyof Pick<PalpiteEspecial, 'campeao' | 'vice' |
 ]
 
 export function VerPalpites() {
+  const navigate = useNavigate()
   const [jogos, setJogos] = useState<Jogo[]>([])
   const [times, setTimes] = useState<Map<string, Time>>(new Map())
   const [palpites, setPalpites] = useState<Palpite[]>([])
@@ -170,7 +172,15 @@ export function VerPalpites() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">Palpites dos Participantes</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-gray-800">Palpites dos Participantes</h2>
+        <button
+          onClick={() => navigate('/admin/imprimir-palpites')}
+          className="px-3 py-1.5 text-sm bg-gray-800 text-white rounded-lg hover:bg-gray-700 flex items-center gap-1.5"
+        >
+          🖨️ Imprimir PDF
+        </button>
+      </div>
 
       {/* Filtros */}
       <div className="flex flex-wrap gap-3 mb-4">

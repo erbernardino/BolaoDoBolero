@@ -61,39 +61,20 @@ export function PalpitesEspeciais() {
     return times.filter(t => !excluir.includes(t.id))
   }
 
-  async function handleSalvar(e: React.FormEvent) {
-    e.preventDefault()
-    if (!firebaseUser) return
+  async function salvarCampo(campo: string, valor: string) {
+    if (!firebaseUser || prazoExpirado || naoLiberado) return
     setMensagem(null)
-
-    if (!campeao || !vice || !terceiro || !quarto) {
-      setMensagem({ tipo: 'erro', texto: 'Selecione as 4 colocações (campeão, vice, 3o e 4o).' })
-      return
-    }
-
-    const colocacoes = [campeao, vice, terceiro, quarto]
-    if (new Set(colocacoes).size !== colocacoes.length) {
-      setMensagem({ tipo: 'erro', texto: 'Não pode haver repetição de países nas colocações.' })
-      return
-    }
-
-    if (!paisArtilheiro) {
-      setMensagem({ tipo: 'erro', texto: 'Selecione o país do artilheiro.' })
-      return
-    }
-
     setSalvando(true)
     try {
       await setDoc(doc(db, 'palpites_especiais', firebaseUser.uid), {
         uid: firebaseUser.uid,
-        campeao,
-        vice,
-        terceiro,
-        quarto,
-        paisArtilheiro,
+        campeao:        campo === 'campeao'        ? valor : campeao,
+        vice:           campo === 'vice'           ? valor : vice,
+        terceiro:       campo === 'terceiro'       ? valor : terceiro,
+        quarto:         campo === 'quarto'         ? valor : quarto,
+        paisArtilheiro: campo === 'paisArtilheiro' ? valor : paisArtilheiro,
         criadoEm: Timestamp.now(),
       })
-      setMensagem({ tipo: 'sucesso', texto: 'Palpites especiais salvos!' })
     } catch {
       setMensagem({ tipo: 'erro', texto: 'Erro ao salvar. Tente novamente.' })
     } finally {
@@ -112,10 +93,10 @@ export function PalpitesEspeciais() {
   const ptsEspecial = config?.pontos?.palpiteEspecial ?? 10
 
   const campos = [
-    { label: 'Campeao', icone: '\u{1F3C6}', value: campeao, setter: setCampeao },
-    { label: 'Vice-Campeao', icone: '\u{1F948}', value: vice, setter: setVice },
-    { label: '3o Lugar', icone: '\u{1F949}', value: terceiro, setter: setTerceiro },
-    { label: '4o Lugar', icone: '4', value: quarto, setter: setQuarto },
+    { key: 'campeao',  label: 'Campeao',     icone: '\u{1F3C6}', value: campeao,  setter: setCampeao },
+    { key: 'vice',     label: 'Vice-Campeao', icone: '\u{1F948}', value: vice,     setter: setVice },
+    { key: 'terceiro', label: '3o Lugar',     icone: '\u{1F949}', value: terceiro, setter: setTerceiro },
+    { key: 'quarto',   label: '4o Lugar',     icone: '4',         value: quarto,   setter: setQuarto },
   ] as const
 
   return (
@@ -130,8 +111,8 @@ export function PalpitesEspeciais() {
         Cada acerto vale <strong>{ptsEspecial} pontos</strong>. Nao pode haver repeticao de paises nas colocacoes.
       </p>
 
-      <form onSubmit={handleSalvar} className="space-y-6">
-        {campos.map(({ label, icone, value, setter }) => {
+      <div className="space-y-6">
+        {campos.map(({ key, label, icone, value, setter }) => {
           const outrosColocacoes = colocacoesSelecionadas.filter(id => id !== value)
           const opcoes = timesDisponiveis(outrosColocacoes)
           const timeSelecionado = getTime(value)
@@ -144,7 +125,7 @@ export function PalpitesEspeciais() {
               </div>
               <select
                 value={value}
-                onChange={e => setter(e.target.value)}
+                onChange={e => { setter(e.target.value); salvarCampo(key, e.target.value) }}
                 disabled={prazoExpirado || naoLiberado}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
               >
@@ -174,7 +155,7 @@ export function PalpitesEspeciais() {
           </p>
           <select
             value={paisArtilheiro}
-            onChange={e => setPaisArtilheiro(e.target.value)}
+            onChange={e => { setPaisArtilheiro(e.target.value); salvarCampo('paisArtilheiro', e.target.value) }}
             disabled={prazoExpirado || naoLiberado}
             className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           >
@@ -192,21 +173,12 @@ export function PalpitesEspeciais() {
         </div>
 
         {mensagem && (
-          <p className={`text-sm ${mensagem.tipo === 'sucesso' ? 'text-green-600' : 'text-red-600'}`}>
-            {mensagem.texto}
-          </p>
+          <p className="text-sm text-red-600">{mensagem.texto}</p>
         )}
-
-        {!prazoExpirado && !naoLiberado && (
-          <button
-            type="submit"
-            disabled={salvando}
-            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50"
-          >
-            {salvando ? 'Salvando...' : 'Salvar Palpites Especiais'}
-          </button>
+        {salvando && (
+          <p className="text-xs text-gray-400 text-center">Salvando...</p>
         )}
-      </form>
+      </div>
     </div>
   )
 }

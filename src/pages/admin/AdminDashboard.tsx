@@ -9,6 +9,7 @@ import { GerenciarConvites } from './GerenciarConvites'
 import { Configuracoes } from './Configuracoes'
 import { GerenciarUsuarios } from './GerenciarUsuarios'
 import { VerPalpites } from './VerPalpites'
+import { ImprimirPalpites } from './ImprimirPalpites'
 import { ResultadosEspeciais } from './ResultadosEspeciais'
 
 const NAV_LINKS = [
@@ -58,6 +59,7 @@ export function AdminDashboard() {
           <Route path="resultados" element={<InserirResultados />} />
           <Route path="resultados-especiais" element={<ResultadosEspeciais />} />
           <Route path="palpites" element={<VerPalpites />} />
+          <Route path="imprimir-palpites" element={<ImprimirPalpites />} />
           <Route path="convites" element={<GerenciarConvites />} />
           <Route path="usuarios" element={<GerenciarUsuarios />} />
           <Route path="auditoria" element={<Auditoria />} />
