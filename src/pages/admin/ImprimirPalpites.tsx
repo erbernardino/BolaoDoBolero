@@ -217,9 +217,9 @@ export function ImprimirPalpites() {
           <span style={{ fontWeight: 700, color: '#374151' }}>#{jogo.numero}</span>
           {jogo.dataHora && (
             <span>
-              {jogo.dataHora.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' })}
+              {jogo.dataHora.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })}
               {' '}
-              {jogo.dataHora.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+              {jogo.dataHora.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
             </span>
           )}
         </div>
@@ -346,8 +346,8 @@ export function ImprimirPalpites() {
                     <span style={{ fontSize: 10, fontWeight: 700, color: '#374151', minWidth: 24 }}>#{jogo.numero}</span>
                     {jogo.dataHora && (
                       <span style={{ fontSize: 9, color: '#9ca3af', whiteSpace: 'nowrap' }}>
-                        {jogo.dataHora.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' })}{' '}
-                        {jogo.dataHora.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+                        {jogo.dataHora.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })}{' '}
+                        {jogo.dataHora.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
                       </span>
                     )}
                     <span style={{ fontSize: 9, display: 'flex', alignItems: 'center' }}>
