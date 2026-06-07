@@ -88,7 +88,15 @@ export function Palpites() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <main className="max-w-3xl mx-auto px-6 py-10">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Palpites</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-gray-800">Palpites</h1>
+          <button
+            onClick={() => window.open('/imprimir-meus-palpites', '_blank')}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+          >
+            🖨️ Imprimir
+          </button>
+        </div>
 
         {/* Barras de progresso (sticky) */}
         {totalJogos > 0 && (
