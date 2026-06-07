@@ -199,6 +199,9 @@ export function ImprimirPalpites() {
     const resultado = jogo.encerrado && jogo.resultado
       ? `${jogo.resultado.golsCasa}–${jogo.resultado.golsVisitante}`
       : null
+    // Para mata-mata, usa os times gravados no palpite (resolvidos no momento do save)
+    const casaId = jogo.timeCasa || p?.timeCasa || null
+    const visitanteId = jogo.timeVisitante || p?.timeVisitante || null
 
     return (
       <div
@@ -212,7 +215,7 @@ export function ImprimirPalpites() {
           overflow: 'hidden',
         }}
       >
-        {/* Linha 1: #N + data/hora (UTC = hora de Brasília como gravado) */}
+        {/* Linha 1: #N + data/hora */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, fontSize: 9, lineHeight: 1.1, whiteSpace: 'nowrap', color: '#6b7280' }}>
           <span style={{ fontWeight: 700, color: '#374151' }}>#{jogo.numero}</span>
           {jogo.dataHora && (
@@ -225,12 +228,12 @@ export function ImprimirPalpites() {
         </div>
         {/* Linha 2: confronto */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, fontSize: 9, lineHeight: 1.1, whiteSpace: 'nowrap' }}>
-          {jogo.timeCasa
-            ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(jogo.timeCasa)} />{sigla(jogo.timeCasa)}</span>
+          {casaId
+            ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(casaId)} />{sigla(casaId)}</span>
             : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
           <span style={{ color: '#9ca3af' }}>×</span>
-          {jogo.timeVisitante
-            ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(jogo.timeVisitante)} />{sigla(jogo.timeVisitante)}</span>
+          {visitanteId
+            ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(visitanteId)} />{sigla(visitanteId)}</span>
             : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
         </div>
         {/* Linha 3: Palpite */}
