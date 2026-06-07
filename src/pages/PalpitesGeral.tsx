@@ -5,6 +5,7 @@ import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
 import { Avatar } from '../components/Avatar'
+import { calcularPontosPalpite } from '../lib/pontuacao'
 import type { Jogo, Time, Palpite, Usuario, Fase, Config, PalpiteEspecial, ResultadoEspecial } from '../types'
 
 type AbaId = Fase | 'todos' | 'especiais'
@@ -193,6 +194,35 @@ export function PalpitesGeral() {
     }
     return map
   }, [palpites])
+
+  const ptsCfg = useMemo(() => ({
+    placarExato: (config as Record<string, number> | null)?.placarExato ?? 5,
+    colunaCerta: (config as Record<string, number> | null)?.colunaCerta ?? 3,
+    totalGols:   (config as Record<string, number> | null)?.totalGols   ?? 1,
+  }), [config])
+
+  function calcPontos(p: Palpite, jogo: Jogo): number | null {
+    if (!jogo.encerrado || !jogo.resultado) return null
+    return calcularPontosPalpite(p, jogo.resultado, ptsCfg).pontos
+  }
+
+  // total de pontos por uid nos jogos atualmente filtrados
+  const totaisPorUsuario = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const u of listaUsuarios) {
+      let soma = 0
+      for (const jogo of jogosFiltrados) {
+        const p = palpiteMap.get(jogo.id)?.get(u.uid)
+        if (p && palpiteVisivel(p, jogo)) {
+          const pts = calcPontos(p, jogo)
+          if (pts !== null) soma += pts
+        }
+      }
+      map.set(u.uid, soma)
+    }
+    return map
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [palpiteMap, jogosFiltrados, ptsCfg])
 
   const gruposDisponiveis = useMemo(() => {
     const grupoSet = new Set<string>()
@@ -407,6 +437,9 @@ export function PalpitesGeral() {
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 sticky left-0 bg-gray-50 min-w-[120px]">
                   Participante
                 </th>
+                <th className="px-2 py-2 text-center text-xs font-medium text-gray-700 bg-gray-100 min-w-[44px] sticky left-0">
+                  Pts
+                </th>
                 {jogosFiltrados.map(jogo => (
                   <th key={jogo.id} className="px-2 py-2 text-center min-w-[80px]">
                     <div className="flex flex-col items-center gap-0.5">
@@ -451,6 +484,9 @@ export function PalpitesGeral() {
                         {ehEu && <span className="text-[10px] text-blue-400">(eu)</span>}
                       </div>
                     </td>
+                    <td className="px-2 py-2 text-center font-bold text-sm text-blue-700 bg-blue-50/40">
+                      {totaisPorUsuario.get(u.uid) ?? 0}
+                    </td>
                     {jogosFiltrados.map(jogo => {
                       const p = palpiteMap.get(jogo.id)?.get(u.uid)
 
@@ -470,28 +506,21 @@ export function PalpitesGeral() {
                         )
                       }
 
-                      // Cor por acerto
+                      const pts = calcPontos(p, jogo)
+
+                      // Cor por pontos
                       let corClasse = 'text-gray-700'
-                      if (jogo.encerrado && jogo.resultado) {
-                        const r = jogo.resultado
-                        if (p.golsCasa === r.golsCasa && p.golsVisitante === r.golsVisitante) {
-                          corClasse = 'text-green-700 bg-green-50 font-bold'
-                        } else if (p.golsCasa === r.golsCasa || p.golsVisitante === r.golsVisitante) {
-                          corClasse = 'text-blue-700 bg-blue-50'
-                        } else {
-                          const vP = Math.sign(p.golsCasa - p.golsVisitante)
-                          const vR = Math.sign(r.golsCasa - r.golsVisitante)
-                          if (vP === vR) {
-                            corClasse = 'text-yellow-700 bg-yellow-50'
-                          } else {
-                            corClasse = 'text-red-400'
-                          }
-                        }
-                      }
+                      if (pts === 5) corClasse = 'text-green-700 bg-green-50 font-bold'
+                      else if (pts === 3) corClasse = 'text-yellow-700 bg-yellow-50'
+                      else if (pts === 1) corClasse = 'text-blue-700 bg-blue-50'
+                      else if (pts === 0) corClasse = 'text-red-400'
 
                       return (
                         <td key={jogo.id} className={`px-2 py-2 text-center text-xs font-mono rounded ${corClasse}`}>
-                          {p.golsCasa}x{p.golsVisitante}
+                          <div>{p.golsCasa}x{p.golsVisitante}</div>
+                          {pts !== null && (
+                            <div className="text-[10px] font-semibold opacity-80">{pts}pt</div>
+                          )}
                         </td>
                       )
                     })}
@@ -518,10 +547,10 @@ export function PalpitesGeral() {
         {/* Legenda */}
         {faseAtiva !== 'especiais' && jogosFiltrados.some(j => j.encerrado) && (
           <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-500">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-50 border border-green-200" /> Placar exato</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-50 border border-blue-200" /> Placar de 1 time</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-50 border border-yellow-200" /> Acertou vencedor</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-white border border-gray-200" /> Errou</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-50 border border-green-200" /> 5pt — coluna + placar exato</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-50 border border-yellow-200" /> 3pt — coluna certa</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-50 border border-blue-200" /> 1pt — total de gols certo</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-white border border-red-200" /> 0pt — errou</span>
             <span className="flex items-center gap-1"><span className="text-gray-400">***</span> Palpite oculto</span>
           </div>
         )}
