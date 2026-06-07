@@ -34,7 +34,7 @@ function bgAcerto(p: Palpite, jogo: Jogo): string {
 
 function Flag({ url, alt }: { url?: string; alt?: string }) {
   if (!url) return null
-  return <img src={url} alt={alt ?? ''} style={{ width: 18, height: 12, objectFit: 'cover', borderRadius: 2, display: 'inline', verticalAlign: 'middle', marginRight: 3 }} />
+  return <img src={url} alt={alt ?? ''} style={{ width: 16, height: 11, objectFit: 'cover', borderRadius: 1, display: 'inline', verticalAlign: 'middle', marginRight: 2 }} />
 }
 
 type Visao = 'usuario' | 'jogo'
@@ -117,13 +117,13 @@ export function ImprimirPalpites() {
     )
   }
 
-  // ── Estilos de tabela compacta ────────────────────────────────────────────
+  // ── Estilos compartilhados ────────────────────────────────────────────────
   const tdBase: React.CSSProperties = {
     border: '1px solid #d1d5db',
-    padding: '2px 4px',
-    fontSize: 9,
+    padding: '1px 3px',
+    fontSize: 7,
     verticalAlign: 'middle',
-    lineHeight: 1.2,
+    lineHeight: 1.15,
   }
   const thBase: React.CSSProperties = {
     ...tdBase,
@@ -138,9 +138,9 @@ export function ImprimirPalpites() {
     fontSize: 8,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
-    padding: '2px 6px',
+    padding: '1px 5px',
     marginBottom: 2,
-    marginTop: 6,
+    marginTop: 5,
     display: 'block',
     borderRadius: 2,
   }
@@ -180,7 +180,7 @@ export function ImprimirPalpites() {
 
   // ── Legenda ───────────────────────────────────────────────────────────────
   const Legenda = () => (
-    <div style={{ display: 'flex', gap: 8, fontSize: 8, color: '#6b7280', marginTop: 4 }}>
+    <div style={{ display: 'flex', gap: 8, fontSize: 7, color: '#6b7280', marginTop: 4 }}>
       {[
         { bg: '#bbf7d0', txt: 'Placar exato' },
         { bg: '#fef08a', txt: 'Coluna certa' },
@@ -192,8 +192,53 @@ export function ImprimirPalpites() {
     </div>
   )
 
+  // ── Card minúsculo de jogo (Visão Por Usuário) ────────────────────────────
+  const CardJogo = ({ jogo, uid }: { jogo: Jogo; uid: string }) => {
+    const p = palpiteMap.get(jogo.id)?.get(uid)
+    const cor = p ? bgAcerto(p, jogo) : ''
+    const resultado = jogo.encerrado && jogo.resultado
+      ? `${jogo.resultado.golsCasa}–${jogo.resultado.golsVisitante}`
+      : null
+
+    return (
+      <div
+        style={{
+          border: '1px solid #e5e7eb',
+          borderLeft: cor ? `3px solid ${cor}` : '3px solid #e5e7eb',
+          borderRadius: 2,
+          padding: '1px 2px',
+          backgroundColor: '#fff',
+          pageBreakInside: 'avoid',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Linha 1: #N + confronto */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: 7, lineHeight: 1.1, whiteSpace: 'nowrap' }}>
+          <span style={{ color: '#9ca3af', fontWeight: 700 }}>#{jogo.numero}</span>
+          {jogo.timeCasa
+            ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(jogo.timeCasa)} />{sigla(jogo.timeCasa)}</span>
+            : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
+          <span style={{ color: '#9ca3af' }}>×</span>
+          {jogo.timeVisitante
+            ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(jogo.timeVisitante)} />{sigla(jogo.timeVisitante)}</span>
+            : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
+        </div>
+        {/* Linha 2: Palpite */}
+        <div style={{ fontSize: 8, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1.1, color: '#111827' }}>
+          {p ? `${p.golsCasa}–${p.golsVisitante}` : <span style={{ color: '#d1d5db', fontWeight: 400 }}>–</span>}
+        </div>
+        {/* Linha 3: Resultado (se encerrado) */}
+        {resultado && (
+          <div style={{ fontSize: 7, fontFamily: 'monospace', lineHeight: 1.1, color: '#6b7280' }}>
+            R: {resultado}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   // ════════════════════════════════════════════════════════════════════════════
-  // VISÃO POR USUÁRIO
+  // VISÃO POR USUÁRIO — cards ultra-compactos
   // ════════════════════════════════════════════════════════════════════════════
   const VisaoPorUsuario = () => (
     <>
@@ -202,9 +247,9 @@ export function ImprimirPalpites() {
         const nomeExib = u.apelido || u.nome || 'Sem nome'
 
         return (
-          <div key={u.uid} style={{ pageBreakAfter: uIdx < usuarios.length - 1 ? 'always' : 'auto', marginBottom: 24 }}>
+          <div key={u.uid} style={{ pageBreakAfter: uIdx < usuarios.length - 1 ? 'always' : 'auto', marginBottom: 16 }}>
             {/* Cabeçalho do usuário */}
-            <div style={{ borderBottom: '2px solid #111827', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4, paddingBottom: 2 }}>
+            <div style={{ borderBottom: '2px solid #111827', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 3, paddingBottom: 1 }}>
               <span style={{ fontSize: 13, fontWeight: 900, color: '#111827' }}>{nomeExib}</span>
               {u.apelido && u.nome && u.apelido !== u.nome && (
                 <span style={{ fontSize: 9, color: '#6b7280' }}>{u.nome}</span>
@@ -212,115 +257,52 @@ export function ImprimirPalpites() {
               <span style={{ fontSize: 8, color: '#9ca3af' }}>Bolão do Bolero — Copa 2026</span>
             </div>
 
-            {/* Jogos por fase */}
+            {/* Jogos por fase — grids de cards */}
             {FASES_ORDEM.map(fase => {
               const jogsFase = jogosPorFase.get(fase) ?? []
               if (!jogsFase.length) return null
+              const cols = fase === 'grupos' ? 4 : 3
               return (
                 <div key={fase}>
                   <span style={faseBg}>{FASE_LABELS[fase] ?? fase}</span>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-                    <colgroup>
-                      <col style={{ width: 22 }} />
-                      <col style={{ width: '30%' }} />
-                      <col style={{ width: 40 }} />
-                      <col style={{ width: 40 }} />
-                      <col style={{ width: '30%' }} />
-                    </colgroup>
-                    <thead>
-                      <tr>
-                        <th style={{ ...thBase, textAlign: 'center' }}>#</th>
-                        <th style={{ ...thBase, textAlign: 'left' }}>Casa</th>
-                        <th style={{ ...thBase }}>Palpite</th>
-                        <th style={{ ...thBase }}>Resultado</th>
-                        <th style={{ ...thBase, textAlign: 'left' }}>Visitante</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {jogsFase.map(jogo => {
-                        const p = palpiteMap.get(jogo.id)?.get(u.uid)
-                        const bg = p ? bgAcerto(p, jogo) : ''
-                        const resultado = jogo.encerrado && jogo.resultado
-                          ? `${jogo.resultado.golsCasa}–${jogo.resultado.golsVisitante}`
-                          : '–'
-                        return (
-                          <tr key={jogo.id} style={{ backgroundColor: bg || 'transparent' }}>
-                            <td style={{ ...tdBase, textAlign: 'center', color: '#6b7280' }}>{jogo.numero}</td>
-                            <td style={tdBase}>
-                              {jogo.timeCasa
-                                ? <><Flag url={bandeira(jogo.timeCasa)} />{sigla(jogo.timeCasa)}</>
-                                : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
-                            </td>
-                            <td style={{ ...tdBase, textAlign: 'center', fontWeight: 700, fontFamily: 'monospace' }}>
-                              {p ? `${p.golsCasa}–${p.golsVisitante}` : <span style={{ color: '#d1d5db' }}>–</span>}
-                            </td>
-                            <td style={{ ...tdBase, textAlign: 'center', fontFamily: 'monospace', color: '#374151' }}>
-                              {resultado}
-                            </td>
-                            <td style={tdBase}>
-                              {jogo.timeVisitante
-                                ? <><Flag url={bandeira(jogo.timeVisitante)} />{sigla(jogo.timeVisitante)}</>
-                                : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 3 }}>
+                    {jogsFase.map(jogo => (
+                      <CardJogo key={jogo.id} jogo={jogo} uid={u.uid} />
+                    ))}
+                  </div>
                 </div>
               )
             })}
 
-            {/* Especiais */}
+            {/* Especiais — 5 cards inline em 1 linha */}
             <span style={especiaisBg}>Palpites Especiais</span>
-            <table style={{ width: '60%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ ...thBase, textAlign: 'left', width: 80 }}>Campo</th>
-                  <th style={{ ...thBase, textAlign: 'left' }}>Palpite</th>
-                  <th style={{ ...thBase, textAlign: 'left' }}>Resultado Oficial</th>
-                  <th style={{ ...thBase, width: 24 }}>✓</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ESPECIAIS_COLS.map(col => {
-                  const timeId = pe?.[col.key]
-                  const acerto = timeId ? acertoEspecial(col.key, timeId) : null
-                  const bgEsp = acerto === true ? '#bbf7d0' : acerto === false ? '#fecaca' : 'transparent'
-
-                  const resOficial = (() => {
-                    if (!resultadoEspecial) return '–'
-                    if (col.key === 'paisArtilheiro') {
-                      const ids = resultadoEspecial.paisesArtilheiros ?? []
-                      return ids.length ? ids.map(id => sigla(id)).join(', ') : '–'
-                    }
-                    const id = resultadoEspecial[col.key]
-                    return id ? sigla(id) : '–'
-                  })()
-
-                  const resId = col.key !== 'paisArtilheiro' && resultadoEspecial ? resultadoEspecial[col.key] : null
-
-                  return (
-                    <tr key={col.key} style={{ backgroundColor: bgEsp }}>
-                      <td style={{ ...tdBase, fontWeight: 600 }}>{col.label}</td>
-                      <td style={tdBase}>
-                        {timeId
-                          ? <><Flag url={bandeira(timeId)} />{sigla(timeId)}</>
-                          : <span style={{ color: '#d1d5db' }}>–</span>}
-                      </td>
-                      <td style={tdBase}>
-                        {resId
-                          ? <><Flag url={bandeira(resId)} />{resOficial}</>
-                          : resOficial}
-                      </td>
-                      <td style={{ ...tdBase, textAlign: 'center', fontWeight: 700 }}>
-                        {acerto === true ? '✓' : acerto === false ? '✗' : '–'}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 3 }}>
+              {ESPECIAIS_COLS.map(col => {
+                const timeId = pe?.[col.key]
+                const acerto = timeId ? acertoEspecial(col.key, timeId) : null
+                const cor = acerto === true ? '#bbf7d0' : acerto === false ? '#fecaca' : ''
+                return (
+                  <div
+                    key={col.key}
+                    style={{
+                      border: '1px solid #e5e7eb',
+                      borderLeft: cor ? `3px solid ${cor}` : '3px solid #e5e7eb',
+                      borderRadius: 2,
+                      padding: '1px 2px',
+                      backgroundColor: '#fff',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div style={{ fontSize: 7, color: '#6b7280', fontWeight: 600, lineHeight: 1.1 }}>{col.label}</div>
+                    <div style={{ fontSize: 8, fontWeight: 700, lineHeight: 1.1, display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                      {timeId
+                        ? <><Flag url={bandeira(timeId)} />{sigla(timeId)}</>
+                        : <span style={{ color: '#d1d5db', fontWeight: 400 }}>–</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
 
             <Legenda />
           </div>
@@ -330,7 +312,7 @@ export function ImprimirPalpites() {
   )
 
   // ════════════════════════════════════════════════════════════════════════════
-  // VISÃO POR JOGO
+  // VISÃO POR JOGO — cabeçalho + grid de chips denso
   // ════════════════════════════════════════════════════════════════════════════
   const VisaoPorJogo = () => (
     <>
@@ -338,7 +320,7 @@ export function ImprimirPalpites() {
         const jogsFase = jogosPorFase.get(fase) ?? []
         if (!jogsFase.length) return null
         return (
-          <div key={fase} style={{ marginBottom: 16 }}>
+          <div key={fase} style={{ marginBottom: 10 }}>
             <span style={faseBg}>{FASE_LABELS[fase] ?? fase}</span>
 
             {jogsFase.map(jogo => {
@@ -348,10 +330,10 @@ export function ImprimirPalpites() {
                 : null
 
               return (
-                <div key={jogo.id} style={{ marginBottom: 6, pageBreakInside: 'avoid' }}>
+                <div key={jogo.id} style={{ marginBottom: 4, pageBreakInside: 'avoid' }}>
                   {/* Cabeçalho do jogo */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: '#f3f4f6', padding: '2px 4px', borderRadius: 2, marginBottom: 2 }}>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: '#6b7280', minWidth: 28 }}>#{jogo.numero}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, backgroundColor: '#f3f4f6', padding: '1px 4px', borderRadius: 2, marginBottom: 2 }}>
+                    <span style={{ fontSize: 8, fontWeight: 700, color: '#6b7280', minWidth: 24 }}>#{jogo.numero}</span>
                     <span style={{ fontSize: 9, display: 'flex', alignItems: 'center' }}>
                       {jogo.timeCasa
                         ? <><Flag url={bandeira(jogo.timeCasa)} /><strong>{sigla(jogo.timeCasa)}</strong></>
@@ -370,11 +352,11 @@ export function ImprimirPalpites() {
                     )}
                   </div>
 
-                  {/* Grid de palpites por usuário — 4 colunas */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px 4px' }}>
+                  {/* Grid de chips por usuário — 6 colunas */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '1px 3px' }}>
                     {usuarios.map(u => {
                       const p = mapa?.get(u.uid)
-                      const bg = p ? bgAcerto(p, jogo) : '#f9fafb'
+                      const bg = p ? bgAcerto(p, jogo) || '#f3f4f6' : '#f9fafb'
                       const nomeExib = u.apelido || u.nome || '?'
                       return (
                         <div
@@ -384,13 +366,13 @@ export function ImprimirPalpites() {
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             backgroundColor: bg,
-                            padding: '1px 4px',
+                            padding: '1px 3px',
                             borderRadius: 2,
-                            fontSize: 8,
+                            fontSize: 7,
                           }}
                         >
-                          <span style={{ color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>{nomeExib}</span>
-                          <span style={{ fontWeight: 700, fontFamily: 'monospace', marginLeft: 4, flexShrink: 0 }}>
+                          <span style={{ color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nomeExib}</span>
+                          <span style={{ fontWeight: 700, fontFamily: 'monospace', marginLeft: 3, flexShrink: 0 }}>
                             {p ? `${p.golsCasa}–${p.golsVisitante}` : <span style={{ color: '#d1d5db' }}>–</span>}
                           </span>
                         </div>
@@ -404,7 +386,7 @@ export function ImprimirPalpites() {
         )
       })}
 
-      {/* Especiais por jogo — seção final */}
+      {/* Especiais por jogo — seção final (tabela mantida) */}
       <div style={{ pageBreakBefore: 'always' }}>
         <span style={especiaisBg}>Palpites Especiais — Todos os Participantes</span>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -467,14 +449,14 @@ export function ImprimirPalpites() {
     <>
       <ActionBar />
 
-      <div style={{ padding: '12px 16px', backgroundColor: '#fff' }} className="print:p-2">
+      <div style={{ padding: '10px 12px', backgroundColor: '#fff' }} className="print:p-1">
         {visao === 'usuario' ? <VisaoPorUsuario /> : <VisaoPorJogo />}
       </div>
 
       <style>{`
         @media print {
-          @page { size: A4; margin: 8mm 8mm; }
-          body { font-size: 8px; }
+          @page { size: A4; margin: 6mm; }
+          body { font-size: 7px; }
           .print\\:hidden { display: none !important; }
         }
       `}</style>
