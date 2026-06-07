@@ -121,9 +121,9 @@ export function ImprimirPalpites() {
   const tdBase: React.CSSProperties = {
     border: '1px solid #d1d5db',
     padding: '1px 3px',
-    fontSize: 7,
+    fontSize: 9,
     verticalAlign: 'middle',
-    lineHeight: 1.15,
+    lineHeight: 1.15, textAlign: 'center' as const,
   }
   const thBase: React.CSSProperties = {
     ...tdBase,
@@ -135,7 +135,7 @@ export function ImprimirPalpites() {
     backgroundColor: '#1d4ed8',
     color: '#fff',
     fontWeight: 700,
-    fontSize: 8,
+    fontSize: 10,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
     padding: '1px 5px',
@@ -180,7 +180,7 @@ export function ImprimirPalpites() {
 
   // ── Legenda ───────────────────────────────────────────────────────────────
   const Legenda = () => (
-    <div style={{ display: 'flex', gap: 8, fontSize: 7, color: '#6b7280', marginTop: 4 }}>
+    <div style={{ display: 'flex', gap: 8, fontSize: 9, color: '#6b7280', marginTop: 4 }}>
       {[
         { bg: '#bbf7d0', txt: 'Placar exato' },
         { bg: '#fef08a', txt: 'Coluna certa' },
@@ -212,9 +212,19 @@ export function ImprimirPalpites() {
           overflow: 'hidden',
         }}
       >
-        {/* Linha 1: #N + confronto */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: 7, lineHeight: 1.1, whiteSpace: 'nowrap' }}>
-          <span style={{ color: '#9ca3af', fontWeight: 700 }}>#{jogo.numero}</span>
+        {/* Linha 1: #N + data/hora (UTC = hora de Brasília como gravado) */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, fontSize: 9, lineHeight: 1.1, whiteSpace: 'nowrap', color: '#6b7280' }}>
+          <span style={{ fontWeight: 700, color: '#374151' }}>#{jogo.numero}</span>
+          {jogo.dataHora && (
+            <span>
+              {jogo.dataHora.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' })}
+              {' '}
+              {jogo.dataHora.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+            </span>
+          )}
+        </div>
+        {/* Linha 2: confronto */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, fontSize: 9, lineHeight: 1.1, whiteSpace: 'nowrap' }}>
           {jogo.timeCasa
             ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(jogo.timeCasa)} />{sigla(jogo.timeCasa)}</span>
             : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
@@ -223,13 +233,13 @@ export function ImprimirPalpites() {
             ? <span style={{ display: 'inline-flex', alignItems: 'center' }}><Flag url={bandeira(jogo.timeVisitante)} />{sigla(jogo.timeVisitante)}</span>
             : <span style={{ color: '#d1d5db', fontStyle: 'italic' }}>TBD</span>}
         </div>
-        {/* Linha 2: Palpite */}
-        <div style={{ fontSize: 8, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1.1, color: '#111827' }}>
+        {/* Linha 3: Palpite */}
+        <div style={{ fontSize: 10, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1.1, color: '#111827', textAlign: 'center' }}>
           {p ? `${p.golsCasa}–${p.golsVisitante}` : <span style={{ color: '#d1d5db', fontWeight: 400 }}>–</span>}
         </div>
-        {/* Linha 3: Resultado (se encerrado) */}
+        {/* Linha 4: Resultado (se encerrado) */}
         {resultado && (
-          <div style={{ fontSize: 7, fontFamily: 'monospace', lineHeight: 1.1, color: '#6b7280' }}>
+          <div style={{ fontSize: 9, fontFamily: 'monospace', lineHeight: 1.1, color: '#6b7280', textAlign: 'center' }}>
             R: {resultado}
           </div>
         )}
@@ -249,12 +259,12 @@ export function ImprimirPalpites() {
         return (
           <div key={u.uid} style={{ pageBreakAfter: uIdx < usuarios.length - 1 ? 'always' : 'auto', marginBottom: 16 }}>
             {/* Cabeçalho do usuário */}
-            <div style={{ borderBottom: '2px solid #111827', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 3, paddingBottom: 1 }}>
-              <span style={{ fontSize: 13, fontWeight: 900, color: '#111827' }}>{nomeExib}</span>
+            <div style={{ borderBottom: '2px solid #111827', display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'baseline', marginBottom: 3, paddingBottom: 1 }}>
+              <span style={{ fontSize: 15, fontWeight: 900, color: '#111827' }}>{nomeExib}</span>
               {u.apelido && u.nome && u.apelido !== u.nome && (
                 <span style={{ fontSize: 9, color: '#6b7280' }}>{u.nome}</span>
               )}
-              <span style={{ fontSize: 8, color: '#9ca3af' }}>Bolão do Bolero — Copa 2026</span>
+              <span style={{ fontSize: 10, color: '#9ca3af' }}>Bolão do Bolero — Copa 2026</span>
             </div>
 
             {/* Jogos por fase — grids de cards */}
@@ -293,8 +303,8 @@ export function ImprimirPalpites() {
                       overflow: 'hidden',
                     }}
                   >
-                    <div style={{ fontSize: 7, color: '#6b7280', fontWeight: 600, lineHeight: 1.1 }}>{col.label}</div>
-                    <div style={{ fontSize: 8, fontWeight: 700, lineHeight: 1.1, display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 9, color: '#6b7280', fontWeight: 600, lineHeight: 1.1 }}>{col.label}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, lineHeight: 1.1, display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
                       {timeId
                         ? <><Flag url={bandeira(timeId)} />{sigla(timeId)}</>
                         : <span style={{ color: '#d1d5db', fontWeight: 400 }}>–</span>}
@@ -333,13 +343,19 @@ export function ImprimirPalpites() {
                 <div key={jogo.id} style={{ marginBottom: 4, pageBreakInside: 'avoid' }}>
                   {/* Cabeçalho do jogo */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, backgroundColor: '#f3f4f6', padding: '1px 4px', borderRadius: 2, marginBottom: 2 }}>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: '#6b7280', minWidth: 24 }}>#{jogo.numero}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#374151', minWidth: 24 }}>#{jogo.numero}</span>
+                    {jogo.dataHora && (
+                      <span style={{ fontSize: 9, color: '#9ca3af', whiteSpace: 'nowrap' }}>
+                        {jogo.dataHora.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' })}{' '}
+                        {jogo.dataHora.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+                      </span>
+                    )}
                     <span style={{ fontSize: 9, display: 'flex', alignItems: 'center' }}>
                       {jogo.timeCasa
                         ? <><Flag url={bandeira(jogo.timeCasa)} /><strong>{sigla(jogo.timeCasa)}</strong></>
                         : <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>TBD</span>}
                     </span>
-                    <span style={{ fontSize: 8, color: '#9ca3af' }}>vs</span>
+                    <span style={{ fontSize: 10, color: '#9ca3af' }}>vs</span>
                     <span style={{ fontSize: 9, display: 'flex', alignItems: 'center' }}>
                       {jogo.timeVisitante
                         ? <><Flag url={bandeira(jogo.timeVisitante)} /><strong>{sigla(jogo.timeVisitante)}</strong></>
@@ -364,11 +380,11 @@ export function ImprimirPalpites() {
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between',
+                            justifyContent: 'center', flexDirection: 'column',
                             backgroundColor: bg,
                             padding: '1px 3px',
                             borderRadius: 2,
-                            fontSize: 7,
+                            fontSize: 9,
                           }}
                         >
                           <span style={{ color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nomeExib}</span>
@@ -456,7 +472,7 @@ export function ImprimirPalpites() {
       <style>{`
         @media print {
           @page { size: A4; margin: 6mm; }
-          body { font-size: 7px; }
+          body { font-size: 9px; }
           .print\\:hidden { display: none !important; }
         }
       `}</style>
