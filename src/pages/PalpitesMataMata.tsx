@@ -296,10 +296,18 @@ export function PalpitesMataMata({ fase }: Props) {
     }
   }
 
-  function vencedorDoPalpite(palpite: Palpite): string | null {
-    if (palpite.golsCasa > palpite.golsVisitante) return palpite.timeCasa
-    if (palpite.golsVisitante > palpite.golsCasa) return palpite.timeVisitante
-    return palpite.classificado
+  // Vencedor projetado deve refletir o bracket AO VIVO (mesma fonte do card do
+  // confronto, resolverTimesDoJogo) — não os IDs congelados no palpite, que
+  // ficam desatualizados se o usuário editou fases anteriores após salvar este jogo.
+  function vencedorDoPalpite(jogo: Jogo, palpite: Palpite): string | null {
+    const { casaId, visitanteId } = resolverTimesDoJogo(jogo)
+    if (palpite.golsCasa > palpite.golsVisitante) return casaId
+    if (palpite.golsVisitante > palpite.golsCasa) return visitanteId
+    // Empate (pênaltis): mapeia pelo LADO salvo, nunca pelo ID congelado.
+    // Invariante (handleChange + PalpiteInput): palpite.classificado é sempre
+    // === palpite.timeCasa OU === palpite.timeVisitante no momento do save.
+    if (!palpite.classificado) return null
+    return palpite.classificado === palpite.timeCasa ? casaId : visitanteId
   }
 
   const todosJogosDaFasePreenchidos = jogos.length > 0 && jogos.every(j => palpites.has(j.id))
@@ -308,7 +316,7 @@ export function PalpitesMataMata({ fase }: Props) {
       const palpite = palpites.get(jogo.id)!
       return {
         jogo,
-        vencedorId: vencedorDoPalpite(palpite),
+        vencedorId: vencedorDoPalpite(jogo, palpite),
         placar: `${palpite.golsCasa}x${palpite.golsVisitante}`,
       }
     })
@@ -362,9 +370,11 @@ export function PalpitesMataMata({ fase }: Props) {
 
         const palpite = palpites.get(jogo.id)
 
-        // Alert when teams changed since last save
+        // Alerta de "times mudaram" só faz sentido enquanto o prazo está ABERTO
+        // (o usuário ainda pode revisar). Com o prazo encerrado não há o que
+        // revisar, então não exibimos. Não altera nenhum palpite.
         let alerta: string | undefined
-        if (palpite) {
+        if (palpite && !prazoExpirado) {
           const casaMudou = resolvedCasaId && palpite.timeCasa !== resolvedCasaId
           const visitanteMudou = resolvedVisitanteId && palpite.timeVisitante !== resolvedVisitanteId
           if (casaMudou || visitanteMudou) {

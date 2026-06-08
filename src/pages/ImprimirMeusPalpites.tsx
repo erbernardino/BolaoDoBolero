@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { collection, getDocs, getDoc, doc, query, where } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
-import type { Jogo, Time, Palpite, PalpiteEspecial, ResultadoEspecial } from '../types'
+import { montarResolvedorBracket, type ResolverBracket } from '../lib/bracketUsuario'
+import type { Jogo, Time, Palpite, PalpiteEspecial, ResultadoEspecial, Grupo } from '../types'
 
 const FASE_LABELS: Record<string, string> = {
   grupos: 'Grupos',
@@ -45,16 +46,20 @@ export function ImprimirMeusPalpites() {
   const [palpites, setPalpites] = useState<Map<string, Palpite>>(new Map())
   const [palpiteEspecial, setPalpiteEspecial] = useState<PalpiteEspecial | null>(null)
   const [resultadoEspecial, setResultadoEspecial] = useState<ResultadoEspecial | null>(null)
+  const [grupos, setGrupos] = useState<Grupo[]>([])
+  const [pontosDisciplinares, setPontosDisciplinares] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (!firebaseUser) return
     async function load() {
-      const [jogosSnap, timesSnap, palpitesSnap, espSnap, resEspSnap] = await Promise.all([
+      const [jogosSnap, timesSnap, palpitesSnap, espSnap, resEspSnap, gruposSnap, desempateSnap] = await Promise.all([
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
         getDocs(query(collection(db, 'palpites'), where('uid', '==', firebaseUser!.uid))),
         getDoc(doc(db, 'palpites_especiais', firebaseUser!.uid)),
         getDoc(doc(db, 'config', 'resultado_especial')),
+        getDocs(collection(db, 'grupos')),
+        getDoc(doc(db, 'desempates_terceiros', firebaseUser!.uid)),
       ])
 
       const jList = jogosSnap.docs.map(d => ({ id: d.id, ...d.data() } as Jogo))
@@ -74,6 +79,10 @@ export function ImprimirMeusPalpites() {
 
       if (espSnap.exists()) setPalpiteEspecial({ uid: firebaseUser!.uid, ...espSnap.data() } as PalpiteEspecial)
       if (resEspSnap.exists()) setResultadoEspecial(resEspSnap.data() as ResultadoEspecial)
+
+      setGrupos(gruposSnap.docs.map(d => ({ id: d.id, ...d.data() } as Grupo)))
+      setPontosDisciplinares((desempateSnap.data()?.pontosDisciplinares ?? {}) as Record<string, number>)
+
       setLoading(false)
     }
     load()
@@ -82,6 +91,18 @@ export function ImprimirMeusPalpites() {
   const t = (id: string) => times.get(id)
   const sigla = (id: string) => t(id)?.sigla ?? '?'
   const bandeira = (id: string) => t(id)?.bandeira
+
+  // Resolve os times do mata-mata pelo bracket AO VIVO do usuário (mesma lógica
+  // da tela de palpites), em vez dos IDs congelados no documento de palpite.
+  const resolverBracket: ResolverBracket = useMemo(
+    () => montarResolvedorBracket({
+      jogos,
+      grupos,
+      palpitesPorJogoId: Object.fromEntries(palpites),
+      pontosDisciplinares,
+    }),
+    [jogos, grupos, palpites, pontosDisciplinares],
+  )
 
   const jogosPorFase = new Map<string, Jogo[]>()
   for (const j of jogos) {
@@ -152,8 +173,7 @@ export function ImprimirMeusPalpites() {
                   const resultado = jogo.encerrado && jogo.resultado
                     ? `${jogo.resultado.golsCasa}–${jogo.resultado.golsVisitante}`
                     : null
-                  const casaId = jogo.timeCasa || p?.timeCasa || null
-                  const visitanteId = jogo.timeVisitante || p?.timeVisitante || null
+                  const { casaId, visitanteId } = resolverBracket(jogo)
 
                   return (
                     <div

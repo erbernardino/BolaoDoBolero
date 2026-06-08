@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { collection, getDocs, getDoc, doc } from 'firebase/firestore'
 import { db } from '../../config/firebase'
-import type { Jogo, Time, Palpite, Usuario, PalpiteEspecial, ResultadoEspecial } from '../../types'
+import { montarResolvedorBracket, type ResolverBracket } from '../../lib/bracketUsuario'
+import type { Jogo, Time, Palpite, Usuario, PalpiteEspecial, ResultadoEspecial, Grupo } from '../../types'
 
 const FASE_LABELS: Record<string, string> = {
   grupos: 'Grupos',
@@ -48,16 +49,20 @@ export function ImprimirPalpites() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [palpitesEspeciais, setPalpitesEspeciais] = useState<Map<string, PalpiteEspecial>>(new Map())
   const [resultadoEspecial, setResultadoEspecial] = useState<ResultadoEspecial | null>(null)
+  const [grupos, setGrupos] = useState<Grupo[]>([])
+  const [desempatesPorUid, setDesempatesPorUid] = useState<Map<string, Record<string, number>>>(new Map())
 
   useEffect(() => {
     async function load() {
-      const [jogosSnap, timesSnap, palpitesSnap, usuariosSnap, especiaisSnap, resEspSnap] = await Promise.all([
+      const [jogosSnap, timesSnap, palpitesSnap, usuariosSnap, especiaisSnap, resEspSnap, gruposSnap, desempatesSnap] = await Promise.all([
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
         getDocs(collection(db, 'palpites')),
         getDocs(collection(db, 'usuarios')),
         getDocs(collection(db, 'palpites_especiais')),
         getDoc(doc(db, 'config', 'resultado_especial')),
+        getDocs(collection(db, 'grupos')),
+        getDocs(collection(db, 'desempates_terceiros')),
       ])
 
       const jList = jogosSnap.docs.map(d => ({ id: d.id, ...d.data() } as Jogo))
@@ -80,6 +85,12 @@ export function ImprimirPalpites() {
       setPalpitesEspeciais(eMap)
 
       if (resEspSnap.exists()) setResultadoEspecial(resEspSnap.data() as ResultadoEspecial)
+
+      setGrupos(gruposSnap.docs.map(d => ({ id: d.id, ...d.data() } as Grupo)))
+      const dMap = new Map<string, Record<string, number>>()
+      desempatesSnap.docs.forEach(d => dMap.set(d.id, (d.data().pontosDisciplinares ?? {}) as Record<string, number>))
+      setDesempatesPorUid(dMap)
+
       setLoading(false)
     }
     load()
@@ -91,6 +102,28 @@ export function ImprimirPalpites() {
     if (!palpiteMap.has(p.jogoId)) palpiteMap.set(p.jogoId, new Map())
     palpiteMap.get(p.jogoId)!.set(p.uid, p)
   }
+
+  // Resolvedor do bracket AO VIVO por usuário (mesma lógica da tela de palpites),
+  // para que os times do mata-mata reflitam o bracket atual de cada um — e não os
+  // IDs congelados no palpite. Memoizado: 60 usuários × bracket é cálculo em memória.
+  const resolversPorUid = useMemo(() => {
+    const palpitesPorUid = new Map<string, Record<string, Palpite>>()
+    for (const p of palpites) {
+      let rec = palpitesPorUid.get(p.uid)
+      if (!rec) { rec = {}; palpitesPorUid.set(p.uid, rec) }
+      rec[p.jogoId] = p
+    }
+    const map = new Map<string, ResolverBracket>()
+    for (const u of usuarios) {
+      map.set(u.uid, montarResolvedorBracket({
+        jogos,
+        grupos,
+        palpitesPorJogoId: palpitesPorUid.get(u.uid) ?? {},
+        pontosDisciplinares: desempatesPorUid.get(u.uid) ?? {},
+      }))
+    }
+    return map
+  }, [jogos, grupos, palpites, usuarios, desempatesPorUid])
 
   const t = (id: string) => times.get(id)
   const sigla = (id: string) => t(id)?.sigla ?? '?'
@@ -200,8 +233,7 @@ export function ImprimirPalpites() {
       ? `${jogo.resultado.golsCasa}–${jogo.resultado.golsVisitante}`
       : null
     // Para mata-mata, usa os times gravados no palpite (resolvidos no momento do save)
-    const casaId = jogo.timeCasa || p?.timeCasa || null
-    const visitanteId = jogo.timeVisitante || p?.timeVisitante || null
+    const { casaId, visitanteId } = resolversPorUid.get(uid)?.(jogo) ?? { casaId: null, visitanteId: null }
 
     const dataHoraStr = jogo.dataHora
       ? `${jogo.dataHora.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })} ${jogo.dataHora.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}`
