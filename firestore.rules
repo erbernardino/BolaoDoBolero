@@ -185,6 +185,12 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // /_system/{docId}: flags de sistema (ex: isteste). Leitura pública, escrita só admin.
+    match /_system/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // /audit_log/{logId}: leitura so admin, escrita so via Admin SDK (Cloud Functions)
     match /audit_log/{logId} {
       allow read: if isAdmin();
