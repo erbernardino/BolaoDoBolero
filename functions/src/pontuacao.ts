@@ -260,5 +260,11 @@ export async function recalcularTodoRanking(): Promise<number> {
     await batch.commit()
   }
 
+  // Registra quando o ranking foi recalculado (exibido na página de ranking).
+  // Coleção separada `_system` — NUNCA usar `config` para metadados de sistema.
+  await db.doc('_system/ranking_meta').set({
+    atualizadoEm: admin.firestore.FieldValue.serverTimestamp(),
+  })
+
   return jogosComResultado.length
 }
