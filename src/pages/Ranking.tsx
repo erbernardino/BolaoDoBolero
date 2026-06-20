@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { collection, doc, getDocs, onSnapshot, query, where } from 'firebase/firestore'
+import { collection, doc, getDocs, onSnapshot, query, where, type Timestamp } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import type { Ranking, Usuario, Jogo, Time, Palpite, Config } from '../types'
 import { Navbar } from '../components/Navbar'
@@ -34,6 +34,18 @@ export function Ranking() {
   const [times, setTimes] = useState<Map<string, Time>>(new Map())
   const [jogosLive, setJogosLive] = useState<Jogo[]>([])
   const [palpitesLive, setPalpitesLive] = useState<Map<string, Palpite>>(new Map())
+  const [rankingAtualizadoEm, setRankingAtualizadoEm] = useState<Timestamp | null>(null)
+
+  // Última atualização do ranking — gravada pela Cloud Function em _system/ranking_meta
+  // a cada recálculo. onSnapshot para refletir em tempo real quando um jogo encerra.
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, '_system', 'ranking_meta'), (snap) => {
+      const ts = snap.data()?.atualizadoEm
+      // serverTimestamp pode chegar null momentaneamente (latency compensation).
+      setRankingAtualizadoEm(ts ?? null)
+    }, () => { /* offline / sem doc — ignora */ })
+    return () => unsub()
+  }, [])
 
   // Times — carregados uma vez (não mudam com frequência).
   useEffect(() => {
@@ -169,7 +181,17 @@ export function Ranking() {
       <main className="max-w-3xl mx-auto px-2 sm:px-6 py-6 sm:py-10">
         {firebaseUser && <AoVivo uid={firebaseUser.uid} />}
 
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Ranking</h1>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Ranking</h1>
+          {rankingAtualizadoEm && (
+            <p className="text-xs text-gray-500 mt-1">
+              Atualizado em{' '}
+              {rankingAtualizadoEm.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Sao_Paulo' })}
+              {' às '}
+              {rankingAtualizadoEm.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
+            </p>
+          )}
+        </div>
         {loading ? (
           <p className="text-gray-500">Carregando...</p>
         ) : ranking.length === 0 ? (
