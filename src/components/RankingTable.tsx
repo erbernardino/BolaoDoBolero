@@ -2,21 +2,14 @@ import type { Ranking, Usuario, Jogo, Time, Palpite } from '../types'
 import { calcularPontosPalpite } from '../lib/pontuacao'
 import { Avatar } from './Avatar'
 
+// Config unitária: só usamos o `tipo` de acerto, que independe dos valores de pontos.
+const PONTOS_UNIT = { placarExato: 1, colunaCerta: 1, totalGols: 1 }
+
 export interface JogoAoVivoRanking {
   jogo: Jogo
   timeCasa: Time | null
   timeVisitante: Time | null
 }
-
-interface PontosCfg {
-  placarExato: number
-  colunaCerta: number
-  totalGols: number
-}
-
-// Mesmo fallback usado em AoVivo.tsx — evita divergência visual (células cinza
-// na tabela enquanto o card AoVivo já mostra verde) na janela antes de config carregar.
-const PONTOS_FALLBACK: PontosCfg = { placarExato: 10, colunaCerta: 3, totalGols: 1 }
 
 interface Props {
   ranking: (Ranking & { usuario: Usuario })[]
@@ -24,46 +17,43 @@ interface Props {
   jogosAoVivo?: JogoAoVivoRanking[]
   /** Palpites por participante, indexados por `${uid}_${jogoId}`. */
   palpitesLive?: Map<string, Palpite>
-  pontosCfg?: PontosCfg
 }
 
 function CelulaPalpite({
   palpite,
   jogo,
-  pontosCfg,
 }: {
   palpite: Palpite | undefined
   jogo: Jogo
-  pontosCfg: PontosCfg
 }) {
   if (!palpite) {
     return <span className="text-gray-300">—</span>
   }
 
-  // Verde quando o palpite já está pontuando contra o placar atual ao vivo.
-  let acertando = false
+  // Cor pelo tipo de pontuação REAL (calcularPontosPalpite), aplicada ao placar
+  // atual ao vivo: exato → verde, coluna/vencedor → amarelo, total de gols → azul,
+  // não pontuou → vermelho.
+  let corClasse = 'text-gray-700'
   if (jogo.resultado) {
-    acertando =
-      calcularPontosPalpite(
-        { golsCasa: palpite.golsCasa, golsVisitante: palpite.golsVisitante },
-        { golsCasa: jogo.resultado.golsCasa, golsVisitante: jogo.resultado.golsVisitante },
-        pontosCfg,
-      ).pontos > 0
+    const { tipo } = calcularPontosPalpite(
+      { golsCasa: palpite.golsCasa, golsVisitante: palpite.golsVisitante },
+      { golsCasa: jogo.resultado.golsCasa, golsVisitante: jogo.resultado.golsVisitante },
+      PONTOS_UNIT,
+    )
+    if (tipo === 'placarExato') corClasse = 'text-green-700 bg-green-50 font-bold'
+    else if (tipo === 'colunaCerta') corClasse = 'text-yellow-700 bg-yellow-50'
+    else if (tipo === 'totalGols') corClasse = 'text-blue-700 bg-blue-50'
+    else corClasse = 'text-red-400'
   }
 
   return (
-    <span
-      className={`inline-block rounded px-1.5 py-0.5 text-xs font-bold tabular-nums ${
-        acertando ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-      }`}
-    >
+    <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-mono ${corClasse}`}>
       {palpite.golsCasa}x{palpite.golsVisitante}
     </span>
   )
 }
 
-export function RankingTable({ ranking, jogosAoVivo = [], palpitesLive, pontosCfg }: Props) {
-  const cfg = pontosCfg ?? PONTOS_FALLBACK
+export function RankingTable({ ranking, jogosAoVivo = [], palpitesLive }: Props) {
 
   return (
     <div className="overflow-x-auto">
@@ -109,6 +99,8 @@ export function RankingTable({ ranking, jogosAoVivo = [], palpitesLive, pontosCf
         <tbody>
           {ranking.map((r, i) => {
             const bg = i % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+            const nome = r.usuario.apelido || r.usuario.nome
+            const nomeExibido = nome.length > 15 ? `${nome.slice(0, 15)}…` : nome
             return (
               <tr key={r.uid} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
                 <td className="px-3 py-2 font-bold">{i + 1}</td>
@@ -117,7 +109,6 @@ export function RankingTable({ ranking, jogosAoVivo = [], palpitesLive, pontosCf
                     <CelulaPalpite
                       palpite={palpitesLive?.get(`${r.uid}_${jogo.id}`)}
                       jogo={jogo}
-                      pontosCfg={cfg}
                     />
                   </td>
                 ))}
@@ -130,12 +121,8 @@ export function RankingTable({ ranking, jogosAoVivo = [], palpitesLive, pontosCf
                       size="sm"
                       ring={false}
                     />
-                    {(() => {
-                      const nome = r.usuario.apelido || r.usuario.nome
-                      const exibido = nome.length > 15 ? `${nome.slice(0, 15)}…` : nome
-                      // title mostra o nome completo no hover (desktop) e long-press (mobile).
-                      return <span title={nome}>{exibido}</span>
-                    })()}
+                    {/* title mostra o nome completo no hover (desktop) e long-press (mobile). */}
+                    <span title={nome}>{nomeExibido}</span>
                   </div>
                 </td>
                 <td className="px-3 py-2 text-center font-bold">{r.pontosTotal}</td>

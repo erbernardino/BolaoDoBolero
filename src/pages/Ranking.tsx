@@ -181,7 +181,6 @@ export function Ranking() {
               ranking={ranking}
               jogosAoVivo={jogosAoVivo}
               palpitesLive={palpitesLive}
-              pontosCfg={config?.pontos}
             />
           </>
         )}
