@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { useEffect, useMemo, useState } from 'react'
+import { collection, doc, getDocs, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../config/firebase'
-import type { Ranking, Usuario } from '../types'
+import type { Ranking, Usuario, Jogo, Time, Palpite, Config } from '../types'
 import { Navbar } from '../components/Navbar'
-import { RankingTable } from '../components/RankingTable'
+import { RankingTable, type JogoAoVivoRanking } from '../components/RankingTable'
 import { RankingDestaques } from '../components/RankingDestaques'
 import { AoVivo } from '../components/AoVivo'
 import { useAuth } from '../hooks/useAuth'
@@ -28,6 +28,94 @@ export function Ranking() {
   const { firebaseUser } = useAuth()
   const [ranking, setRanking] = useState<RankingComUsuario[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Estado para as colunas de palpite ao vivo na tabela.
+  const [config, setConfig] = useState<Config | null>(null)
+  const [times, setTimes] = useState<Map<string, Time>>(new Map())
+  const [jogosLive, setJogosLive] = useState<Jogo[]>([])
+  const [palpitesLive, setPalpitesLive] = useState<Map<string, Palpite>>(new Map())
+
+  // Times — carregados uma vez (não mudam com frequência).
+  useEffect(() => {
+    getDocs(collection(db, 'times')).then((snap) => {
+      const m = new Map<string, Time>()
+      snap.docs.forEach((d) => m.set(d.id, { id: d.id, ...d.data() } as Time))
+      setTimes(m)
+    }).catch(() => { /* offline — ignora */ })
+  }, [])
+
+  // Config (pontos, visibilidade, prazo) em tempo real: se o admin mudar a
+  // visibilidade durante um jogo ao vivo, recomputamos podeVerAlheios sem reload.
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'config', 'geral'), (snap) => {
+      if (snap.exists()) setConfig(snap.data() as Config)
+    }, () => { /* offline — ignora */ })
+    return () => unsub()
+  }, [])
+
+  // Jogos ao vivo (tempo real — o placar muda durante o jogo).
+  useEffect(() => {
+    const q = query(collection(db, 'jogos'), where('aoVivo', '==', true))
+    const unsub = onSnapshot(q, (snap) => {
+      setJogosLive(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Jogo)))
+    }, () => { /* sem jogos ao vivo ou sem permissão — ignora */ })
+    return () => unsub()
+  }, [])
+
+  // Instante de montagem — lido uma vez (Date.now é impuro no render reativo).
+  const [agoraMs] = useState(() => Date.now())
+
+  // Só dá para mostrar palpites de TODOS os participantes quando as regras de
+  // visibilidade permitem (mesmas condições de canReadPalpite no firestore.rules
+  // para um jogo ao vivo, que nunca está encerrado).
+  const podeVerAlheios = useMemo(() => {
+    if (!config) return false
+    if (config.visibilidadePalpites === 'sempre') return true
+    if (config.visibilidadePalpites === 'apos_prazo') {
+      return agoraMs >= config.prazoLimitePalpites.toMillis()
+    }
+    return false // 'apos_jogo' (jogo ao vivo não encerrado) ou 'nunca'
+  }, [config, agoraMs])
+
+  // Jogos ao vivo ordenados e limitados a 30 (limite do operador 'in' do
+  // Firestore) — fonte única para as colunas E para a query de palpites, para
+  // que cabeçalho e dados nunca divirjam.
+  const jogosAoVivo = useMemo<JogoAoVivoRanking[]>(() => {
+    if (!podeVerAlheios) return []
+    return [...jogosLive]
+      .sort((a, b) => a.dataHora.toMillis() - b.dataHora.toMillis())
+      .slice(0, 30)
+      .map((jogo) => ({
+        jogo,
+        timeCasa: times.get(jogo.timeCasa) ?? null,
+        timeVisitante: times.get(jogo.timeVisitante) ?? null,
+      }))
+  }, [podeVerAlheios, jogosLive, times])
+
+  // Chave estável: só muda quando o CONJUNTO de jogos ao vivo muda (entra/sai
+  // jogo), não a cada gol. Evita refazer o getDocs de palpites a cada placar.
+  const liveKey = useMemo(() => jogosAoVivo.map((j) => j.jogo.id).join(','), [jogosAoVivo])
+
+  // Palpites de todos os participantes para os jogos ao vivo. Palpites não mudam
+  // durante o jogo (prazo fechado), então uma leitura pontual basta.
+  useEffect(() => {
+    const ids = liveKey ? liveKey.split(',') : []
+    // Sem jogos ao vivo / sem permissão: jogosAoVivo é [], então as colunas não
+    // renderizam e um palpitesLive obsoleto nunca é consultado — não precisa limpar.
+    if (!podeVerAlheios || ids.length === 0) return
+    let cancelado = false
+    const q = query(collection(db, 'palpites'), where('jogoId', 'in', ids))
+    getDocs(q).then((snap) => {
+      if (cancelado) return
+      const m = new Map<string, Palpite>()
+      snap.docs.forEach((d) => {
+        const p = { id: d.id, ...d.data() } as Palpite
+        m.set(`${p.uid}_${p.jogoId}`, p)
+      })
+      setPalpitesLive(m)
+    }).catch(() => { /* sem permissão ou offline — sem colunas */ })
+    return () => { cancelado = true }
+  }, [podeVerAlheios, liveKey])
 
   useEffect(() => {
     async function load() {
@@ -78,7 +166,7 @@ export function Ranking() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="max-w-3xl mx-auto px-6 py-10">
+      <main className="max-w-3xl mx-auto px-2 sm:px-6 py-6 sm:py-10">
         {firebaseUser && <AoVivo uid={firebaseUser.uid} />}
 
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Ranking</h1>
@@ -89,7 +177,12 @@ export function Ranking() {
         ) : (
           <>
             <RankingDestaques ranking={ranking} />
-            <RankingTable ranking={ranking} />
+            <RankingTable
+              ranking={ranking}
+              jogosAoVivo={jogosAoVivo}
+              palpitesLive={palpitesLive}
+              pontosCfg={config?.pontos}
+            />
           </>
         )}
       </main>
