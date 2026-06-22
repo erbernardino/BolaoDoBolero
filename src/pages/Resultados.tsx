@@ -1,0 +1,96 @@
+import { useState, useEffect, useMemo } from 'react'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '../config/firebase'
+import { Navbar } from '../components/Navbar'
+import type { Jogo, Time, ClassificacaoTime } from '../types'
+import type { GrupoRef } from '../lib/bracketUsuario'
+import { calcularClinchGrupo, type ClinchTime } from '../lib/clinchGrupo'
+import { calcularClassificacoesReais, montarResolvedorBracketOficial } from '../lib/resultadosOficiais'
+import { PorFaseView } from '../components/resultados/PorFaseView'
+
+type Modo = 'chaveamento' | 'fase'
+
+export function Resultados() {
+  const [jogos, setJogos] = useState<Jogo[]>([])
+  const [times, setTimes] = useState<Map<string, Time>>(new Map())
+  const [grupos, setGrupos] = useState<GrupoRef[]>([])
+  const [loading, setLoading] = useState(true)
+  const [modo, setModo] = useState<Modo>('chaveamento')
+
+  useEffect(() => {
+    async function load() {
+      const [jogosSnap, timesSnap, gruposSnap] = await Promise.all([
+        getDocs(collection(db, 'jogos')),
+        getDocs(collection(db, 'times')),
+        getDocs(collection(db, 'grupos')),
+      ])
+      setJogos(jogosSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Jogo))
+      const tmap = new Map<string, Time>()
+      timesSnap.docs.forEach(d => tmap.set(d.id, { id: d.id, ...d.data() } as Time))
+      setTimes(tmap)
+      setGrupos(gruposSnap.docs.map(d => {
+        const data = d.data() as { nome?: string; times?: string[] }
+        return { nome: data.nome ?? `Grupo ${d.id}`, times: data.times ?? [] }
+      }))
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  const classificacoes = useMemo<Record<string, ClassificacaoTime[]>>(
+    () => calcularClassificacoesReais(jogos, grupos),
+    [jogos, grupos],
+  )
+
+  const clinchPorGrupo = useMemo<Record<string, Record<string, ClinchTime>>>(() => {
+    const out: Record<string, Record<string, ClinchTime>> = {}
+    const jogosGrupos = jogos.filter(j => j.fase === 'grupos')
+    for (const g of grupos) {
+      const letra = g.nome.replace('Grupo ', '')
+      out[letra] = calcularClinchGrupo(jogosGrupos.filter(j => j.grupo === letra), g.times)
+    }
+    return out
+  }, [jogos, grupos])
+
+  const resolver = useMemo(
+    () => montarResolvedorBracketOficial(jogos, grupos),
+    [jogos, grupos],
+  )
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h1 className="text-xl font-bold text-gray-800">Resultados Oficiais</h1>
+          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            <button
+              onClick={() => setModo('chaveamento')}
+              className={'px-3 py-1.5 text-sm ' + (modo === 'chaveamento' ? 'bg-blue-700 text-white' : 'bg-white text-gray-600')}
+            >
+              Chaveamento
+            </button>
+            <button
+              onClick={() => setModo('fase')}
+              className={'px-3 py-1.5 text-sm ' + (modo === 'fase' ? 'bg-blue-700 text-white' : 'bg-white text-gray-600')}
+            >
+              Por fase
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <p className="text-gray-500">Carregando…</p>
+        ) : modo === 'fase' ? (
+          <PorFaseView jogos={jogos} times={times} resolver={resolver} />
+        ) : (
+          // BracketView entra na Task 5; placeholder temporário evita import quebrado.
+          <p className="text-gray-500">Chaveamento em construção.</p>
+        )}
+
+        {/* classificacoes e clinchPorGrupo serão consumidos pelo BracketView na Task 5 */}
+        <span className="hidden">{Object.keys(classificacoes).length}{Object.keys(clinchPorGrupo).length}</span>
+      </div>
+    </div>
+  )
+}

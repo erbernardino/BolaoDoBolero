@@ -22,6 +22,7 @@ const Chat = lazy(() => import('./pages/Chat').then(m => ({ default: m.Chat })))
 const Perfil = lazy(() => import('./pages/Perfil').then(m => ({ default: m.Perfil })))
 const VerificarVinculo = lazy(() => import('./pages/VerificarVinculo').then(m => ({ default: m.VerificarVinculo })))
 const ImprimirMeusPalpites = lazy(() => import('./pages/ImprimirMeusPalpites').then(m => ({ default: m.ImprimirMeusPalpites })))
+const Resultados = lazy(() => import('./pages/Resultados').then(m => ({ default: m.Resultados })))
 
 function AppContent() {
   useAnalyticsTracking()
@@ -45,6 +46,7 @@ function AppContent() {
         <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
         <Route path="/perfil/verificar/:tipo" element={<ProtectedRoute><VerificarVinculo /></ProtectedRoute>} />
         <Route path="/imprimir-meus-palpites" element={<ProtectedRoute><ImprimirMeusPalpites /></ProtectedRoute>} />
+        <Route path="/resultados" element={<ProtectedRoute><Resultados /></ProtectedRoute>} />
         <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       </Routes>
     </Suspense>
