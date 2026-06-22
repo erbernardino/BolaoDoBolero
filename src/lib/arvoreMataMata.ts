@@ -35,7 +35,8 @@ function coletarLado<T extends JogoBracket>(raizNum: number, porNum: Map<number,
   const niveis: T[][] = []
   const raiz = porNum.get(raizNum)
   let atual: T[] = raiz ? [raiz] : []
-  const visitados = new Set<number>()
+  // Inclui a raiz para evitar loop caso um jogo referencie de volta o jogo-raiz.
+  const visitados = new Set<number>([raizNum])
   while (atual.length > 0) {
     niveis.push(atual)
     const prox: T[] = []
