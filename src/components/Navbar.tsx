@@ -15,6 +15,7 @@ export function Navbar() {
 
   const navLinks = [
     { to: '/palpites', label: 'Palpites' },
+    { to: '/resultados', label: 'Resultados' },
     ...(liberado ? [
       { to: '/todos-palpites', label: 'Geral' },
       { to: '/ranking', label: 'Ranking' },

@@ -1,4 +1,4 @@
-import type { ClassificacaoTime } from '../types'
+import type { ClassificacaoTime } from '../types/calc'
 
 export function normalizarPontosDisciplinares(valor?: number): number {
   if (!Number.isFinite(valor)) return 0

@@ -1,4 +1,4 @@
-import type { Palpite, ClassificacaoTime } from '../types'
+import type { PalpiteCalc as Palpite, ClassificacaoTime } from '../types/calc'
 
 // Implementa Article 13 do regulamento FIFA Copa 2026 para classificacao
 // dentro do grupo:

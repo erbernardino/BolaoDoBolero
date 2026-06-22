@@ -1,4 +1,4 @@
-import type { Origem, Palpite, ClassificacaoTime } from '../types'
+import type { Origem, PalpiteCalc as Palpite, ClassificacaoTime } from '../types/calc'
 
 interface JogoReferencia {
   id: string
