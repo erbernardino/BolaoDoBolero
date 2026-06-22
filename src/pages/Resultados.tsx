@@ -71,7 +71,7 @@ export function Resultados() {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <h1 className="text-xl font-bold text-gray-800">Resultados Oficiais</h1>
+          <h1 className="text-xl font-bold text-gray-800">Resultados e Projeções</h1>
           {!erro && (
             <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
               <button
