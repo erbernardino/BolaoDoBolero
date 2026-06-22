@@ -1,0 +1,3863 @@
+{
+  "documents": [
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/02PSAy6pNH8WzUAbhjHD",
+      "fields": {
+        "aoVivo": {
+          "booleanValue": false
+        },
+        "dataHora": {
+          "timestampValue": "2026-06-15T13:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "H"
+        },
+        "numero": {
+          "integerValue": "14"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "MORwi3txhmtvl65q53o0"
+        },
+        "timeVisitante": {
+          "stringValue": "NceOvmxRxolTxoF4DXvP"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/1CZVPvb57yxMO6zIYzQN",
+      "fields": {
+        "aoVivo": {
+          "booleanValue": false
+        },
+        "dataHora": {
+          "timestampValue": "2026-06-26T23:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "H"
+        },
+        "numero": {
+          "integerValue": "66"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "Ao4mjDVAPtLl2omAOaol"
+        },
+        "timeVisitante": {
+          "stringValue": "MORwi3txhmtvl65q53o0"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/1OqpZD9u94taD9d8pBXT",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-25T17:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "E"
+        },
+        "numero": {
+          "integerValue": "56"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "FrhVWlGecqFTXDi5SNKM"
+        },
+        "timeVisitante": {
+          "stringValue": "FhtaC3QKhaQoCpJMa8zC"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/1vxRKHPkemJutTFgbLd8",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-18T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "B"
+        },
+        "numero": {
+          "integerValue": "26"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "8COgS5QM2aCKNsqAQ9UK"
+        },
+        "timeVisitante": {
+          "stringValue": "RAaOkpJKOQQmOy8CuhsO"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/4Xdyb8maJa2jy6bsgxxR",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-27T03:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "G"
+        },
+        "numero": {
+          "integerValue": "64"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "5yo09jaTIL4d5T9Nl2kC"
+        },
+        "timeVisitante": {
+          "stringValue": "0bLiklK0aytJWBFW4A56"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/55O5ZPaE4sqYt6MwCOfw",
+      "fields": {
+        "aoVivo": {
+          "booleanValue": false
+        },
+        "dataHora": {
+          "timestampValue": "2026-06-18T13:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "A"
+        },
+        "numero": {
+          "integerValue": "25"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "jgyntxITzmjRkLMydoTY"
+        },
+        "timeVisitante": {
+          "stringValue": "qNdbC80lNgARJyo1a6E4"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/5I4gjvxN42WVeeHnM3P0",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-21T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "G"
+        },
+        "numero": {
+          "integerValue": "39"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "0bLiklK0aytJWBFW4A56"
+        },
+        "timeVisitante": {
+          "stringValue": "Kdexb0Fi47jL1Q3YXE9P"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/5KFu2dAtMmT1ZnIzMx1R",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-26T02:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "D"
+        },
+        "numero": {
+          "integerValue": "59"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "k3hU3IkXYcmYMKMK0Ygx"
+        },
+        "timeVisitante": {
+          "stringValue": "7umCo4IXMKDWL89HNhml"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/6cgzgGqx9TVux1UdMTVn",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-22T18:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "I"
+        },
+        "numero": {
+          "integerValue": "42"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "pBCoo9LsQXEJHttc9uh6"
+        },
+        "timeVisitante": {
+          "stringValue": "D8IMK6CkmQI6DxVpmiFT"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/6ewFHhqT7XxdQh0SdT7S",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-13T01:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "D"
+        },
+        "numero": {
+          "integerValue": "4"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "7umCo4IXMKDWL89HNhml"
+        },
+        "timeVisitante": {
+          "stringValue": "f2bTDqF1aj3diKwSXEfs"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/90qEHu2w569y0PSw2VsB",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-16T23:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "J"
+        },
+        "numero": {
+          "integerValue": "19"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "IhorDrd2lRnPahBYaCUt"
+        },
+        "timeVisitante": {
+          "stringValue": "6IgLepZV343Pf5E7QcTN"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/9t1Ha6FzSmw7zilymhWV",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-18T01:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "K"
+        },
+        "numero": {
+          "integerValue": "24"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "PntaoGjZbhR1H8vGH8Na"
+        },
+        "timeVisitante": {
+          "stringValue": "IfRM6suHapSvcIlqX5tc"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/A3KqwewStxaELJS3y34D",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-23T17:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "L"
+        },
+        "numero": {
+          "integerValue": "45"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "7Wslu5fFh6BaKnLjUlIJ"
+        },
+        "timeVisitante": {
+          "stringValue": "rqCUgcLh6ug8Wgnl1dLO"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/ABl7uWMBV7FFd5ss8gTx",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-25T21:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "F"
+        },
+        "numero": {
+          "integerValue": "57"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "c50tt0pKcQpKGXvFqy38"
+        },
+        "timeVisitante": {
+          "stringValue": "pfrP27ysqfL5ahWhwTFM"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/BrPBtE57d503gVHHEEPC",
+      "fields": {
+        "aoVivo": {
+          "booleanValue": false
+        },
+        "dataHora": {
+          "timestampValue": "2026-06-25T00:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "A"
+        },
+        "numero": {
+          "integerValue": "53"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "jgyntxITzmjRkLMydoTY"
+        },
+        "timeVisitante": {
+          "stringValue": "QcI9jHOxsxocKt0uB3Ep"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/CB9GzaDo4UUmlIu9cb1k",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-27T20:30:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "K"
+        },
+        "numero": {
+          "integerValue": "71"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "IfRM6suHapSvcIlqX5tc"
+        },
+        "timeVisitante": {
+          "stringValue": "J9NdprbyufvPDJ00PYFt"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/CxZjWw1wvQwojROWqwWs",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-15T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "G"
+        },
+        "numero": {
+          "integerValue": "16"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "0bLiklK0aytJWBFW4A56"
+        },
+        "timeVisitante": {
+          "stringValue": "MRPY05r0UVc7CBKBeLeW"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/DkkOg0rcUpRQHKRhmy7d",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-22T15:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "J"
+        },
+        "numero": {
+          "integerValue": "43"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "IhorDrd2lRnPahBYaCUt"
+        },
+        "timeVisitante": {
+          "stringValue": "54yxpwob3fLsMFd6Sfn2"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/EcdZQI3AorSiC11qzLG0",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-24T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "C"
+        },
+        "numero": {
+          "integerValue": "49"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "PiolGM1SKoEiwFktVqg0"
+        },
+        "timeVisitante": {
+          "stringValue": "adQ3u11wHpa1ppEHA6U4"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/FUFeH8CwmcEaPVWK582G",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-23T15:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "K"
+        },
+        "numero": {
+          "integerValue": "47"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "J9NdprbyufvPDJ00PYFt"
+        },
+        "timeVisitante": {
+          "stringValue": "PntaoGjZbhR1H8vGH8Na"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/GPoDBFvCupbpZVfzL1zA",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-20T03:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "D"
+        },
+        "numero": {
+          "integerValue": "31"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "k3hU3IkXYcmYMKMK0Ygx"
+        },
+        "timeVisitante": {
+          "stringValue": "f2bTDqF1aj3diKwSXEfs"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/JlPrad6rKlKTgAX5c2wr",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-14T15:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "E"
+        },
+        "numero": {
+          "integerValue": "10"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "FhtaC3QKhaQoCpJMa8zC"
+        },
+        "timeVisitante": {
+          "stringValue": "vVGEHs0845KzVNIiekQZ"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/K3LYu8kCGrPwG8YJBi89",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-17T15:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "K"
+        },
+        "numero": {
+          "integerValue": "23"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "J9NdprbyufvPDJ00PYFt"
+        },
+        "timeVisitante": {
+          "stringValue": "6Zf5pn5wRuWIgZeDRxyS"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/KmDoTuuyAYLWX9vLO26r",
+      "fields": {
+        "aoVivo": {
+          "booleanValue": false
+        },
+        "dataHora": {
+          "timestampValue": "2026-06-14T04:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "D"
+        },
+        "numero": {
+          "integerValue": "6"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "fcpFng9AgxBth4kbfPse"
+        },
+        "timeVisitante": {
+          "stringValue": "k3hU3IkXYcmYMKMK0Ygx"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/LFqSmu38PG3dk7cNqcrG",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-17T18:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "L"
+        },
+        "numero": {
+          "integerValue": "22"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "7Wslu5fFh6BaKnLjUlIJ"
+        },
+        "timeVisitante": {
+          "stringValue": "wQAIQSSD7RKkjC9xza6O"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/LhpEygBi44e8sbdg3IYt",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-26T16:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "I"
+        },
+        "numero": {
+          "integerValue": "61"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "Vdt6LL0nV59IFMaOTvCl"
+        },
+        "timeVisitante": {
+          "stringValue": "pBCoo9LsQXEJHttc9uh6"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/LweTnDx5zDWFumHN8rap",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-13T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "B"
+        },
+        "numero": {
+          "integerValue": "8"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "IMrwzH7JxlEPnbmJae3j"
+        },
+        "timeVisitante": {
+          "stringValue": "8COgS5QM2aCKNsqAQ9UK"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/Mwm7alF9X7V8c3x5oPTA",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-25T17:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "E"
+        },
+        "numero": {
+          "integerValue": "55"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "vVGEHs0845KzVNIiekQZ"
+        },
+        "timeVisitante": {
+          "stringValue": "6JP3ZWKdyPbN9r5U6DuQ"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/O2uY92kYaelPp2CZrM95",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-24T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "B"
+        },
+        "numero": {
+          "integerValue": "52"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "RAaOkpJKOQQmOy8CuhsO"
+        },
+        "timeVisitante": {
+          "stringValue": "IMrwzH7JxlEPnbmJae3j"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/PlGHpmXlQU1QqeSH9bTu",
+      "fields": {
+        "aoVivo": {
+          "booleanValue": false
+        },
+        "dataHora": {
+          "timestampValue": "2026-06-25T00:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "A"
+        },
+        "numero": {
+          "integerValue": "54"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "qNdbC80lNgARJyo1a6E4"
+        },
+        "timeVisitante": {
+          "stringValue": "Rt0UfKO7MFlScfGhpzbm"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/QDJnO8jc9cme1I7YYPtP",
+      "fields": {
+        "aoVivo": {
+          "booleanValue": false
+        },
+        "dataHora": {
+          "timestampValue": "2026-06-19T00:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "A"
+        },
+        "numero": {
+          "integerValue": "28"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "QcI9jHOxsxocKt0uB3Ep"
+        },
+        "timeVisitante": {
+          "stringValue": "Rt0UfKO7MFlScfGhpzbm"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/QHSXuv7IjZNibIFRKm6j",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-21T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "H"
+        },
+        "numero": {
+          "integerValue": "37"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "Ao4mjDVAPtLl2omAOaol"
+        },
+        "timeVisitante": {
+          "stringValue": "NceOvmxRxolTxoF4DXvP"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/SSP8StbWaywhCfOrR5RC",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-20T15:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "F"
+        },
+        "numero": {
+          "integerValue": "35"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "qDyOwNgZGQmTkic6PyYF"
+        },
+        "timeVisitante": {
+          "stringValue": "pfrP27ysqfL5ahWhwTFM"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/VezNkh9BIo0bhEQIJLST",
+      "fields": {
+        "aoVivo": {
+          "booleanValue": false
+        },
+        "dataHora": {
+          "timestampValue": "2026-06-12T01:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "A"
+        },
+        "numero": {
+          "integerValue": "2"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "Rt0UfKO7MFlScfGhpzbm"
+        },
+        "timeVisitante": {
+          "stringValue": "jgyntxITzmjRkLMydoTY"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/VsyQYr5GLdbCYMJkn3xv",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-24T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "C"
+        },
+        "numero": {
+          "integerValue": "50"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "ABkIogxkUpJpX1JsOZEV"
+        },
+        "timeVisitante": {
+          "stringValue": "dLhvkN9rrZRodep8MHzw"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/WPJz2Epu0Tzp7sDP7tcU",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-19T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "C"
+        },
+        "numero": {
+          "integerValue": "30"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "PiolGM1SKoEiwFktVqg0"
+        },
+        "timeVisitante": {
+          "stringValue": "ABkIogxkUpJpX1JsOZEV"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/Xt9WL2cbgmGm09iIPmMt",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-26T22:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "H"
+        },
+        "numero": {
+          "integerValue": "65"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "NceOvmxRxolTxoF4DXvP"
+        },
+        "timeVisitante": {
+          "stringValue": "EzUQ3Eftr5IU13wmdtsX"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/Xu1TSYeSHW7XGrFXgLsh",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-24T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "B"
+        },
+        "numero": {
+          "integerValue": "51"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "8COgS5QM2aCKNsqAQ9UK"
+        },
+        "timeVisitante": {
+          "stringValue": "P5nrw3VPLzzDDX3hkHoL"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/Z7clRQNl98NrEPPiiokT",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-23T20:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "L"
+        },
+        "numero": {
+          "integerValue": "46"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "aE3UMtLP6xAktBYpFK6m"
+        },
+        "timeVisitante": {
+          "stringValue": "wQAIQSSD7RKkjC9xza6O"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/a17Dcv9Yq4wKQjq43s5l",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-17T04:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "J"
+        },
+        "numero": {
+          "integerValue": "20"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "54yxpwob3fLsMFd6Sfn2"
+        },
+        "timeVisitante": {
+          "stringValue": "Q2rrZP4B87DI5GeK3hC9"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/cCnXkwGJHFrnOSuOoRFi",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-26T02:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "D"
+        },
+        "numero": {
+          "integerValue": "60"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "f2bTDqF1aj3diKwSXEfs"
+        },
+        "timeVisitante": {
+          "stringValue": "fcpFng9AgxBth4kbfPse"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/cKte0dI8YB3r4IuKh3eU",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-21T03:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "F"
+        },
+        "numero": {
+          "integerValue": "36"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "hQSmdQSs7W8TBz2zBufY"
+        },
+        "timeVisitante": {
+          "stringValue": "c50tt0pKcQpKGXvFqy38"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/cXhNQaBaxDjUATwGU4zJ",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-12T16:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "B"
+        },
+        "numero": {
+          "integerValue": "3"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "P5nrw3VPLzzDDX3hkHoL"
+        },
+        "timeVisitante": {
+          "stringValue": "RAaOkpJKOQQmOy8CuhsO"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/dBFNTfsf1OBWDpFVzI6V",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-16T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "I"
+        },
+        "numero": {
+          "integerValue": "18"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "D8IMK6CkmQI6DxVpmiFT"
+        },
+        "timeVisitante": {
+          "stringValue": "Vdt6LL0nV59IFMaOTvCl"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/dE8cI9WbvH09RZeC3Jiw",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-17T20:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "L"
+        },
+        "numero": {
+          "integerValue": "21"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "rqCUgcLh6ug8Wgnl1dLO"
+        },
+        "timeVisitante": {
+          "stringValue": "aE3UMtLP6xAktBYpFK6m"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/f4dzS0P2AusCakRMoBIA",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-18T22:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "B"
+        },
+        "numero": {
+          "integerValue": "27"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "P5nrw3VPLzzDDX3hkHoL"
+        },
+        "timeVisitante": {
+          "stringValue": "IMrwzH7JxlEPnbmJae3j"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_1",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-28T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "2A"
+        },
+        "labelVisitante": {
+          "stringValue": "2B"
+        },
+        "numero": {
+          "integerValue": "73"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_10",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-01T20:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1G"
+        },
+        "labelVisitante": {
+          "stringValue": "3AEHIJ"
+        },
+        "numero": {
+          "integerValue": "82"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_11",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-02T20:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "2K"
+        },
+        "labelVisitante": {
+          "stringValue": "2L"
+        },
+        "numero": {
+          "integerValue": "83"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_12",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-02T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1H"
+        },
+        "labelVisitante": {
+          "stringValue": "2J"
+        },
+        "numero": {
+          "integerValue": "84"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_13",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-03T03:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1B"
+        },
+        "labelVisitante": {
+          "stringValue": "3EFGIJ"
+        },
+        "numero": {
+          "integerValue": "85"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_14",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-03T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1J"
+        },
+        "labelVisitante": {
+          "stringValue": "2H"
+        },
+        "numero": {
+          "integerValue": "86"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_15",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-03T23:30:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1K"
+        },
+        "labelVisitante": {
+          "stringValue": "3DEIJL"
+        },
+        "numero": {
+          "integerValue": "87"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_16",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-03T16:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "2D"
+        },
+        "labelVisitante": {
+          "stringValue": "2G"
+        },
+        "numero": {
+          "integerValue": "88"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_2",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-29T17:30:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1E"
+        },
+        "labelVisitante": {
+          "stringValue": "3ABCDF"
+        },
+        "numero": {
+          "integerValue": "74"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_3",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-30T00:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1F"
+        },
+        "labelVisitante": {
+          "stringValue": "2C"
+        },
+        "numero": {
+          "integerValue": "75"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_4",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-29T15:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1C"
+        },
+        "labelVisitante": {
+          "stringValue": "2F"
+        },
+        "numero": {
+          "integerValue": "76"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_5",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-30T18:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1I"
+        },
+        "labelVisitante": {
+          "stringValue": "3CDFGH"
+        },
+        "numero": {
+          "integerValue": "77"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_6",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-30T15:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "2E"
+        },
+        "labelVisitante": {
+          "stringValue": "2I"
+        },
+        "numero": {
+          "integerValue": "78"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_7",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-01T00:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1A"
+        },
+        "labelVisitante": {
+          "stringValue": "3CEFHI"
+        },
+        "numero": {
+          "integerValue": "79"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_8",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-01T13:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1L"
+        },
+        "labelVisitante": {
+          "stringValue": "3EHIJK"
+        },
+        "numero": {
+          "integerValue": "80"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fase32_9",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-02T00:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "fase32"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "1D"
+        },
+        "labelVisitante": {
+          "stringValue": "3BEFIJ"
+        },
+        "numero": {
+          "integerValue": "81"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/fi8rDHqXBBTtkP0lSQAg",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-20T22:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "E"
+        },
+        "numero": {
+          "integerValue": "34"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "FrhVWlGecqFTXDi5SNKM"
+        },
+        "timeVisitante": {
+          "stringValue": "vVGEHs0845KzVNIiekQZ"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/final",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-19T16:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "final"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W101"
+        },
+        "labelVisitante": {
+          "stringValue": "W102"
+        },
+        "numero": {
+          "integerValue": "104"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/g79pQJmikywdSd9tNaHJ",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-27T18:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "L"
+        },
+        "numero": {
+          "integerValue": "67"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "aE3UMtLP6xAktBYpFK6m"
+        },
+        "timeVisitante": {
+          "stringValue": "7Wslu5fFh6BaKnLjUlIJ"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/gsbLLddSncOnMIUtffWb",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-22T01:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "G"
+        },
+        "numero": {
+          "integerValue": "40"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "5yo09jaTIL4d5T9Nl2kC"
+        },
+        "timeVisitante": {
+          "stringValue": "MRPY05r0UVc7CBKBeLeW"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/gsbbVeDRyWBPDH6DnHHY",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-13T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "C"
+        },
+        "numero": {
+          "integerValue": "7"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "adQ3u11wHpa1ppEHA6U4"
+        },
+        "timeVisitante": {
+          "stringValue": "ABkIogxkUpJpX1JsOZEV"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/hXAruN5d0GeD7nntPrur",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-22T21:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "I"
+        },
+        "numero": {
+          "integerValue": "41"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "Vdt6LL0nV59IFMaOTvCl"
+        },
+        "timeVisitante": {
+          "stringValue": "l73etXGVUErVPC2ktExi"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/hxcSkyZ0mcfK3eQR7M4J",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-14T20:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "E"
+        },
+        "numero": {
+          "integerValue": "9"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "6JP3ZWKdyPbN9r5U6DuQ"
+        },
+        "timeVisitante": {
+          "stringValue": "FrhVWlGecqFTXDi5SNKM"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/i6wYuaxchSRsWpbPAiA3",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-27T03:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "G"
+        },
+        "numero": {
+          "integerValue": "63"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "MRPY05r0UVc7CBKBeLeW"
+        },
+        "timeVisitante": {
+          "stringValue": "Kdexb0Fi47jL1Q3YXE9P"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/jy60AaJrVx6YX9EWzwrd",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-28T00:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "J"
+        },
+        "numero": {
+          "integerValue": "69"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "6IgLepZV343Pf5E7QcTN"
+        },
+        "timeVisitante": {
+          "stringValue": "54yxpwob3fLsMFd6Sfn2"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/kCaAaNofkwz9iusako4b",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-27T20:30:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "K"
+        },
+        "numero": {
+          "integerValue": "72"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "6Zf5pn5wRuWIgZeDRxyS"
+        },
+        "timeVisitante": {
+          "stringValue": "PntaoGjZbhR1H8vGH8Na"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/khIzbn235cxP1npvko2U",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-27T18:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "L"
+        },
+        "numero": {
+          "integerValue": "68"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "wQAIQSSD7RKkjC9xza6O"
+        },
+        "timeVisitante": {
+          "stringValue": "rqCUgcLh6ug8Wgnl1dLO"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/ksJJ9hLWRwNceYEUDb62",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-24T01:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "K"
+        },
+        "numero": {
+          "integerValue": "48"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "IfRM6suHapSvcIlqX5tc"
+        },
+        "timeVisitante": {
+          "stringValue": "6Zf5pn5wRuWIgZeDRxyS"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/lT1eWVlV9lLp0orb0rC7",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-15T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "H"
+        },
+        "numero": {
+          "integerValue": "13"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "EzUQ3Eftr5IU13wmdtsX"
+        },
+        "timeVisitante": {
+          "stringValue": "Ao4mjDVAPtLl2omAOaol"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/nMpc4ElNlakmegW6CN7y",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-16T01:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "G"
+        },
+        "numero": {
+          "integerValue": "15"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "Kdexb0Fi47jL1Q3YXE9P"
+        },
+        "timeVisitante": {
+          "stringValue": "5yo09jaTIL4d5T9Nl2kC"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/oitavas_1",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-04T18:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "oitavas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W74"
+        },
+        "labelVisitante": {
+          "stringValue": "W77"
+        },
+        "numero": {
+          "integerValue": "89"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/oitavas_2",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-04T15:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "oitavas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W73"
+        },
+        "labelVisitante": {
+          "stringValue": "W75"
+        },
+        "numero": {
+          "integerValue": "90"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/oitavas_3",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-05T17:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "oitavas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W76"
+        },
+        "labelVisitante": {
+          "stringValue": "W78"
+        },
+        "numero": {
+          "integerValue": "91"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/oitavas_4",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-05T23:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "oitavas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W79"
+        },
+        "labelVisitante": {
+          "stringValue": "W80"
+        },
+        "numero": {
+          "integerValue": "92"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/oitavas_5",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-06T17:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "oitavas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W83"
+        },
+        "labelVisitante": {
+          "stringValue": "W84"
+        },
+        "numero": {
+          "integerValue": "93"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/oitavas_6",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-07T00:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "oitavas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W81"
+        },
+        "labelVisitante": {
+          "stringValue": "W82"
+        },
+        "numero": {
+          "integerValue": "94"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/oitavas_7",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-07T13:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "oitavas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W86"
+        },
+        "labelVisitante": {
+          "stringValue": "W88"
+        },
+        "numero": {
+          "integerValue": "95"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/oitavas_8",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-07T20:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "oitavas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W85"
+        },
+        "labelVisitante": {
+          "stringValue": "W87"
+        },
+        "numero": {
+          "integerValue": "96"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/oyVuKwSZf29dTWvn17nw",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-19T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "D"
+        },
+        "numero": {
+          "integerValue": "32"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "7umCo4IXMKDWL89HNhml"
+        },
+        "timeVisitante": {
+          "stringValue": "fcpFng9AgxBth4kbfPse"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/pHiOcW4cpUiH3m8DGO0S",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-23T03:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "J"
+        },
+        "numero": {
+          "integerValue": "44"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "Q2rrZP4B87DI5GeK3hC9"
+        },
+        "timeVisitante": {
+          "stringValue": "6IgLepZV343Pf5E7QcTN"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/pc7htdRcxve1jGp4dDef",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-21T13:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "H"
+        },
+        "numero": {
+          "integerValue": "38"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "MORwi3txhmtvl65q53o0"
+        },
+        "timeVisitante": {
+          "stringValue": "EzUQ3Eftr5IU13wmdtsX"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/pl7FWWvgEEfQhPRlrkfN",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-19T21:30:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "C"
+        },
+        "numero": {
+          "integerValue": "29"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "adQ3u11wHpa1ppEHA6U4"
+        },
+        "timeVisitante": {
+          "stringValue": "dLhvkN9rrZRodep8MHzw"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/q9VaqoOvWCeqHLriwxaC",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-16T16:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "I"
+        },
+        "numero": {
+          "integerValue": "17"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "pBCoo9LsQXEJHttc9uh6"
+        },
+        "timeVisitante": {
+          "stringValue": "l73etXGVUErVPC2ktExi"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/qeq0fLPxZ5ttGayWu9t6",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-20T17:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "E"
+        },
+        "numero": {
+          "integerValue": "33"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "FhtaC3QKhaQoCpJMa8zC"
+        },
+        "timeVisitante": {
+          "stringValue": "6JP3ZWKdyPbN9r5U6DuQ"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/qjFKmDskEd6f7H5J2FyD",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-26T16:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "I"
+        },
+        "numero": {
+          "integerValue": "62"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "l73etXGVUErVPC2ktExi"
+        },
+        "timeVisitante": {
+          "stringValue": "D8IMK6CkmQI6DxVpmiFT"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/quartas_1",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-09T17:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "quartas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W89"
+        },
+        "labelVisitante": {
+          "stringValue": "W90"
+        },
+        "numero": {
+          "integerValue": "97"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/quartas_2",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-10T19:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "quartas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W93"
+        },
+        "labelVisitante": {
+          "stringValue": "W94"
+        },
+        "numero": {
+          "integerValue": "98"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/quartas_3",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-11T18:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "quartas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W91"
+        },
+        "labelVisitante": {
+          "stringValue": "W92"
+        },
+        "numero": {
+          "integerValue": "99"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/quartas_4",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-11T23:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "quartas"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W95"
+        },
+        "labelVisitante": {
+          "stringValue": "W96"
+        },
+        "numero": {
+          "integerValue": "100"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/rgxBBigERpq4nP508LTk",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-25T21:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "F"
+        },
+        "numero": {
+          "integerValue": "58"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "hQSmdQSs7W8TBz2zBufY"
+        },
+        "timeVisitante": {
+          "stringValue": "qDyOwNgZGQmTkic6PyYF"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/semi_1",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-14T17:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "semi"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W97"
+        },
+        "labelVisitante": {
+          "stringValue": "W98"
+        },
+        "numero": {
+          "integerValue": "101"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/semi_2",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-15T16:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "semi"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "W99"
+        },
+        "labelVisitante": {
+          "stringValue": "W100"
+        },
+        "numero": {
+          "integerValue": "102"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/sjLFvmeihslb5TmoQcVi",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-15T01:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "F"
+        },
+        "numero": {
+          "integerValue": "12"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "pfrP27ysqfL5ahWhwTFM"
+        },
+        "timeVisitante": {
+          "stringValue": "hQSmdQSs7W8TBz2zBufY"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/t89vGMKhoFga6xDH3WtN",
+      "fields": {
+        "aoVivo": {
+          "booleanValue": false
+        },
+        "dataHora": {
+          "timestampValue": "2026-06-11T18:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "A"
+        },
+        "numero": {
+          "integerValue": "1"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "QcI9jHOxsxocKt0uB3Ep"
+        },
+        "timeVisitante": {
+          "stringValue": "qNdbC80lNgARJyo1a6E4"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/terceiro_lugar",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-07-18T18:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "terceiro"
+        },
+        "grupo": {
+          "nullValue": null
+        },
+        "labelCasa": {
+          "stringValue": "RU101"
+        },
+        "labelVisitante": {
+          "stringValue": "RU102"
+        },
+        "numero": {
+          "integerValue": "103"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": ""
+        },
+        "timeVisitante": {
+          "stringValue": ""
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/x9tnSBwLweStdZXd5Fuc",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-13T22:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "C"
+        },
+        "numero": {
+          "integerValue": "5"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "dLhvkN9rrZRodep8MHzw"
+        },
+        "timeVisitante": {
+          "stringValue": "PiolGM1SKoEiwFktVqg0"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/xM7CPteYZOEfU8letSXj",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-14T18:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "F"
+        },
+        "numero": {
+          "integerValue": "11"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "qDyOwNgZGQmTkic6PyYF"
+        },
+        "timeVisitante": {
+          "stringValue": "c50tt0pKcQpKGXvFqy38"
+        }
+      }
+    },
+    {
+      "name": "projects/bolao-do-bolero/databases/(default)/documents/jogos/zKMsG0wDK8bxAcwIQgg4",
+      "fields": {
+        "dataHora": {
+          "timestampValue": "2026-06-28T00:00:00Z"
+        },
+        "encerrado": {
+          "booleanValue": false
+        },
+        "fase": {
+          "stringValue": "grupos"
+        },
+        "grupo": {
+          "stringValue": "J"
+        },
+        "numero": {
+          "integerValue": "70"
+        },
+        "origemCasa": {
+          "nullValue": null
+        },
+        "origemVisitante": {
+          "nullValue": null
+        },
+        "resultado": {
+          "nullValue": null
+        },
+        "timeCasa": {
+          "stringValue": "Q2rrZP4B87DI5GeK3hC9"
+        },
+        "timeVisitante": {
+          "stringValue": "IhorDrd2lRnPahBYaCUt"
+        }
+      }
+    }
+  ]
+}
