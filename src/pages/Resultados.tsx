@@ -7,6 +7,7 @@ import type { GrupoRef } from '../lib/bracketUsuario'
 import { calcularClinchGrupo, type ClinchTime } from '../lib/clinchGrupo'
 import { calcularClassificacoesReais, montarResolvedorBracketOficial } from '../lib/resultadosOficiais'
 import { PorFaseView } from '../components/resultados/PorFaseView'
+import { BracketView } from '../components/resultados/BracketView'
 
 type Modo = 'chaveamento' | 'fase'
 
@@ -84,12 +85,15 @@ export function Resultados() {
         ) : modo === 'fase' ? (
           <PorFaseView jogos={jogos} times={times} resolver={resolver} />
         ) : (
-          // BracketView entra na Task 5; placeholder temporário evita import quebrado.
-          <p className="text-gray-500">Chaveamento em construção.</p>
+          <BracketView
+            jogos={jogos}
+            times={times}
+            grupos={grupos}
+            classificacoes={classificacoes}
+            clinchPorGrupo={clinchPorGrupo}
+            resolver={resolver}
+          />
         )}
-
-        {/* classificacoes e clinchPorGrupo serão consumidos pelo BracketView na Task 5 */}
-        <span className="hidden">{Object.keys(classificacoes).length}{Object.keys(clinchPorGrupo).length}</span>
       </div>
     </div>
   )
