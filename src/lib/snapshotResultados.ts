@@ -1,7 +1,8 @@
 import type { JogoCalc as Jogo, ClassificacaoTime } from '../types/calc'
 import type { GrupoRef } from './bracketUsuario'
 import { calcularClassificacoesReais } from './resultadosOficiais'
-import { calcularClinchGrupo, type ClinchTime } from './clinchGrupo'
+import type { ClinchTime } from './clinchGrupo'
+import { montarClinchCompleto } from './clinchMataMata'
 import { montarResolvedorProvisorio, type SlotResolvido } from './resolverProvisorio'
 
 /**
@@ -27,12 +28,8 @@ export interface SnapshotResultados {
 export function montarSnapshotResultados(jogos: Jogo[], grupos: GrupoRef[]): SnapshotResultados {
   const classificacoes = calcularClassificacoesReais(jogos, grupos)
 
-  const clinch: Record<string, Record<string, ClinchTime>> = {}
-  const jogosGrupos = jogos.filter(j => j.fase === 'grupos')
-  for (const g of grupos) {
-    const letra = g.nome.replace('Grupo ', '')
-    clinch[letra] = calcularClinchGrupo(jogosGrupos.filter(j => j.grupo === letra), g.times)
-  }
+  // Clinch completo (top-2 + melhor terceiro, cross-group).
+  const clinch: Record<string, Record<string, ClinchTime>> = montarClinchCompleto(jogos, grupos)
 
   const resolver = montarResolvedorProvisorio(jogos, grupos)
   const bracket: Record<string, { casa: SlotResolvido; visitante: SlotResolvido }> = {}

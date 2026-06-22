@@ -4,7 +4,8 @@ import { db } from '../config/firebase'
 import { Navbar } from '../components/Navbar'
 import type { Jogo, Time, ClassificacaoTime } from '../types'
 import type { GrupoRef } from '../lib/bracketUsuario'
-import { calcularClinchGrupo, type ClinchTime } from '../lib/clinchGrupo'
+import type { ClinchTime } from '../lib/clinchGrupo'
+import { montarClinchCompleto } from '../lib/clinchMataMata'
 import { calcularClassificacoesReais } from '../lib/resultadosOficiais'
 import { montarResolvedorProvisorio, type ResolverProvisorio } from '../lib/resolverProvisorio'
 import type { SnapshotResultados } from '../lib/snapshotResultados'
@@ -82,13 +83,7 @@ export function Resultados() {
 
   const clinchPorGrupo = useMemo<Record<string, Record<string, ClinchTime>>>(() => {
     if (snapshotFresco && snapshot) return snapshot.clinch
-    const out: Record<string, Record<string, ClinchTime>> = {}
-    const jogosGrupos = jogos.filter(j => j.fase === 'grupos')
-    for (const g of grupos) {
-      const letra = g.nome.replace('Grupo ', '')
-      out[letra] = calcularClinchGrupo(jogosGrupos.filter(j => j.grupo === letra), g.times)
-    }
-    return out
+    return montarClinchCompleto(jogos, grupos)
   }, [snapshotFresco, snapshot, jogos, grupos])
 
   const resolver = useMemo<ResolverProvisorio>(() => {

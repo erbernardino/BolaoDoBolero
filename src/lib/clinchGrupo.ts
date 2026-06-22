@@ -7,8 +7,13 @@ export interface ClinchTime {
   classificadoTop2: boolean
   /** 1 ou 2 se a posição exata está garantida em todos os cenários; senão null. */
   posicaoExataGarantida: 1 | 2 | null
-  /** Não alcança top-2 em NENHUM cenário possível. */
+  /** Eliminado. No clinch por grupo = não alcança top-2; após montarClinchCompleto = fora do mata-mata. */
   eliminado: boolean
+  /**
+   * Garantido no mata-mata (top-2 OU melhor terceiro), em todos os cenários.
+   * Preenchido por montarClinchCompleto (cross-group); ausente no clinch por grupo isolado.
+   */
+  classificadoMataMata?: boolean
   timeId: string
 }
 

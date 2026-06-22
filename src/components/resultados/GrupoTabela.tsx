@@ -34,7 +34,7 @@ export function GrupoTabela({ letra, classificacao, clinch, times }: GrupoTabela
         <tbody>
           {classificacao.map((ct, idx) => {
             const c = clinch[ct.timeId]
-            const classificado = c?.classificadoTop2
+            const classificado = c?.classificadoMataMata ?? c?.classificadoTop2
             const eliminado = c?.eliminado
             return (
               <tr

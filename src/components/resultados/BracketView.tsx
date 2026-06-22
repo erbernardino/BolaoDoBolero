@@ -41,7 +41,7 @@ export function BracketView({ jogos, times, grupos, classificacoes, clinchPorGru
   // Times já classificados (clinch) por grupo, para reforçar no cabeçalho do grupo.
   function classificadosDoGrupo(letra: string): string[] {
     const clinch = clinchPorGrupo[letra] ?? {}
-    return Object.values(clinch).filter(c => c.classificadoTop2).map(c => c.timeId)
+    return Object.values(clinch).filter(c => c.classificadoMataMata ?? c.classificadoTop2).map(c => c.timeId)
   }
 
   function CardConfronto({ jogo }: { jogo: Jogo }) {

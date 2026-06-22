@@ -21,6 +21,7 @@ const LIBS = [
   'chaveamento.ts',
   'bracketUsuario.ts',
   'clinchGrupo.ts',
+  'clinchMataMata.ts',
   'resultadosOficiais.ts',
   'resolverProvisorio.ts',
   'snapshotResultados.ts',
