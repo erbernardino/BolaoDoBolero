@@ -24,6 +24,10 @@ interface JogoRestante {
  * Critério CONSERVADOR baseado apenas em pontos (1º critério FIFA). Nunca
  * declara classificado quem não está (zero falsos positivos); pode atrasar o
  * badge em empates resolvidos por saldo (falso negativo intencional).
+ *
+ * "Grupo completo" significa que todos os jogos CADASTRADOS do grupo estão
+ * encerrados (restantes.length === 0). Assume-se que o carregamento traz todos
+ * os jogos do grupo de uma vez; jogos ainda não cadastrados não são considerados.
  */
 export function calcularClinchGrupo(
   jogosDoGrupo: Jogo[],

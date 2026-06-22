@@ -47,8 +47,7 @@ describe('calcularClinchGrupo', () => {
   })
 
   it('clinch antecipado de 1º: T1 vence 2 jogos e ninguém alcança seus pontos', () => {
-    // T1 venceu T2 e T3 (6 pts). Restam: T3-T4, T2-T4, T1-T4, T2-T3.
-    // Máximo de qualquer rival ao fim < 6? T4 pode chegar a 9 (vence 3). Então NÃO é clinch de 1º ainda.
+    // T1 venceu T2, T3 e T4 (9 pts, todos os jogos de T1 encerrados). Nenhum rival pode passar de 6.
     // Para garantir 1º cedo, fechamos mais jogos:
     const jogos = todosJogos({
       'T1-T2': [1, 0], 'T1-T3': [1, 0], 'T1-T4': [1, 0], // T1 = 9 pts, todos seus jogos feitos
@@ -90,6 +89,24 @@ describe('calcularClinchGrupo', () => {
     expect(r['T2'].classificadoTop2).toBe(true)
     expect(r['T3'].eliminado).toBe(true)
     expect(r['T4'].eliminado).toBe(true)
+  })
+
+  it('posicaoExataGarantida=2 via enumeração (grupo incompleto): T2 sempre exatamente 2º', () => {
+    // T1: 9 pts (venceu T2, T3, T4 — todos os seus jogos encerrados).
+    // T2: 6 pts (venceu T3 e T4 — jogos de T2 encerrados, exceto T1-T2 já encerrado).
+    // Resta APENAS T3-T4 (null). T3 e T4 têm no máximo 3 pts.
+    // Em TODOS os 3 cenários de T3-T4: T2 tem exatamente T1 à frente (strictAhead==1, aheadEqual==1).
+    // Logo: T2 deve ter posicaoExataGarantida===2 e classificadoTop2===true (via enumeração).
+    const jogos = todosJogos({
+      'T1-T2': [1, 0], 'T1-T3': [1, 0], 'T1-T4': [1, 0],
+      'T2-T3': [1, 0], 'T2-T4': [1, 0],
+      'T3-T4': null, // jogo restante → força branch de enumeração
+    })
+    const r = calcularClinchGrupo(jogos, TIMES)
+    expect(r['T1'].posicaoExataGarantida).toBe(1)
+    expect(r['T1'].classificadoTop2).toBe(true)
+    expect(r['T2'].posicaoExataGarantida).toBe(2)
+    expect(r['T2'].classificadoTop2).toBe(true)
   })
 
   it('falso-negativo conservador: empate em pontos não dá clinch de top-2 mesmo com saldo melhor', () => {
