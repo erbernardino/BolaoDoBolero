@@ -189,10 +189,14 @@ um novo resultado entra.
 ## Princípio
 
 O snapshot é um **cache de dados derivados**, não fonte de verdade — a verdade continua sendo a
-coleção `jogos`. A lógica de cálculo é **reusada de `src/lib`** (zero duplicação; nada migra para
-Cloud Functions). Decisão alinhada com o usuário: recálculo no **fluxo de gravação do admin**, não em
-trigger de servidor (evita duplicar a lógica de clinch/bracket — exatamente a classe de divergência que
-já causou bugs neste projeto — e a race condition conhecida do trigger `onJogoEncerrado`).
+coleção `jogos`. O recálculo roda **no servidor, numa Cloud Function** disparada por trigger quando um
+resultado é gravado. A lógica de cálculo é **compartilhada** (fonte única em `src/lib`, espelhada para
+dentro de `functions/` no build) — **zero duplicação**: a function usa exatamente o mesmo código do
+frontend, evitando a classe de divergência clinch/bracket que já causou bugs neste projeto.
+
+> **Revisão (2026-06-22):** a versão inicial deste adendo propunha recálculo no fluxo do admin
+> (client-side). O usuário definiu **servidor + trigger + snapshot único compartilhado**. O recálculo
+> passou para a Cloud Function; a página apenas lê o snapshot (com fallback de cálculo local).
 
 ## Onde armazenar
 
@@ -218,19 +222,27 @@ Reusa `calcularClassificacoesReais`, `calcularClinchGrupo` e `montarResolvedorPr
 serializável (sem `Timestamp`; o `atualizadoEm` é adicionado só na gravação). `baseadoEm.jogosEncerrados`
 = contagem de jogos com `encerrado && resultado`.
 
-### 2. Escrita (admin) — em `InserirResultados.tsx`
+### 2. Escrita — Cloud Function `functions/src/resultadosProjecoes.ts`
 
-Após gravar um resultado com sucesso (o componente já recarrega/atualiza a lista de jogos), persistir:
+Trigger `onResultadoParaSnapshot` = `onDocumentWritten('jogos/{jogoId}')`: quando o `resultado` ou
+`encerrado` de um jogo muda, `recalcularSnapshotResultados()` lê todos os jogos/grupos (admin SDK),
+chama `montarSnapshotResultados()` (lib compartilhada) e grava:
 
 ```ts
-await setDoc(doc(db, '_system', 'resultados'), {
-  ...montarSnapshotResultados(jogosAtualizados, grupos),
-  atualizadoEm: serverTimestamp(),
+await db.doc('_system/resultados').set({
+  ...montarSnapshotResultados(jogos, grupos),
+  atualizadoEm: FieldValue.serverTimestamp(),
 })
 ```
 
-Encapsular em helper `persistirSnapshotResultados(jogos, grupos)`. A escrita é best-effort: se falhar,
-loga e não bloqueia a gravação do resultado (a página tem fallback de cálculo).
+Idempotente (recomputa do zero e sobrescreve um único doc) → disparos concorrentes convergem
+(last-write-wins); não precisa de lock/debounce. Dispara em `jogos`, nunca em `_system` (evita loop).
+
+**Compartilhamento da lib (sem duplicação):** `functions/copy-shared.mjs` espelha, no `npm run build`
+das functions, uma allowlist de `src/lib/*.ts` + `src/types/calc.ts` para `functions/src/_shared/`
+(gitignored). A fonte editável é única (`src/lib`); a function importa de `./_shared/lib/...`. O
+desacoplamento de `Timestamp` (tipos de cálculo em `src/types/calc.ts`, sem `firebase`) é o que torna
+as libs compiláveis no toolchain das functions.
 
 ### 3. Leitura (página) — `Resultados.tsx`
 
