@@ -36,10 +36,12 @@ export function Resultados() {
         const tmap = new Map<string, Time>()
         timesSnap.docs.forEach(d => tmap.set(d.id, { id: d.id, ...d.data() } as Time))
         setTimes(tmap)
-        setGrupos(gruposSnap.docs.map(d => {
-          const data = d.data() as { nome?: string; times?: string[] }
-          return { nome: data.nome ?? `Grupo ${d.id}`, times: data.times ?? [] }
-        }))
+        setGrupos(gruposSnap.docs
+          .map(d => {
+            const data = d.data() as { nome?: string; times?: string[] }
+            return { nome: data.nome ?? `Grupo ${d.id}`, times: data.times ?? [] }
+          })
+          .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')))
       } catch (e) {
         console.error('Falha ao carregar times/grupos', e)
         setErro(true)
