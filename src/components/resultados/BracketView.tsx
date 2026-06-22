@@ -2,8 +2,13 @@ import { useMemo } from 'react'
 import type { Jogo, Time, ClassificacaoTime, Fase } from '../../types'
 import type { ResolverProvisorio } from '../../lib/resolverProvisorio'
 import type { ClinchTime } from '../../lib/clinchGrupo'
+import { montarColunasBracket } from '../../lib/arvoreMataMata'
 import { GrupoTabela } from './GrupoTabela'
 import { TimeChip } from './TimeChip'
+
+const LABEL_FASE: Record<string, string> = {
+  fase32: '2ª Fase', oitavas: 'Oitavas', quartas: 'Quartas', semi: 'Semis', final: 'Final', terceiro: '3º lugar',
+}
 
 export interface BracketViewProps {
   jogos: Jogo[]
@@ -38,6 +43,9 @@ export function BracketView({ jogos, times, grupos, classificacoes, clinchPorGru
     return map
   }, [jogos])
 
+  // Bracket espelhado: lados convergindo para a final no centro (derivado das labels W##).
+  const cols = useMemo(() => montarColunasBracket(jogos), [jogos])
+
   // Times já classificados (clinch) por grupo, para reforçar no cabeçalho do grupo.
   function classificadosDoGrupo(letra: string): string[] {
     const clinch = clinchPorGrupo[letra] ?? {}
@@ -66,6 +74,20 @@ export function BracketView({ jogos, times, grupos, classificacoes, clinchPorGru
               pênaltis: {nome(r.classificado)}
             </div>
           )}
+        </div>
+      </div>
+    )
+  }
+
+  function ColunaBracket({ jogos: lista }: { jogos: Jogo[] }) {
+    if (lista.length === 0) return null
+    return (
+      <div className="flex flex-col shrink-0">
+        <div className="text-[10px] font-semibold text-gray-500 text-center mb-1 uppercase tracking-wide">
+          {LABEL_FASE[lista[0].fase] ?? lista[0].fase}
+        </div>
+        <div className="flex flex-col justify-around flex-1 gap-2">
+          {lista.map(j => <CardConfronto key={j.id} jogo={j} />)}
         </div>
       </div>
     )
@@ -112,22 +134,43 @@ export function BracketView({ jogos, times, grupos, classificacoes, clinchPorGru
             <span className="text-green-600 font-bold">✓</span> classificado · <span className="italic">itálico</span> = provisório
           </span>
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {COLUNAS.map(col => (
-            <div key={col.fase} className="flex flex-col gap-2 shrink-0">
-              <div className="text-xs font-semibold text-gray-500">{col.label}</div>
-              {porFase[col.fase].map(j => <CardConfronto key={j.id} jogo={j} />)}
-              {porFase[col.fase].length === 0 && (
-                <div className="text-[11px] text-gray-300 w-44">—</div>
+        {cols.final ? (
+          // Bracket espelhado: esquerda → FINAL (centro) → direita.
+          <div className="flex items-stretch gap-2 sm:gap-3 overflow-x-auto pb-4">
+            {cols.esquerda.map((col, i) => <ColunaBracket key={`e${i}`} jogos={col} />)}
+            <div className="flex flex-col justify-center items-center shrink-0 px-1">
+              <div className="text-[11px] font-bold text-amber-600 uppercase tracking-wide mb-1">Final</div>
+              <CardConfronto jogo={cols.final} />
+              {cols.terceiro && (
+                <div className="mt-5 flex flex-col items-center">
+                  <div className="text-[10px] text-gray-400 mb-1">3º lugar</div>
+                  <CardConfronto jogo={cols.terceiro} />
+                </div>
               )}
             </div>
-          ))}
-        </div>
-        {jogoTerceiro && (
-          <div className="mt-4">
-            <div className="text-xs font-semibold text-gray-500 mb-1">Disputa de 3º lugar</div>
-            <CardConfronto jogo={jogoTerceiro} />
+            {cols.direita.map((col, i) => <ColunaBracket key={`d${i}`} jogos={col} />)}
           </div>
+        ) : (
+          // Fallback (dados sem final definida): colunas lineares.
+          <>
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {COLUNAS.map(col => (
+                <div key={col.fase} className="flex flex-col gap-2 shrink-0">
+                  <div className="text-xs font-semibold text-gray-500">{col.label}</div>
+                  {porFase[col.fase].map(j => <CardConfronto key={j.id} jogo={j} />)}
+                  {porFase[col.fase].length === 0 && (
+                    <div className="text-[11px] text-gray-300 w-44">—</div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {jogoTerceiro && (
+              <div className="mt-4">
+                <div className="text-xs font-semibold text-gray-500 mb-1">Disputa de 3º lugar</div>
+                <CardConfronto jogo={jogoTerceiro} />
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>
