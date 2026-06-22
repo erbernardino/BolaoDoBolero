@@ -1,4 +1,4 @@
-import type { ClassificacaoTime, Jogo, Palpite } from '../types'
+import type { ClassificacaoTime, JogoCalc as Jogo, PalpiteCalc as Palpite } from '../types/calc'
 import { calcularClassificacaoGrupo } from './classificacao'
 import { selecionarMelhoresTerceiros } from './melhoresTerceiros'
 import { montarTerceirosPorSlot, resolverTimeMataMataPersonalizado } from './chaveamento'

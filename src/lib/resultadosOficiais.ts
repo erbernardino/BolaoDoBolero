@@ -1,4 +1,4 @@
-import type { Jogo, Palpite, ClassificacaoTime } from '../types'
+import type { JogoCalc as Jogo, PalpiteCalc as Palpite, ClassificacaoTime } from '../types/calc'
 import { calcularClassificacaoGrupo } from './classificacao'
 import { montarResolvedorBracket, type GrupoRef, type ResolverBracket } from './bracketUsuario'
 
@@ -16,7 +16,6 @@ export function jogoParaPalpiteReal(j: Jogo): Palpite {
     golsCasa: j.resultado!.golsCasa,
     golsVisitante: j.resultado!.golsVisitante,
     classificado: j.resultado!.classificado,
-    criadoEm: null as never,
   }
 }
 

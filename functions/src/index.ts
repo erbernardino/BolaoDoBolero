@@ -5,6 +5,7 @@ import { recalcularTodoRanking } from './pontuacao'
 export { backupFirestoreDiario } from './backup'
 export { auditPalpites, auditPalpitesEspeciais, auditUsuarios, registrarLogin } from './audit'
 export { resolverMataMata } from './resolverMataMata'
+export { onResultadoParaSnapshot } from './resultadosProjecoes'
 
 admin.initializeApp()
 

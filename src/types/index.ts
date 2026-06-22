@@ -1,4 +1,12 @@
-import { Timestamp } from 'firebase/firestore'
+import type { Timestamp } from 'firebase/firestore'
+import type { JogoCalc, PalpiteCalc } from './calc'
+
+// Tipos de cálculo (livres de Timestamp) são definidos em ./calc e reexportados
+// aqui para o frontend. Jogo/Palpite estendem-nos com os campos Timestamp.
+export type {
+  Fase, Origem, OrigemGrupo, OrigemJogo, Resultado, ClassificacaoTime,
+  JogoCalc, PalpiteCalc,
+} from './calc'
 
 export interface Config {
   pontos: {
@@ -35,54 +43,11 @@ export interface Grupo {
   times: string[]
 }
 
-export type Fase = 'grupos' | 'fase32' | 'oitavas' | 'quartas' | 'semi' | 'terceiro' | 'final'
-
-export interface OrigemGrupo {
-  tipo: 'grupo'
-  grupo: string
-  posicao: number
-}
-
-export interface OrigemJogo {
-  tipo: 'jogo'
-  jogoId: string
-  resultado: 'vencedor' | 'perdedor'
-}
-
-export type Origem = OrigemGrupo | OrigemJogo
-
-export interface Resultado {
-  golsCasa: number
-  golsVisitante: number
-  classificado: string | null
-}
-
-export interface Jogo {
-  id: string
-  numero: number
-  fase: Fase
-  grupo: string | null
-  timeCasa: string
-  timeVisitante: string
-  origemCasa: Origem | null
-  origemVisitante: Origem | null
+export interface Jogo extends JogoCalc {
   dataHora: Timestamp
-  resultado: Resultado | null
-  encerrado: boolean
-  aoVivo?: boolean
-  labelCasa?: string
-  labelVisitante?: string
 }
 
-export interface Palpite {
-  id: string
-  uid: string
-  jogoId: string
-  timeCasa: string
-  timeVisitante: string
-  golsCasa: number
-  golsVisitante: number
-  classificado: string | null
+export interface Palpite extends PalpiteCalc {
   criadoEm: Timestamp
 }
 
@@ -157,16 +122,3 @@ export interface ResultadoEspecial {
   paisesArtilheiros: string[] // timeIds (pode ter mais de um artilheiro)
 }
 
-export interface ClassificacaoTime {
-  timeId: string
-  grupo?: string
-  pontos: number
-  jogos: number
-  vitorias: number
-  empates: number
-  derrotas: number
-  golsMarcados: number
-  golsSofridos: number
-  saldoGols: number
-  fairPlayPontos?: number
-}

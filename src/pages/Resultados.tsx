@@ -1,34 +1,38 @@
 import { useState, useEffect, useMemo } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { Navbar } from '../components/Navbar'
 import type { Jogo, Time, ClassificacaoTime } from '../types'
 import type { GrupoRef } from '../lib/bracketUsuario'
 import { calcularClinchGrupo, type ClinchTime } from '../lib/clinchGrupo'
 import { calcularClassificacoesReais } from '../lib/resultadosOficiais'
-import { montarResolvedorProvisorio } from '../lib/resolverProvisorio'
+import { montarResolvedorProvisorio, type ResolverProvisorio } from '../lib/resolverProvisorio'
+import type { SnapshotResultados } from '../lib/snapshotResultados'
 import { PorFaseView } from '../components/resultados/PorFaseView'
 import { BracketView } from '../components/resultados/BracketView'
 
 type Modo = 'chaveamento' | 'fase'
 
+const SLOT_VAZIO = { timeId: null, classificado: false, provisorio: false }
+const SLOTS_VAZIOS = { casa: SLOT_VAZIO, visitante: SLOT_VAZIO }
+
 export function Resultados() {
   const [jogos, setJogos] = useState<Jogo[]>([])
   const [times, setTimes] = useState<Map<string, Time>>(new Map())
   const [grupos, setGrupos] = useState<GrupoRef[]>([])
+  const [snapshot, setSnapshot] = useState<SnapshotResultados | null>(null)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState(false)
   const [modo, setModo] = useState<Modo>('chaveamento')
 
+  // times e grupos não mudam durante a Copa: leitura pontual.
   useEffect(() => {
-    async function load() {
+    async function loadEstaticos() {
       try {
-        const [jogosSnap, timesSnap, gruposSnap] = await Promise.all([
-          getDocs(collection(db, 'jogos')),
+        const [timesSnap, gruposSnap] = await Promise.all([
           getDocs(collection(db, 'times')),
           getDocs(collection(db, 'grupos')),
         ])
-        setJogos(jogosSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Jogo))
         const tmap = new Map<string, Time>()
         timesSnap.docs.forEach(d => tmap.set(d.id, { id: d.id, ...d.data() } as Time))
         setTimes(tmap)
@@ -37,21 +41,45 @@ export function Resultados() {
           return { nome: data.nome ?? `Grupo ${d.id}`, times: data.times ?? [] }
         }))
       } catch (e) {
-        console.error('Falha ao carregar resultados', e)
+        console.error('Falha ao carregar times/grupos', e)
         setErro(true)
-      } finally {
-        setLoading(false)
       }
     }
-    load()
+    loadEstaticos()
   }, [])
 
+  // jogos e snapshot: tempo real.
+  useEffect(() => {
+    const unsubJogos = onSnapshot(
+      collection(db, 'jogos'),
+      snap => {
+        setJogos(snap.docs.map(d => ({ id: d.id, ...d.data() }) as Jogo))
+        setLoading(false)
+      },
+      e => { console.error('Falha ao escutar jogos', e); setErro(true); setLoading(false) },
+    )
+    const unsubSnap = onSnapshot(
+      doc(db, '_system', 'resultados'),
+      snap => setSnapshot(snap.exists() ? (snap.data() as SnapshotResultados) : null),
+      e => { console.error('Falha ao escutar snapshot', e); setSnapshot(null) },
+    )
+    return () => { unsubJogos(); unsubSnap() }
+  }, [])
+
+  // Snapshot é usável quando existe e bate com a contagem atual de jogos encerrados.
+  const snapshotFresco = useMemo(() => {
+    if (!snapshot) return false
+    const encerrados = jogos.filter(j => j.encerrado && j.resultado).length
+    return snapshot.baseadoEm?.jogosEncerrados === encerrados
+  }, [snapshot, jogos])
+
   const classificacoes = useMemo<Record<string, ClassificacaoTime[]>>(
-    () => calcularClassificacoesReais(jogos, grupos),
-    [jogos, grupos],
+    () => (snapshotFresco && snapshot ? snapshot.classificacoes : calcularClassificacoesReais(jogos, grupos)),
+    [snapshotFresco, snapshot, jogos, grupos],
   )
 
   const clinchPorGrupo = useMemo<Record<string, Record<string, ClinchTime>>>(() => {
+    if (snapshotFresco && snapshot) return snapshot.clinch
     const out: Record<string, Record<string, ClinchTime>> = {}
     const jogosGrupos = jogos.filter(j => j.fase === 'grupos')
     for (const g of grupos) {
@@ -59,12 +87,14 @@ export function Resultados() {
       out[letra] = calcularClinchGrupo(jogosGrupos.filter(j => j.grupo === letra), g.times)
     }
     return out
-  }, [jogos, grupos])
+  }, [snapshotFresco, snapshot, jogos, grupos])
 
-  const resolver = useMemo(
-    () => montarResolvedorProvisorio(jogos, grupos),
-    [jogos, grupos],
-  )
+  const resolver = useMemo<ResolverProvisorio>(() => {
+    if (snapshotFresco && snapshot) {
+      return jogo => snapshot.bracket[jogo.id] ?? SLOTS_VAZIOS
+    }
+    return montarResolvedorProvisorio(jogos, grupos)
+  }, [snapshotFresco, snapshot, jogos, grupos])
 
   return (
     <div className="min-h-screen bg-gray-50">

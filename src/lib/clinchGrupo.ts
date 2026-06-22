@@ -1,4 +1,4 @@
-import type { Jogo } from '../types'
+import type { JogoCalc as Jogo } from '../types/calc'
 import { calcularClassificacaoGrupo } from './classificacao'
 import { jogoParaPalpiteReal } from './resultadosOficiais'
 

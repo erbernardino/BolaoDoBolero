@@ -1,4 +1,4 @@
-import type { Jogo } from '../types'
+import type { JogoCalc as Jogo } from '../types/calc'
 import type { GrupoRef } from './bracketUsuario'
 import { calcularClassificacoesReais, montarResolvedorBracketOficial } from './resultadosOficiais'
 import { calcularClinchGrupo, type ClinchTime } from './clinchGrupo'
