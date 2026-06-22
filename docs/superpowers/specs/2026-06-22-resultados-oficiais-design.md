@@ -25,12 +25,23 @@ internamente, porém em uma visão consolidada para qualquer usuário logado.
 3. **Visualização:** **dois modos** alternáveis por toggle:
    - **Chaveamento** (bracket visual do mata-mata + tabelas dos grupos);
    - **Por fase** (abas: Grupos · 2ª fase · Oitavas · Quartas · Semis · 3º lugar · Final).
-4. **Preenchimento de slot no bracket:** um slot (`1º A`, `2º B`, ...) só é preenchido com um time
-   quando a **posição exata** está matematicamente garantida. Garantir apenas top-2 (sem saber se é
-   1º ou 2º) **não** preenche o slot.
-5. **Classificados no bracket:** além da regra de slot exato, cada grupo no modo chaveamento exibe a
-   lista de times **já classificados** (badge), sem afirmar 1º/2º, para que o clinch antecipado
-   também apareça na visão de chaveamento.
+4. **Preenchimento de slot no bracket — PROVISÓRIO (revisado em 2026-06-22):** os slots diretos de
+   grupo (`1A`, `2A`, ...) são preenchidos com a **classificação atual** (parcial) do grupo: o 1º
+   colocado atual vai para `1A`, o 2º atual para `2A`, atualizando conforme os jogos acontecem. O
+   estado de cada time preenchido é sinalizado: **classificado** (clinch top-2 garantido) recebe selo
+   `✓`; **provisório** (líder atual sem garantia, ou vaga garantida mas posição 1º/2º ainda não
+   travada) é exibido **esmaecido**. Quando a posição exata trava (grupo completo ou clinch de
+   posição), o time deixa de ser provisório.
+   - _Observação:_ esta decisão **substitui** a regra original ("só preenche com posição exata
+     garantida"), que na prática deixava o chaveamento vazio durante toda a fase de grupos. Comporta-se
+     como brackets reais de torneio durante a fase de grupos.
+   - _Limite:_ o preenchimento provisório vale **apenas** para slots diretos de grupo (`1X`/`2X`). Os
+     "melhores terceiros" (`3XYZ...`) e as cascatas de mata-mata (`W##`/`RU##`) **não** resolvem cedo
+     — permanecem como label até haver dado suficiente (grupos todos completos / resultado do jogo
+     anterior).
+5. **Classificados no bracket:** além do preenchimento provisório dos slots, cada grupo no modo
+   chaveamento exibe a lista de times **já classificados** (badge), reforçando o clinch antecipado na
+   visão de chaveamento.
 6. **Melhores terceiros:** o clinch antecipado vale só para 1º/2º (lógica interna ao grupo). Os "8
    melhores terceiros" (comparação entre os 12 grupos) só são resolvidos quando **toda** a fase de
    grupos termina. Sem clinch antecipado para terceiros.

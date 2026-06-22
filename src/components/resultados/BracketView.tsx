@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import type { Jogo, Time, ClassificacaoTime, Fase } from '../../types'
-import type { ResolverBracket } from '../../lib/bracketUsuario'
+import type { ResolverProvisorio } from '../../lib/resolverProvisorio'
 import type { ClinchTime } from '../../lib/clinchGrupo'
 import { GrupoTabela } from './GrupoTabela'
+import { TimeChip } from './TimeChip'
 
 export interface BracketViewProps {
   jogos: Jogo[]
@@ -10,7 +11,7 @@ export interface BracketViewProps {
   grupos: { nome: string; times: string[] }[]
   classificacoes: Record<string, ClassificacaoTime[]>
   clinchPorGrupo: Record<string, Record<string, ClinchTime>>
-  resolver: ResolverBracket
+  resolver: ResolverProvisorio
 }
 
 const COLUNAS: { fase: Fase; label: string }[] = [
@@ -26,9 +27,6 @@ export function BracketView({ jogos, times, grupos, classificacoes, clinchPorGru
     if (!id) return null
     return times.get(id)?.sigla ?? times.get(id)?.nome ?? id
   }
-  function bandeira(id: string | null) {
-    return id ? times.get(id)?.bandeira : undefined
-  }
 
   const porFase = useMemo(() => {
     const map: Record<string, Jogo[]> = {}
@@ -40,31 +38,35 @@ export function BracketView({ jogos, times, grupos, classificacoes, clinchPorGru
     return map
   }, [jogos])
 
-  // Times já classificados (clinch) por grupo, para exibir no cabeçalho dos grupos.
+  // Times já classificados (clinch) por grupo, para reforçar no cabeçalho do grupo.
   function classificadosDoGrupo(letra: string): string[] {
     const clinch = clinchPorGrupo[letra] ?? {}
     return Object.values(clinch).filter(c => c.classificadoTop2).map(c => c.timeId)
   }
 
   function CardConfronto({ jogo }: { jogo: Jogo }) {
-    const { casaId, visitanteId } = resolver(jogo)
+    const { casa, visitante } = resolver(jogo)
     const r = jogo.resultado
-    const linha = (id: string | null, label: string | undefined, gols: number | undefined) => (
-      <div className="flex items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-1 min-w-0">
-          {bandeira(id) && <img src={bandeira(id)} alt="" className="w-4 h-3 object-cover rounded-sm" />}
-          <span className="truncate">{nome(id) ?? label ?? '—'}</span>
-        </div>
-        <span className="font-bold tabular-nums">{gols ?? ''}</span>
-      </div>
-    )
     return (
-      <div className="rounded border border-gray-200 bg-white px-2 py-1.5 w-40 space-y-1">
-        {linha(casaId, jogo.labelCasa, r?.golsCasa)}
-        {linha(visitanteId, jogo.labelVisitante, r?.golsVisitante)}
-        {r?.classificado && (
-          <div className="text-[10px] text-gray-400 text-center">pen: {nome(r.classificado)}</div>
-        )}
+      <div className="rounded border border-gray-200 bg-white w-44 overflow-hidden shadow-sm">
+        <div className="bg-gray-50 border-b border-gray-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-gray-400">
+          Jogo {jogo.numero}
+        </div>
+        <div className="px-2 py-1.5 space-y-1">
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <TimeChip slot={casa} label={jogo.labelCasa} times={times} />
+            <span className="font-bold tabular-nums shrink-0">{r?.golsCasa ?? ''}</span>
+          </div>
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <TimeChip slot={visitante} label={jogo.labelVisitante} times={times} />
+            <span className="font-bold tabular-nums shrink-0">{r?.golsVisitante ?? ''}</span>
+          </div>
+          {r?.classificado && (
+            <div className="text-[10px] text-gray-400 text-center border-t border-gray-50 pt-0.5">
+              pênaltis: {nome(r.classificado)}
+            </div>
+          )}
+        </div>
       </div>
     )
   }
@@ -104,14 +106,19 @@ export function BracketView({ jogos, times, grupos, classificacoes, clinchPorGru
 
       {/* MATA-MATA EM COLUNAS */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-600 mb-2">Mata-mata</h2>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-semibold text-gray-600">Mata-mata</h2>
+          <span className="text-[11px] text-gray-400">
+            <span className="text-green-600 font-bold">✓</span> classificado · <span className="italic">itálico</span> = provisório
+          </span>
+        </div>
         <div className="flex gap-4 overflow-x-auto pb-2">
           {COLUNAS.map(col => (
             <div key={col.fase} className="flex flex-col gap-2 shrink-0">
               <div className="text-xs font-semibold text-gray-500">{col.label}</div>
               {porFase[col.fase].map(j => <CardConfronto key={j.id} jogo={j} />)}
               {porFase[col.fase].length === 0 && (
-                <div className="text-[11px] text-gray-300 w-40">—</div>
+                <div className="text-[11px] text-gray-300 w-44">—</div>
               )}
             </div>
           ))}

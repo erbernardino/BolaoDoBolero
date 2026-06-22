@@ -5,7 +5,8 @@ import { Navbar } from '../components/Navbar'
 import type { Jogo, Time, ClassificacaoTime } from '../types'
 import type { GrupoRef } from '../lib/bracketUsuario'
 import { calcularClinchGrupo, type ClinchTime } from '../lib/clinchGrupo'
-import { calcularClassificacoesReais, montarResolvedorBracketOficial } from '../lib/resultadosOficiais'
+import { calcularClassificacoesReais } from '../lib/resultadosOficiais'
+import { montarResolvedorProvisorio } from '../lib/resolverProvisorio'
 import { PorFaseView } from '../components/resultados/PorFaseView'
 import { BracketView } from '../components/resultados/BracketView'
 
@@ -61,7 +62,7 @@ export function Resultados() {
   }, [jogos, grupos])
 
   const resolver = useMemo(
-    () => montarResolvedorBracketOficial(jogos, grupos),
+    () => montarResolvedorProvisorio(jogos, grupos),
     [jogos, grupos],
   )
 
@@ -94,7 +95,14 @@ export function Resultados() {
         ) : erro ? (
           <p className="text-red-600">Não foi possível carregar os resultados. Tente recarregar a página.</p>
         ) : modo === 'fase' ? (
-          <PorFaseView jogos={jogos} times={times} resolver={resolver} />
+          <PorFaseView
+            jogos={jogos}
+            times={times}
+            resolver={resolver}
+            grupos={grupos}
+            classificacoes={classificacoes}
+            clinchPorGrupo={clinchPorGrupo}
+          />
         ) : (
           <BracketView
             jogos={jogos}
