@@ -172,6 +172,109 @@ jogos + times + grupos (Firestore)
 ## Fora de escopo (YAGNI)
 
 - Clinch antecipado para melhores terceiros (cross-group).
-- Atualização em tempo real (listeners). A página usa `getDocs` pontual, como `PalpitesGeral`.
-- Qualquer alteração em coleções do Firestore (especialmente `config`, proibido por diretiva).
+- Qualquer alteração na coleção `config` do Firestore (proibido por diretiva).
 - Build/deploy de produção.
+
+---
+
+# Adendo (2026-06-22) — Persistência do snapshot de Resultados/Projeções
+
+## Objetivo
+
+Hoje cada visita à página recalcula tudo no navegador (lê todos os jogos, roda `clinch 3^k` por
+grupo, monta o bracket). Persistir o resultado computado no Firestore resolve três coisas: (1) visitas
+deixam de recalcular; (2) todos os usuários veem o mesmo dado; (3) a página atualiza **ao vivo** quando
+um novo resultado entra.
+
+## Princípio
+
+O snapshot é um **cache de dados derivados**, não fonte de verdade — a verdade continua sendo a
+coleção `jogos`. A lógica de cálculo é **reusada de `src/lib`** (zero duplicação; nada migra para
+Cloud Functions). Decisão alinhada com o usuário: recálculo no **fluxo de gravação do admin**, não em
+trigger de servidor (evita duplicar a lógica de clinch/bracket — exatamente a classe de divergência que
+já causou bugs neste projeto — e a race condition conhecida do trigger `onJogoEncerrado`).
+
+## Onde armazenar
+
+Documento único **`_system/resultados`** (coleção `_system`, mesmo padrão seguro de
+`_system/ranking_meta`). **NUNCA** a coleção `config` (diretiva de segurança do projeto).
+
+## Componentes
+
+### 1. Lib pura — `src/lib/snapshotResultados.ts` (+ testes)
+
+```ts
+export interface SnapshotResultados {
+  classificacoes: Record<string, ClassificacaoTime[]>            // por letra de grupo
+  clinch: Record<string, Record<string, ClinchTime>>            // por letra → por timeId
+  bracket: Record<string, { casa: SlotResolvido; visitante: SlotResolvido }>  // por jogoId
+  baseadoEm: { jogosEncerrados: number }                        // marcador de staleness
+}
+
+export function montarSnapshotResultados(jogos: Jogo[], grupos: GrupoRef[]): SnapshotResultados
+```
+
+Reusa `calcularClassificacoesReais`, `calcularClinchGrupo` e `montarResolvedorProvisorio`. Função pura,
+serializável (sem `Timestamp`; o `atualizadoEm` é adicionado só na gravação). `baseadoEm.jogosEncerrados`
+= contagem de jogos com `encerrado && resultado`.
+
+### 2. Escrita (admin) — em `InserirResultados.tsx`
+
+Após gravar um resultado com sucesso (o componente já recarrega/atualiza a lista de jogos), persistir:
+
+```ts
+await setDoc(doc(db, '_system', 'resultados'), {
+  ...montarSnapshotResultados(jogosAtualizados, grupos),
+  atualizadoEm: serverTimestamp(),
+})
+```
+
+Encapsular em helper `persistirSnapshotResultados(jogos, grupos)`. A escrita é best-effort: se falhar,
+loga e não bloqueia a gravação do resultado (a página tem fallback de cálculo).
+
+### 3. Leitura (página) — `Resultados.tsx`
+
+- Troca `getDocs` por `onSnapshot` (tempo real) em `jogos` e no doc `_system/resultados`; `times` e
+  `grupos` lidos uma vez (não mudam durante a Copa).
+- **Snapshot presente e fresco** (`baseadoEm.jogosEncerrados` == contagem real de encerrados): usa
+  `classificacoes`/`clinch`/`bracket` do snapshot — **não recalcula**.
+- **Snapshot ausente ou stale**: recalcula client-side com as libs (auto-heal). A página nunca quebra.
+- O `resolver` consumido por `BracketView`/`PorFaseView` passa a vir do snapshot (uma função que lê
+  `bracket[jogo.id]`) quando fresco, ou do `montarResolvedorProvisorio` no fallback. Mesma interface
+  `ResolverProvisorio`, então os componentes não mudam.
+
+### 4. Regras Firestore — `firestore.rules`
+
+`_system/resultados`: leitura para autenticados; escrita apenas para admin (`role == 'admin'`). Seguir
+o padrão de regras já usado para `_system`/`ranking`.
+
+## Fluxo
+
+```
+Admin grava resultado (InserirResultados)
+   │  updateDoc(jogos/{id}, {resultado, encerrado})
+   │  recarrega jogos
+   └─ persistirSnapshotResultados(jogos, grupos)
+          montarSnapshotResultados() → setDoc(_system/resultados, {…, atualizadoEm})
+                         │
+                  onSnapshot (tempo real)
+                         ▼
+   Resultados.tsx — usa derivados do snapshot (sem recalcular); fallback calcula se ausente/stale
+```
+
+## Testes
+
+- **Unitários (Vitest, lib pura):** `snapshotResultados.test.ts` — estrutura do snapshot (chaves por
+  grupo, bracket por jogoId, `baseadoEm.jogosEncerrados` correto); consistência com as libs de origem
+  para um cenário conhecido.
+- **Manual:** gravar um resultado no admin (ambiente teste) e confirmar que `_system/resultados`
+  é escrito e que a página atualiza ao vivo, sem recálculo quando o snapshot está fresco; remover o
+  doc e confirmar o fallback (auto-heal).
+
+## Fora de escopo (YAGNI)
+
+- Cloud Function / trigger de servidor.
+- Recompute fora do fluxo do admin (scripts de manutenção podem deixar o snapshot stale; a página
+  detecta via `baseadoEm` e recalcula).
+- Migração/seed do doc inicial — a primeira gravação de resultado o cria; até lá, a página usa o
+  fallback de cálculo.
