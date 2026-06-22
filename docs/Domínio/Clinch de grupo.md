@@ -69,8 +69,12 @@ O algoritmo usa apenas **pontos** — o 1º critério de desempate FIFA — e nu
 
 `src/lib/__tests__/clinchGrupo.test.ts` cobre: grupo sem jogos (tudo indefinido), clinch antecipado de 1º, top-2 sem posição exata (dois líderes empatados, 1º/2º indefinido), grupo completo consistente com a classificação, `posicaoExataGarantida = 2` via enumeração e o falso-negativo conservador.
 
-> [!danger] Bug confirmado em produção (2026-06-22)
-> Em diagnóstico do Grupo J real, **Argentina** (6 pts, saldo +5, 1 jogo restante; rivais com no máximo 3 pts) recebeu `classificadoTop2 = false` — caso em que **nenhuma** combinação de resultados leva dois times acima dela. Isso **não** é o falso-negativo conservador (que trata de empates por pontos): é um **falso negativo indevido** de um líder folgado por pontos. O valor errado foi inclusive gravado no [[Snapshot de resultados]] em `_system/resultados`. Tratar como divergência aberta entre o algoritmo e o comportamento esperado — não confiar no clinch de top-2 como definitivo até a correção.
+> [!note] Falso negativo relatado historicamente — não reproduz no código atual
+> Em 2026-06-22 houve um **relato** (diagnóstico operacional, não confirmado em código na época) de que **Argentina** no Grupo J — 6 pts, saldo +5, 1 jogo restante, rivais com no máximo 3 pts — teria recebido `classificadoTop2 = false`, valor que chegou a ser gravado no [[Snapshot de resultados]] em `_system/resultados`.
+>
+> **Verificação (durante esta documentação):** ao reconstruir esse exato cenário contra a `calcularClinchGrupo` atual (`src/lib/clinchGrupo.ts`), o resultado é `classificadoTop2 = true` em todas as variantes testadas (rivais com 2 e com 3 pts). Ou seja, **o defeito não reproduz** no código atual — provavelmente já corrigido, ou o sintoma original vinha de dados de entrada (ex.: jogos não cadastrados inflando a lista de "restantes", ou snapshot defasado), não do algoritmo em si.
+>
+> Mantido aqui como nota histórica. Se o sintoma reaparecer, suspeite primeiro da **completude dos jogos do grupo** carregados (ver callout "Custo exponencial") antes do algoritmo. Registrado também em [[Divergências conhecidas]].
 
 ## Relacionados
 

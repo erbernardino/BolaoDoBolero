@@ -21,7 +21,7 @@ Guarda flags de sistema (ex.: `isteste`). A leitura é **pública** justamente p
 | `write` | `if isAdmin()` | firestore.rules:191 |
 
 > [!warning] `_system` é a exceção pública entre as coleções
-> Diferente de **todas** as outras coleções — que exigem `isAuthenticated()` na leitura — `_system` tem `read: if true`. Confirmado em revisão de memória em 2026-06-22. Não coloque nada sensível aqui: qualquer cliente, autenticado ou não, lê esta coleção.
+> Diferente de **todas** as outras coleções — que exigem `isAuthenticated()` na leitura — `_system` tem `read: if true` (`firestore.rules:190`; escrita só admin, linha 191). Não coloque nada sensível aqui: qualquer cliente, autenticado ou não, lê esta coleção.
 
 > [!info] Coleção de sistema separada de `config`
 > Por diretiva crítica do projeto, dados de sistema **não** podem ir para a coleção [[Coleção config|config]] (só pode conter `geral` e `resultado_especial`). `_system` existe exatamente para abrigar esses dados de sistema fora de `config`. O persistido pelo [[Snapshot de resultados]] / [[Recálculo de ranking]] (ex.: `_system/resultados`) reside nesta coleção.

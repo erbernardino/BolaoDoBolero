@@ -77,7 +77,7 @@ Duas coleções **fogem** do padrão `isAuthenticated()` na leitura e permitem `
 - **`convites/{conviteId}`** (`firestore.rules:225`): `read: if true`, `create: if isAdmin()`, `delete: if false`. Público para permitir validar um convite **antes** do cadastro/login, na [[Autenticação Login e Cadastro]].
 
 > [!warning] `_system` e `convites` são os únicos com leitura pública
-> Todas as demais coleções exigem `isAuthenticated()` para ler. Manter `_system` público é intencional (confirmado em memória 2026-06-22), mas qualquer dado sensível **não** deve ir para lá.
+> Todas as demais coleções exigem `isAuthenticated()` para ler. Manter `_system` público é intencional (`firestore.rules:190` — `read: if true`), mas qualquer dado sensível **não** deve ir para lá.
 
 ## Auto-claim de convite único
 

@@ -15,7 +15,7 @@ related:
 
 Risco arquitetural conhecido: **dois triggers** escutam o mesmo documento `jogos/{jogoId}` e disparam no mesmo write, e o [[Recálculo de ranking]] faz um *delete-then-write* não transacional que abre uma janela em que a coleção `ranking` fica vazia ou parcial. Esta nota documenta o risco; não há, no código, mecanismo de serialização, lock ou fila entre execuções concorrentes.
 
-> [!warning] Race condition documentada na memória do projeto (Jun 1, 2026)
+> [!warning] Dois triggers concorrentes no mesmo documento `jogos/{jogoId}`
 > Múltiplos disparos de [[Trigger onJogoEncerrado]] podem chamar `recalcularTodoRanking` concorrentemente. Quando o admin atualiza vários jogos em sequência (ou em lote), cada gravação aciona seu próprio trigger e, portanto, sua própria execução completa do recálculo — sem nenhuma garantia de exclusão mútua entre elas.
 
 ## Dois triggers no mesmo write

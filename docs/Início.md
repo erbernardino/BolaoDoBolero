@@ -17,7 +17,7 @@ related:
 # 🏆 Bolão do Bolero — Segundo Cérebro
 
 > [!info] O que é este vault
-> Documentação viva do **Bolão do Bolero**, um bolão entre amigos para a **Copa do Mundo FIFA 2026**. Cada nota é atômica e conectada por _wikilinks_ (`[[Nota]]`) — navegue pelo grafo, não pela árvore de pastas. Comece pela [[Visão Geral e Regulamento]] ou pelo [[#Mapa de áreas]] abaixo.
+> Documentação viva do **Bolão do Bolero**, um bolão entre amigos para a **Copa do Mundo FIFA 2026**. Cada nota é atômica e conectada por _wikilinks_ (`[[Nota]]`) — navegue pelo grafo, não pela árvore de pastas. Comece pela [[Visão Geral e Regulamento]] ou pelo **Mapa de áreas** abaixo.
 
 Bolão **único** (não é plataforma multi-bolão), cadastro **apenas por convite** do administrador. Frontend React + TypeScript (PWA) sobre **Firebase puro** (Auth, Firestore, Cloud Functions, Hosting, FCM, Storage). Detalhes em [[Stack e Ambientes]].
 

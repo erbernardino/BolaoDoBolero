@@ -82,7 +82,7 @@ Essa estrutura é a base para resolver o [[Bracket oficial]] e o [[Bracket perso
 `times`, `grupos` e `jogos` são [[Coleções do Firestore]] raiz: leitura por qualquer autenticado, escrita só pelo admin (ver [[Regras de segurança do Firestore]], `firestore.rules:117-132`).
 
 > [!danger] `jogos.write` não valida campos de resultado
-> A regra `match /jogos/{jogoId}` libera `allow write: if isAdmin()` **sem nenhum validador de schema** (`firestore.rules:129`). Um admin pode gravar qualquer estrutura em `resultado`/`encerrado` sem que as regras barrem inconsistências — gap conhecido (memória 2026-06-01). Quem escreve esses campos é [[Inserir Resultados]], e o [[Trigger onJogoEncerrado]] reage a `encerrado`. Listado em [[Divergências conhecidas]].
+> A regra `match /jogos/{jogoId}` libera `allow write: if isAdmin()` **sem nenhum validador de schema** (`firestore.rules:129`). Um admin pode gravar qualquer estrutura em `resultado`/`encerrado` sem que as regras barrem inconsistências — gap conhecido. Quem escreve esses campos é [[Inserir Resultados]], e o [[Trigger onJogoEncerrado]] reage a `encerrado`. Listado em [[Divergências conhecidas]].
 
 ## Relacionados
 
