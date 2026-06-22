@@ -72,7 +72,7 @@ O plano de implementação está em `docs/superpowers/plans/2026-03-31-bolao-do-
 - `notificacoes.ts` — envio de push notifications via FCM
 
 ### Regras de Negócio Principais
-- Pontuação não cumulativa: placar exato (10) > placar de um time (5) > vencedor (3) — valores configuráveis
+- Pontuação não cumulativa, em cascata de tiers mutuamente exclusivos (campos `placarExato` > `colunaCerta` > `totalGols`, valores configuráveis em `config/geral`): **placar exato** (acertou o vencedor/empate **e** o placar) > **coluna certa** (acertou só o vencedor, ou o empate) > **total de gols** (errou a coluna, mas acertou a soma de gols). Sem acerto = 0. Implementação em `src/lib/pontuacao.ts`
 - Mata-mata personalizado por usuário baseado nos palpites da fase de grupos
 - Classificação de grupos segue critérios FIFA (pontos > saldo > gols marcados > confronto direto)
 - 8 melhores terceiros colocados avançam para mata-mata

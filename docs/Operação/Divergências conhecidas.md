@@ -26,12 +26,13 @@ Há três descrições diferentes da escala de pontos circulando no projeto. Ape
 | --- | --- | --- | --- | --- |
 | **Regulamento real** (Considerações Gerais + `config/geral`) | `placarExato`: 5 | `colunaCerta`: 3 | `totalGols`: 1 | `palpiteEspecial`: 10 |
 | **Spec de design** (2026-03-31) | `placarExato`: 10 | `placarUmTime`: 5 | `vencedor`: 3 | — |
-| **CLAUDE.md** | placar exato: 10 | placar de um time: 5 | vencedor: 3 | — |
+| **CLAUDE.md** (alinhado em 2026-06-22) | `placarExato` | `colunaCerta` | `totalGols` | — |
 
 A escala real é **0 / 1 / 3 / 5 por jogo**, mais **10 por palpite especial acertado** (ver [[Resultados Especiais]]). Os valores são configuráveis pelo admin via [[Configurações do bolão]] e persistidos em `config/geral`.
 
-> [!danger] O tier "placar de um time" NÃO existe no código
-> Tanto a spec ("placarUmTime") quanto o `CLAUDE.md` ("placar de um time") descrevem um tier intermediário que premia acertar os gols de **um** dos times. **Esse tier não existe** em `src/lib/pontuacao.ts`. O tier intermediário real é `totalGols` — acertar a **soma** de gols da partida com a **coluna errada**. Ao documentar comportamento, documente o **código**, não o `CLAUDE.md` (a descrição em `CLAUDE.md:75` está incorreta).
+> [!warning] O tier "placar de um time" NÃO existe no código (CLAUDE.md já corrigido)
+> A **spec de design** ("placarUmTime") descrevia um tier intermediário que premiava acertar os gols de **um** dos times. **Esse tier não existe** em `src/lib/pontuacao.ts`: o tier intermediário real é `colunaCerta` (acertar o vencedor/empate) e o tier baixo é `totalGols` (acertar a **soma** de gols com a **coluna errada**).
+> O `CLAUDE.md` repetia essa descrição incorreta na linha 75, mas foi **alinhado ao código em 2026-06-22**. A spec histórica (`docs/superpowers/specs/2026-03-31-bolao-do-bolero-design.md`) é preservada como registro e **não** reflete o código atual — ao documentar comportamento, a autoridade é sempre o **código**.
 
 ## Como os pontos de um palpite são calculados
 
@@ -69,7 +70,7 @@ A avaliação é um `if/else` em cascata, com prioridade decrescente (`pontuacao
 A [[analise-codigo-2026-06-07|análise de código]] confirmou um bug de exibição na [[Página Palpites]] (visão geral). `PalpitesGeral.tsx:198-201` fazia um **cast inseguro** de `Config` para `Record<string, number>` e caía em **defaults hardcoded (5 / 3 / 1)** quando os campos não vinham com o nome esperado — mostrando uma escala fixa em vez dos valores realmente configurados pelo admin em `config/geral`.
 
 > [!warning] Ao mexer em pontuação/exibição
-> Use **sempre** os valores de `config/geral`. **Nunca** hardcode `10 / 5 / 3` (spec/CLAUDE.md) nem `5 / 3 / 1` (defaults do cast inseguro). Trate `5 / 3 / 1` como exemplo configurável, não como produção. A mesma `calcularPontosPalpite` alimenta o cálculo oficial — divergência aqui propaga para a [[Página Ranking]] e para o [[Trigger onJogoEncerrado]].
+> Use **sempre** os valores de `config/geral`. **Nunca** hardcode `10 / 5 / 3` (da spec de design antiga) nem `5 / 3 / 1` (defaults do cast inseguro). Trate `5 / 3 / 1` como exemplo configurável, não como produção. A mesma `calcularPontosPalpite` alimenta o cálculo oficial — divergência aqui propaga para a [[Página Ranking]] e para o [[Trigger onJogoEncerrado]].
 
 ## Relacionados
 
