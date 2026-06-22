@@ -16,24 +16,31 @@ export function Resultados() {
   const [times, setTimes] = useState<Map<string, Time>>(new Map())
   const [grupos, setGrupos] = useState<GrupoRef[]>([])
   const [loading, setLoading] = useState(true)
+  const [erro, setErro] = useState(false)
   const [modo, setModo] = useState<Modo>('chaveamento')
 
   useEffect(() => {
     async function load() {
-      const [jogosSnap, timesSnap, gruposSnap] = await Promise.all([
-        getDocs(collection(db, 'jogos')),
-        getDocs(collection(db, 'times')),
-        getDocs(collection(db, 'grupos')),
-      ])
-      setJogos(jogosSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Jogo))
-      const tmap = new Map<string, Time>()
-      timesSnap.docs.forEach(d => tmap.set(d.id, { id: d.id, ...d.data() } as Time))
-      setTimes(tmap)
-      setGrupos(gruposSnap.docs.map(d => {
-        const data = d.data() as { nome?: string; times?: string[] }
-        return { nome: data.nome ?? `Grupo ${d.id}`, times: data.times ?? [] }
-      }))
-      setLoading(false)
+      try {
+        const [jogosSnap, timesSnap, gruposSnap] = await Promise.all([
+          getDocs(collection(db, 'jogos')),
+          getDocs(collection(db, 'times')),
+          getDocs(collection(db, 'grupos')),
+        ])
+        setJogos(jogosSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Jogo))
+        const tmap = new Map<string, Time>()
+        timesSnap.docs.forEach(d => tmap.set(d.id, { id: d.id, ...d.data() } as Time))
+        setTimes(tmap)
+        setGrupos(gruposSnap.docs.map(d => {
+          const data = d.data() as { nome?: string; times?: string[] }
+          return { nome: data.nome ?? `Grupo ${d.id}`, times: data.times ?? [] }
+        }))
+      } catch (e) {
+        console.error('Falha ao carregar resultados', e)
+        setErro(true)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [])
@@ -64,24 +71,28 @@ export function Resultados() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <h1 className="text-xl font-bold text-gray-800">Resultados Oficiais</h1>
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
-            <button
-              onClick={() => setModo('chaveamento')}
-              className={'px-3 py-1.5 text-sm ' + (modo === 'chaveamento' ? 'bg-blue-700 text-white' : 'bg-white text-gray-600')}
-            >
-              Chaveamento
-            </button>
-            <button
-              onClick={() => setModo('fase')}
-              className={'px-3 py-1.5 text-sm ' + (modo === 'fase' ? 'bg-blue-700 text-white' : 'bg-white text-gray-600')}
-            >
-              Por fase
-            </button>
-          </div>
+          {!erro && (
+            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              <button
+                onClick={() => setModo('chaveamento')}
+                className={'px-3 py-1.5 text-sm ' + (modo === 'chaveamento' ? 'bg-blue-700 text-white' : 'bg-white text-gray-600')}
+              >
+                Chaveamento
+              </button>
+              <button
+                onClick={() => setModo('fase')}
+                className={'px-3 py-1.5 text-sm ' + (modo === 'fase' ? 'bg-blue-700 text-white' : 'bg-white text-gray-600')}
+              >
+                Por fase
+              </button>
+            </div>
+          )}
         </div>
 
         {loading ? (
           <p className="text-gray-500">Carregando…</p>
+        ) : erro ? (
+          <p className="text-red-600">Não foi possível carregar os resultados. Tente recarregar a página.</p>
         ) : modo === 'fase' ? (
           <PorFaseView jogos={jogos} times={times} resolver={resolver} />
         ) : (

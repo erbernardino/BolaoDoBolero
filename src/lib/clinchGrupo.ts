@@ -1,5 +1,6 @@
 import type { Jogo } from '../types'
 import { calcularClassificacaoGrupo } from './classificacao'
+import { jogoParaPalpiteReal } from './resultadosOficiais'
 
 export interface ClinchTime {
   /** Garantiu top-2 (classificação) em TODOS os cenários possíveis. */
@@ -59,12 +60,7 @@ export function calcularClinchGrupo(
 
   // Grupo completo: usar a classificação real (com desempates FIFA completos).
   if (restantes.length === 0) {
-    const reaisComoPalpites = encerrados.map(j => ({
-      id: `real_${j.id}`, uid: 'real', jogoId: j.id,
-      timeCasa: j.timeCasa, timeVisitante: j.timeVisitante,
-      golsCasa: j.resultado!.golsCasa, golsVisitante: j.resultado!.golsVisitante,
-      classificado: j.resultado!.classificado, criadoEm: null as never,
-    }))
+    const reaisComoPalpites = encerrados.map(jogoParaPalpiteReal)
     const ordenada = calcularClassificacaoGrupo(reaisComoPalpites, timesDoGrupo)
     ordenada.forEach((ct, idx) => {
       const alvo = base[ct.timeId]
