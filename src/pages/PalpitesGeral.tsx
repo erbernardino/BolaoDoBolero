@@ -6,6 +6,8 @@ import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
 import { Avatar } from '../components/Avatar'
 import { calcularPontosPalpite } from '../lib/pontuacao'
+import { montarResolvedorProvisorio } from '../lib/resolverProvisorio'
+import type { GrupoRef } from '../lib/bracketUsuario'
 import type { Jogo, Time, Palpite, Usuario, Fase, Config, PalpiteEspecial, ResultadoEspecial } from '../types'
 
 type AbaId = Fase | 'todos' | 'especiais'
@@ -31,6 +33,7 @@ export function PalpitesGeral() {
   const [resultadoEspecial, setResultadoEspecial] = useState<ResultadoEspecial | null>(null)
   const [usuarios, setUsuarios] = useState<Map<string, Usuario>>(new Map())
   const [config, setConfig] = useState<Config | null>(null)
+  const [grupos, setGrupos] = useState<GrupoRef[]>([])
   const [loading, setLoading] = useState(true)
   const [faseAtiva, setFaseAtiva] = useState<AbaId>('grupos')
   const [usuarioFiltro, setUsuarioFiltro] = useState('')
@@ -40,13 +43,19 @@ export function PalpitesGeral() {
 
   useEffect(() => {
     async function load() {
-      const [jogosSnap, timesSnap, usuariosSnap, configSnap, resultadoEspecialSnap] = await Promise.all([
+      const [jogosSnap, timesSnap, usuariosSnap, configSnap, resultadoEspecialSnap, gruposSnap] = await Promise.all([
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
         getDocs(collection(db, 'usuarios')),
         getDoc(doc(db, 'config', 'geral')),
         getDoc(doc(db, 'config', 'resultado_especial')),
+        getDocs(collection(db, 'grupos')),
       ])
+
+      setGrupos(gruposSnap.docs.map(d => {
+        const data = d.data() as { nome?: string; times?: string[] }
+        return { nome: data.nome ?? `Grupo ${d.id}`, times: data.times ?? [] }
+      }))
 
       if (resultadoEspecialSnap.exists()) {
         setResultadoEspecial(resultadoEspecialSnap.data() as ResultadoEspecial)
@@ -236,6 +245,18 @@ export function PalpitesGeral() {
 
   function bandeiraUrl(id: string): string | undefined {
     return times.get(id)?.bandeira
+  }
+
+  // Resolve os times do mata-mata a partir dos resultados oficiais (igual à página
+  // /resultados). Jogos de grupos usam os times diretos; mata-mata é resolvido.
+  const resolverProvisorio = useMemo(
+    () => montarResolvedorProvisorio(jogos, grupos),
+    [jogos, grupos],
+  )
+  function ladosDoJogo(jogo: Jogo): { casaId: string | null; visitanteId: string | null } {
+    if (jogo.fase === 'grupos') return { casaId: jogo.timeCasa, visitanteId: jogo.timeVisitante }
+    const r = resolverProvisorio(jogo)
+    return { casaId: r.casa.timeId, visitanteId: r.visitante.timeId }
   }
 
   const palpiteEspecialMap = useMemo(() => {
@@ -440,21 +461,28 @@ export function PalpitesGeral() {
                 <th className="px-2 py-2 text-center text-xs font-medium text-gray-700 bg-gray-100 min-w-[44px] sticky left-0">
                   Pts
                 </th>
-                {jogosFiltrados.map(jogo => (
+                {jogosFiltrados.map(jogo => {
+                  const { casaId, visitanteId } = ladosDoJogo(jogo)
+                  return (
                   <th key={jogo.id} className="px-2 py-2 text-center min-w-[80px]">
                     <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-[10px] font-semibold text-gray-500">Jogo {jogo.numero}</span>
                       <div className="flex items-center gap-1">
-                        {bandeiraUrl(jogo.timeCasa) && (
-                          <img src={bandeiraUrl(jogo.timeCasa)!} alt="" className="w-4 h-3 object-cover rounded" />
+                        {casaId && bandeiraUrl(casaId) && (
+                          <img src={bandeiraUrl(casaId)!} alt="" className="w-4 h-3 object-cover rounded" />
                         )}
-                        <span className="text-xs font-medium text-gray-600">{sigla(jogo.timeCasa)}</span>
+                        <span className="text-xs font-medium text-gray-600">
+                          {casaId ? sigla(casaId) : (jogo.labelCasa ?? '?')}
+                        </span>
                       </div>
                       <span className="text-[10px] text-gray-400">vs</span>
                       <div className="flex items-center gap-1">
-                        {bandeiraUrl(jogo.timeVisitante) && (
-                          <img src={bandeiraUrl(jogo.timeVisitante)!} alt="" className="w-4 h-3 object-cover rounded" />
+                        {visitanteId && bandeiraUrl(visitanteId) && (
+                          <img src={bandeiraUrl(visitanteId)!} alt="" className="w-4 h-3 object-cover rounded" />
                         )}
-                        <span className="text-xs font-medium text-gray-600">{sigla(jogo.timeVisitante)}</span>
+                        <span className="text-xs font-medium text-gray-600">
+                          {visitanteId ? sigla(visitanteId) : (jogo.labelVisitante ?? '?')}
+                        </span>
                       </div>
                       {jogo.encerrado && jogo.resultado && (
                         <span className="text-[10px] font-bold text-green-600 mt-0.5">
@@ -463,7 +491,8 @@ export function PalpitesGeral() {
                       )}
                     </div>
                   </th>
-                ))}
+                  )
+                })}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -471,8 +500,8 @@ export function PalpitesGeral() {
                 const ehEu = u.uid === firebaseUser?.uid
                 return (
                   <tr key={u.uid} className={`hover:bg-blue-50/50 ${ehEu ? 'bg-blue-50/30' : ''}`}>
-                    <td className={`px-3 py-2 font-medium sticky left-0 whitespace-nowrap ${ehEu ? 'text-blue-700 bg-blue-50/30' : 'text-gray-800 bg-white'}`}>
-                      <div className="flex items-center gap-2">
+                    <td className={`px-3 py-2 font-medium sticky left-0 z-10 whitespace-nowrap ${ehEu ? 'text-blue-700 bg-blue-50' : 'text-gray-800 bg-white'}`}>
+                      <div className="flex items-center gap-2 min-w-0">
                         <Avatar
                           src={u.fotoURL ?? null}
                           nome={u.apelido || u.nome}
@@ -480,7 +509,7 @@ export function PalpitesGeral() {
                           size="sm"
                           ring={false}
                         />
-                        <span>{u.apelido || u.nome || 'Sem nome'}</span>
+                        <span className="truncate max-w-[15ch] sm:max-w-none">{u.apelido || u.nome || 'Sem nome'}</span>
                         {ehEu && <span className="text-[10px] text-blue-400">(eu)</span>}
                       </div>
                     </td>
