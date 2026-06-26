@@ -79,15 +79,38 @@ export function BracketView({ jogos, times, grupos, classificacoes, clinchPorGru
     )
   }
 
-  function ColunaBracket({ jogos: lista }: { jogos: Jogo[] }) {
+  function ColunaBracket({ jogos: lista, lado }: { jogos: Jogo[]; lado: 'esq' | 'dir' }) {
     if (lista.length === 0) return null
+    const esq = lado === 'esq'
+    // Conectores em "⊏": saem para o centro (à direita no lado esq, à esquerda no dir).
+    const stub = esq ? 'right-0 translate-x-full' : 'left-0 -translate-x-full'
+    const vert = esq ? 'right-0 translate-x-2' : 'left-0 -translate-x-2'
+    const mid = esq ? 'right-0 translate-x-4' : 'left-0 -translate-x-4'
+    const pares: Jogo[][] = []
+    for (let i = 0; i < lista.length; i += 2) pares.push(lista.slice(i, i + 2))
     return (
       <div className="flex flex-col shrink-0">
         <div className="text-[10px] font-semibold text-gray-500 text-center mb-1 uppercase tracking-wide">
           {LABEL_FASE[lista[0].fase] ?? lista[0].fase}
         </div>
-        <div className="flex flex-col justify-around flex-1 gap-2">
-          {lista.map(j => <CardConfronto key={j.id} jogo={j} />)}
+        <div className="flex flex-col flex-1">
+          {pares.map((par, pi) => (
+            <div key={pi} className="flex-1 flex flex-col relative">
+              {par.map(j => (
+                <div key={j.id} className="flex-1 flex items-center relative">
+                  <CardConfronto jogo={j} />
+                  {/* stub horizontal saindo do card */}
+                  <span className={`absolute top-1/2 -translate-y-1/2 h-px w-2 bg-gray-300 ${stub}`} />
+                </div>
+              ))}
+              {/* linha vertical unindo o par (centros em 25%/75%) */}
+              {par.length === 2 && (
+                <span className={`absolute top-1/4 bottom-1/4 w-px bg-gray-300 ${vert}`} />
+              )}
+              {/* linha horizontal central do par para a próxima rodada */}
+              <span className={`absolute top-1/2 -translate-y-1/2 h-px w-2 bg-gray-300 ${mid}`} />
+            </div>
+          ))}
         </div>
       </div>
     )
@@ -136,8 +159,8 @@ export function BracketView({ jogos, times, grupos, classificacoes, clinchPorGru
         </div>
         {cols.final ? (
           // Bracket espelhado: esquerda → FINAL (centro) → direita.
-          <div className="flex items-stretch gap-2 sm:gap-3 overflow-x-auto pb-4">
-            {cols.esquerda.map((col, i) => <ColunaBracket key={`e${i}`} jogos={col} />)}
+          <div className="flex items-stretch gap-4 overflow-x-auto pb-4">
+            {cols.esquerda.map((col, i) => <ColunaBracket key={`e${i}`} jogos={col} lado="esq" />)}
             <div className="flex flex-col justify-center items-center shrink-0 px-1">
               <div className="text-[11px] font-bold text-amber-600 uppercase tracking-wide mb-1">Final</div>
               <CardConfronto jogo={cols.final} />
@@ -148,7 +171,7 @@ export function BracketView({ jogos, times, grupos, classificacoes, clinchPorGru
                 </div>
               )}
             </div>
-            {cols.direita.map((col, i) => <ColunaBracket key={`d${i}`} jogos={col} />)}
+            {cols.direita.map((col, i) => <ColunaBracket key={`d${i}`} jogos={col} lado="dir" />)}
           </div>
         ) : (
           // Fallback (dados sem final definida): colunas lineares.
