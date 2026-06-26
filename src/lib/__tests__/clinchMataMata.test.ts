@@ -83,4 +83,25 @@ describe('calcularClassificadosMataMata', () => {
     expect(r.has('A1')).toBe(true)
     expect(r.has('A2')).toBe(true)
   })
+
+  it('classifica o 2º de grupo COMPLETO empatado em pontos com o 3º (desempate por saldo) — regressão CAN/AUS', () => {
+    // 9 grupos completos idênticos. Em cada um: 1º=9pts; 2º e 3º empatam em 4 pts (o 2º só fica
+    // à frente pelo SALDO geral); 4º=0. Com 9 grupos, nenhum 3º (4 pts) está garantido via melhor
+    // terceiro — então o ✓ do 2º depende de reconhecer a posição REAL (top-2), não a contagem por pontos.
+    const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+    const grupos: GrupoRef[] = letras.map(L => ({ nome: `Grupo ${L}`, times: [`${L}1`, `${L}2`, `${L}3`, `${L}4`] }))
+    const jogos: JogoCalc[] = letras.flatMap(L => {
+      const t = [`${L}1`, `${L}2`, `${L}3`, `${L}4`]
+      return [
+        jg(L, t[0], t[1], [1, 0]), jg(L, t[0], t[2], [1, 0]), jg(L, t[0], t[3], [1, 0]), // 1º vence todos
+        jg(L, t[1], t[2], [2, 2]), // 2º e 3º empatam no confronto direto
+        jg(L, t[1], t[3], [5, 0]), // 2º goleia o 4º → saldo +4
+        jg(L, t[2], t[3], [1, 0]), // 3º vence o 4º → saldo 0
+      ]
+    })
+    const r = calcularClassificadosMataMata(jogos, grupos)
+    expect(r.has('A2')).toBe(true) // 2º real (por saldo) — DEVE estar classificado (top-2)
+    expect(r.has('A1')).toBe(true) // 1º
+    expect(r.has('A3')).toBe(false) // 3º não garantido entre os 8 melhores
+  })
 })
