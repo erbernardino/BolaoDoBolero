@@ -1,6 +1,8 @@
 import type { JogoCalc as Jogo } from '../types/calc'
 import type { GrupoRef } from './bracketUsuario'
 import { calcularClinchGrupo, type ClinchTime } from './clinchGrupo'
+import { calcularClassificacaoGrupo } from './classificacao'
+import { jogoParaPalpiteReal } from './resultadosOficiais'
 
 /**
  * Clinch de classificação para o MATA-MATA (cross-group), considerando que a Copa
@@ -43,6 +45,17 @@ function analisarGrupo(jogosDoGrupo: Jogo[], times: string[]): AnaliseGrupo {
     if (gc > gv) pontosAtuais[j.timeCasa] += 3
     else if (gc < gv) pontosAtuais[j.timeVisitante] += 3
     else { pontosAtuais[j.timeCasa] += 1; pontosAtuais[j.timeVisitante] += 1 }
+  }
+
+  // Grupo COMPLETO: a classificação é final e determinística (com desempate FIFA por
+  // saldo/critérios). A contagem conservadora por pontos abaixo não desempata por saldo, o
+  // que tiraria indevidamente o ✓ de um 2º colocado empatado em pontos com o 3º (ex.: CAN/AUS).
+  if (restantes.length === 0) {
+    const cls = calcularClassificacaoGrupo(encerrados.map(jogoParaPalpiteReal), times)
+    const pior: Record<string, number> = {}
+    const melhor: Record<string, number> = {}
+    cls.forEach((c, i) => { pior[c.timeId] = i + 1; melhor[c.timeId] = i + 1 })
+    return { pontosAtuais, piorPosicao: pior, melhorPosicao: melhor, maxPontos3o: cls[2]?.pontos ?? 0 }
   }
 
   const piorPosicao: Record<string, number> = {}
