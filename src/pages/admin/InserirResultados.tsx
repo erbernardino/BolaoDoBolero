@@ -1,51 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
-import { collection, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore'
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../../config/firebase'
-import { calcularClassificacaoGrupo } from '../../lib/classificacao'
-import type { Jogo, Time, Grupo, Palpite, ClassificacaoTime, Origem } from '../../types'
+import { montarResolvedorProvisorio } from '../../lib/resolverProvisorio'
+import type { Jogo, Time, Grupo } from '../../types'
 
 interface ResultadoForm {
   golsCasa: string
   golsVisitante: string
   classificado: string
-}
-
-function resolverTimeReal(
-  origem: Origem | null,
-  classReais: Record<string, ClassificacaoTime[]>,
-  todosJogos: Jogo[],
-): string | null {
-  if (!origem) return null
-
-  if (origem.tipo === 'grupo') {
-    const classificacao = classReais[origem.grupo]
-    if (!classificacao || classificacao.length < origem.posicao) return null
-    return classificacao[origem.posicao - 1].timeId
-  }
-
-  if (origem.tipo === 'jogo') {
-    const jogoRef = todosJogos.find(j => j.id === origem.jogoId)
-    if (!jogoRef || !jogoRef.resultado || !jogoRef.encerrado) return null
-
-    const r = jogoRef.resultado
-    let vencedor: string | null
-    let perdedor: string | null
-
-    if (r.golsCasa > r.golsVisitante) {
-      vencedor = jogoRef.timeCasa || null
-      perdedor = jogoRef.timeVisitante || null
-    } else if (r.golsVisitante > r.golsCasa) {
-      vencedor = jogoRef.timeVisitante || null
-      perdedor = jogoRef.timeCasa || null
-    } else {
-      vencedor = r.classificado || null
-      perdedor = r.classificado === jogoRef.timeCasa ? (jogoRef.timeVisitante || null) : (jogoRef.timeCasa || null)
-    }
-
-    return origem.resultado === 'perdedor' ? perdedor : vencedor
-  }
-
-  return null
 }
 
 export function InserirResultados() {
@@ -82,58 +44,25 @@ export function InserirResultados() {
     carregarDados()
   }, [])
 
-  // Classificação real baseada em resultados oficiais
-  const classReais = useMemo(() => {
-    const jogosGrupos = jogos.filter(j => j.fase === 'grupos')
-    const result: Record<string, ClassificacaoTime[]> = {}
-
-    for (const grupo of grupos) {
-      const letra = grupo.nome.replace('Grupo ', '')
-      const jogosDoGrupo = jogosGrupos.filter(j => j.grupo === letra)
-      const palpitesReais: Palpite[] = jogosDoGrupo
-        .filter(j => j.encerrado && j.resultado)
-        .map(j => ({
-          id: `real_${j.id}`,
-          uid: 'real',
-          jogoId: j.id,
-          timeCasa: j.timeCasa,
-          timeVisitante: j.timeVisitante,
-          golsCasa: j.resultado!.golsCasa,
-          golsVisitante: j.resultado!.golsVisitante,
-          classificado: j.resultado!.classificado,
-          criadoEm: Timestamp.now(),
-        }))
-      if (palpitesReais.length > 0) {
-        result[letra] = calcularClassificacaoGrupo(palpitesReais, grupo.times)
-      }
-    }
-    return result
-  }, [jogos, grupos])
+  // Resolve os times do mata-mata pelos resultados oficiais (posições de grupo e
+  // cascatas W##), a mesma resolução usada em /resultados e /todos-palpites.
+  const resolverProvisorio = useMemo(
+    () => montarResolvedorProvisorio(jogos, grupos),
+    [jogos, grupos],
+  )
 
   // Resolver times reais para cada jogo de mata-mata
   function getTimesReais(jogo: Jogo): { casaId: string | null; visitanteId: string | null } {
     if (jogo.fase === 'grupos') {
       return { casaId: jogo.timeCasa, visitanteId: jogo.timeVisitante }
     }
-    return {
-      casaId: resolverTimeReal(jogo.origemCasa, classReais, jogos),
-      visitanteId: resolverTimeReal(jogo.origemVisitante, classReais, jogos),
-    }
+    const r = resolverProvisorio(jogo)
+    return { casaId: r.casa.timeId, visitanteId: r.visitante.timeId }
   }
 
   function getTime(id: string | null): Time | null {
     if (!id) return null
     return times.find(t => t.id === id) ?? null
-  }
-
-  function descreverOrigem(origem: Jogo['origemCasa']): string {
-    if (!origem) return '?'
-    if (origem.tipo === 'grupo') {
-      const pos = origem.posicao === 1 ? '1o' : origem.posicao === 2 ? '2o' : '3o'
-      return `${pos} Grupo ${origem.grupo}`
-    }
-    const label = origem.resultado === 'perdedor' ? 'Perd.' : 'Venc.'
-    return `${label} ${origem.jogoId.replace('_', ' ')}`
   }
 
   function setResultado(jogoId: string, field: keyof ResultadoForm, value: string) {
@@ -265,7 +194,7 @@ export function InserirResultados() {
           <div className="flex-1 flex justify-end">
             {renderTimeDisplay(
               timeCasa,
-              isMataMata ? descreverOrigem(jogo.origemCasa) : '?',
+              isMataMata ? (jogo.labelCasa ?? '?') : '?',
             )}
           </div>
 
@@ -338,7 +267,7 @@ export function InserirResultados() {
           <div className="flex-1">
             {renderTimeDisplay(
               timeVisitante,
-              isMataMata ? descreverOrigem(jogo.origemVisitante) : '?',
+              isMataMata ? (jogo.labelVisitante ?? '?') : '?',
             )}
           </div>
         </div>
