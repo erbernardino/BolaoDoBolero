@@ -12,6 +12,8 @@
 
 import * as admin from 'firebase-admin'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
+import { selecionarMelhoresTerceiros } from './_shared/lib/melhoresTerceiros'
+import { montarTerceirosPorSlot } from './_shared/lib/chaveamento'
 
 interface ResultadoJogo {
   golsCasa: number
@@ -154,20 +156,10 @@ function aplicarCriteriosGerais(empatados: ClassificacaoTime[]): ClassificacaoTi
   })
 }
 
-// ---- Comparador de 3os colocados (FIFA) ----
-function compararTerceiros(a: ClassificacaoTime, b: ClassificacaoTime): number {
-  if (b.pontos !== a.pontos) return b.pontos - a.pontos
-  if (b.saldoGols !== a.saldoGols) return b.saldoGols - a.saldoGols
-  if (b.golsMarcados !== a.golsMarcados) return b.golsMarcados - a.golsMarcados
-  if (a.grupo !== b.grupo) return a.grupo.localeCompare(b.grupo)
-  return a.timeId.localeCompare(b.timeId)
-}
-
 // ---- Resolver labels para timeIds ----
 
 interface ContextoResolver {
   classificacoesPorGrupo: Record<string, ClassificacaoTime[]>
-  melhoresTerceiros: ClassificacaoTime[]
   jogosByNumero: Map<number, JogoData>
 }
 
@@ -213,57 +205,8 @@ function resolverLabelSimples(label: string, ctx: ContextoResolver): string | nu
   return null
 }
 
-// Slots de "3o de um conjunto de grupos": atribuicao via bipartite matching greedy
-// usando a ordem dos melhoresTerceiros.
-interface SlotTerceiro { jogoId: string; lado: 'casa' | 'visitante'; gruposPermitidos: string[] }
-
-function montarMapaTerceirosPorSlot(
-  jogosFase32: JogoData[],
-  ctx: ContextoResolver,
-): Map<string, string> {
-  const slots: SlotTerceiro[] = []
-  const jogosOrdenados = [...jogosFase32].sort((a, b) => a.numero - b.numero)
-  for (const j of jogosOrdenados) {
-    for (const lado of ['casa', 'visitante'] as const) {
-      const label = (lado === 'casa' ? j.labelCasa : j.labelVisitante)?.trim().toUpperCase().replace(/\s+/g, '')
-      const m = label?.match(/^3([A-L]+)$/)
-      if (!m || m[1].length < 2) continue
-      slots.push({ jogoId: j.id, lado, gruposPermitidos: m[1].split('') })
-    }
-  }
-
-  const melhoresIds = new Set(ctx.melhoresTerceiros.map(t => t.timeId))
-  const ranking = new Map(ctx.melhoresTerceiros.map((t, i) => [t.timeId, i]))
-  const terceirosPorGrupo = new Map<string, ClassificacaoTime>()
-  for (const [grupo, cl] of Object.entries(ctx.classificacoesPorGrupo)) {
-    const t = cl[2]
-    if (t && melhoresIds.has(t.timeId)) terceirosPorGrupo.set(grupo, t)
-  }
-
-  const out = new Map<string, string>()
-  const usados = new Set<string>()
-
-  function tentar(idx: number): boolean {
-    if (idx >= slots.length) return true
-    const s = slots[idx]
-    const candidatos = s.gruposPermitidos
-      .map(g => terceirosPorGrupo.get(g))
-      .filter((t): t is ClassificacaoTime => t != null && !usados.has(t.timeId))
-      .sort((a, b) => (ranking.get(a.timeId) ?? 999) - (ranking.get(b.timeId) ?? 999))
-
-    for (const c of candidatos) {
-      out.set(`${s.jogoId}:${s.lado}`, c.timeId)
-      usados.add(c.timeId)
-      if (tentar(idx + 1)) return true
-      usados.delete(c.timeId)
-      out.delete(`${s.jogoId}:${s.lado}`)
-    }
-    return false
-  }
-
-  tentar(0)
-  return out
-}
+// A atribuição dos 3º colocados aos slots (3XYZ) usa a tabela oficial FIFA das 495
+// combinações, via montarTerceirosPorSlot (lib compartilhada) — fonte única com a página.
 
 // ---- Callable principal ----
 
@@ -306,20 +249,19 @@ export const resolverMataMata = onCall(async (request) => {
     classificacoesPorGrupo[g] = calcularClassificacaoGrupo(lista, times, g)
   }
 
-  // 8 melhores 3os
+  // 8 melhores 3os — mesma seleção (desempate FIFA) usada pela página/snapshot.
   const terceiros = Object.values(classificacoesPorGrupo)
     .map(cl => cl[2])
     .filter((t): t is ClassificacaoTime => t != null)
-    .sort(compararTerceiros)
-  const melhoresTerceiros = terceiros.slice(0, 8)
+  const melhoresTerceiros = selecionarMelhoresTerceiros(terceiros)
 
   const jogosByNumero = new Map<number, JogoData>(jogos.map(j => [j.numero, j]))
 
-  const ctx: ContextoResolver = { classificacoesPorGrupo, melhoresTerceiros, jogosByNumero }
+  const ctx: ContextoResolver = { classificacoesPorGrupo, jogosByNumero }
 
-  // Atribuicao dos slots de 3o-em-conjunto-de-grupos (so fase32)
+  // Atribuição dos slots de 3º (tabela oficial FIFA das 495 combinações) — fonte única.
   const fase32 = jogos.filter(j => j.fase === 'fase32')
-  const terceirosPorSlot = montarMapaTerceirosPorSlot(fase32, ctx)
+  const terceirosPorSlot = montarTerceirosPorSlot(fase32, classificacoesPorGrupo, melhoresTerceiros)
 
   // Resolver e atualizar
   const mataMata = jogos.filter(j => j.fase !== 'grupos')
@@ -332,13 +274,13 @@ export const resolverMataMata = onCall(async (request) => {
 
     if (!j.timeCasa && j.labelCasa) {
       const slotKey = `${j.id}:casa`
-      const fromSlot = terceirosPorSlot.get(slotKey)
+      const fromSlot = terceirosPorSlot[slotKey]
       const id = fromSlot ?? resolverLabelSimples(j.labelCasa, ctx)
       if (id) update.timeCasa = id
     }
     if (!j.timeVisitante && j.labelVisitante) {
       const slotKey = `${j.id}:visitante`
-      const fromSlot = terceirosPorSlot.get(slotKey)
+      const fromSlot = terceirosPorSlot[slotKey]
       const id = fromSlot ?? resolverLabelSimples(j.labelVisitante, ctx)
       if (id) update.timeVisitante = id
     }

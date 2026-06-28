@@ -27,13 +27,21 @@ const LIBS = [
   'snapshotResultados.ts',
 ]
 
+// Dados estáticos importados pelas libs (ex.: tabela oficial dos terceiros).
+const DATA = [
+  'terceirosFifa2026.ts',
+]
+
 rmSync(sharedDir, { recursive: true, force: true })
-mkdirSync(join(sharedDir, 'lib'), { recursive: true })
+mkdirSync(join(sharedDir, 'lib', 'data'), { recursive: true })
 mkdirSync(join(sharedDir, 'types'), { recursive: true })
 
 const libSrc = join(root, 'src', 'lib')
 for (const f of LIBS) {
   copyFileSync(join(libSrc, f), join(sharedDir, 'lib', f))
+}
+for (const f of DATA) {
+  copyFileSync(join(libSrc, 'data', f), join(sharedDir, 'lib', 'data', f))
 }
 // Copia os tipos de cálculo (livres de Timestamp).
 copyFileSync(join(root, 'src', 'types', 'calc.ts'), join(sharedDir, 'types', 'calc.ts'))

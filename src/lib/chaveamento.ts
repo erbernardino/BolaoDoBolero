@@ -1,4 +1,5 @@
 import type { Origem, PalpiteCalc as Palpite, ClassificacaoTime } from '../types/calc'
+import { TABELA_TERCEIROS_FIFA_2026 } from './data/terceirosFifa2026'
 
 interface JogoReferencia {
   id: string
@@ -129,16 +130,21 @@ export function montarTerceirosPorSlot(
     }
   }
 
-  const slots: Array<{ slotKey: string; candidatos: ClassificacaoTime[] }> = []
+  const limpar = (label: string | undefined) => label?.trim().toUpperCase().replace(/\s+/g, '')
+
+  const slots: Array<{ slotKey: string; candidatos: ClassificacaoTime[]; grupoVencedor: string | null }> = []
   const jogosOrdenados = [...jogosFase32].sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0))
   for (const jogo of jogosOrdenados) {
     for (const lado of ['casa', 'visitante'] as const) {
-      const label = lado === 'casa' ? jogo.labelCasa : jogo.labelVisitante
-      const clean = label?.trim().toUpperCase().replace(/\s+/g, '')
+      const clean = limpar(lado === 'casa' ? jogo.labelCasa : jogo.labelVisitante)
       const match = clean?.match(/^3([A-L]+)$/)
       if (!match) continue
 
       const slotKey = `${jogo.id}:${lado}`
+      // O vencedor (1X) que enfrenta este terceiro está no lado oposto do mesmo jogo.
+      const oposto = limpar(lado === 'casa' ? jogo.labelVisitante : jogo.labelCasa)
+      const grupoVencedor = oposto?.match(/^1([A-L])$/)?.[1] ?? null
+
       const candidatos = match[1]
         .split('')
         .map(grupo => terceirosPorGrupo.get(grupo))
@@ -148,7 +154,23 @@ export function montarTerceirosPorSlot(
         return (rankingMelhores.get(a.timeId) ?? 999) - (rankingMelhores.get(b.timeId) ?? 999)
       })
 
-      slots.push({ slotKey, candidatos })
+      slots.push({ slotKey, candidatos, grupoVencedor })
+    }
+  }
+
+  // Caminho OFICIAL: com os 8 melhores terceiros conhecidos, a FIFA define uma
+  // atribuição FIXA (vencedor → terceiro) por combinação de grupos classificados.
+  // Só aplicável se cada slot souber seu vencedor (1X) e a combinação existir na tabela.
+  if (melhoresIds.size === 8 && terceirosPorGrupo.size === 8) {
+    const combinacao = [...terceirosPorGrupo.keys()].sort().join('')
+    const tabela = TABELA_TERCEIROS_FIFA_2026[combinacao]
+    const completo = tabela != null && slots.every(s =>
+      s.grupoVencedor != null && terceirosPorGrupo.has(tabela[s.grupoVencedor]))
+    if (completo) {
+      for (const s of slots) {
+        terceirosPorSlot[s.slotKey] = terceirosPorGrupo.get(tabela[s.grupoVencedor!])!.timeId
+      }
+      return terceirosPorSlot
     }
   }
 

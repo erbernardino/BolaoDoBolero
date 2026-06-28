@@ -64,24 +64,46 @@ describe('calcularClassificadosMataMata', () => {
     expect(r.has('A4')).toBe(false)
   })
 
-  it('NÃO inclui terceiro quando 8+ outros grupos podem ter 3º igual ou melhor', () => {
-    // 10 grupos completos. No grupo alvo (A), o 3º (A3) tem 3 pts.
-    // 9 outros grupos com 3º de 3 pts → 9 > 7 → A3 não garantido entre os 8.
-    const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
-    const grupos: GrupoRef[] = letras.map(L => ({ nome: `Grupo ${L}`, times: [`${L}1`, `${L}2`, `${L}3`, `${L}4`] }))
+  it('estado PROVISÓRIO: 3º não garantido enquanto 8+ outros grupos podem ter 3º igual ou melhor', () => {
+    // 9 grupos completos + 1 grupo (Z) ainda em aberto → fase NÃO completa: vale a
+    // contagem conservadora por pontos. No grupo alvo (A), o 3º (A3) tem 3 pts e há
+    // 8 outros grupos completos com 3º de 3 pts (8 > 7) → A3 não garantido.
+    const completos = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+    const grupos: GrupoRef[] = [...completos, 'Z'].map(L => ({ nome: `Grupo ${L}`, times: [`${L}1`, `${L}2`, `${L}3`, `${L}4`] }))
     const jogos: JogoCalc[] = []
-    for (const L of letras) {
-      // round-robin: 1º vence todos (9), 2º vence 2 (6), 3º vence 1 (3), 4º 0.
+    for (const L of completos) {
       jogos.push(
         jg(L, `${L}1`, `${L}2`, [1, 0]), jg(L, `${L}1`, `${L}3`, [1, 0]), jg(L, `${L}1`, `${L}4`, [1, 0]),
         jg(L, `${L}2`, `${L}3`, [1, 0]), jg(L, `${L}2`, `${L}4`, [1, 0]), jg(L, `${L}3`, `${L}4`, [1, 0]),
       )
     }
+    // Grupo Z em aberto (nenhum jogo encerrado) → mantém o estado provisório.
+    jogos.push(jg('Z', 'Z1', 'Z2', null), jg('Z', 'Z3', 'Z4', null))
     const r = calcularClassificadosMataMata(jogos, grupos)
-    // 1º e 2º de cada grupo entram (top-2); os 3os (3 pts) competem por 8 vagas entre 10 → nenhum garantido.
-    expect(r.has('A3')).toBe(false)
+    expect(r.has('A3')).toBe(false) // conservador: ainda não garantido
     expect(r.has('A1')).toBe(true)
     expect(r.has('A2')).toBe(true)
+  })
+
+  it('fase COMPLETA: seleciona os 8 melhores terceiros por SALDO (não falso-negativo) — caso SEN', () => {
+    // 9 grupos completos. Todos os 3os têm 3 pts; o SALDO os separa: A3..H3 fazem 3×0
+    // no 3º vs 4º (saldo +1); I3 faz só 1×0 (saldo -1) → I3 é o pior e fica de fora.
+    const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+    const grupos: GrupoRef[] = letras.map(L => ({ nome: `Grupo ${L}`, times: [`${L}1`, `${L}2`, `${L}3`, `${L}4`] }))
+    const jogos: JogoCalc[] = letras.flatMap(L => {
+      const margem3vs4: [number, number] = L === 'I' ? [1, 0] : [3, 0]
+      return [
+        jg(L, `${L}1`, `${L}2`, [1, 0]), jg(L, `${L}1`, `${L}3`, [1, 0]), jg(L, `${L}1`, `${L}4`, [1, 0]),
+        jg(L, `${L}2`, `${L}3`, [1, 0]), jg(L, `${L}2`, `${L}4`, [1, 0]), jg(L, `${L}3`, `${L}4`, margem3vs4),
+      ]
+    })
+    const r = calcularClassificadosMataMata(jogos, grupos)
+    const tercClass = letras.filter(L => r.has(`${L}3`))
+    expect(tercClass).toHaveLength(8) // exatamente 8 melhores terceiros
+    expect(r.has('A3')).toBe(true) // 3 pts, saldo +1 → classificado (era falso-negativo antes)
+    expect(r.has('I3')).toBe(false) // 3 pts, pior saldo → 9º, fora
+    // top-2 de todos entram.
+    expect(letras.every(L => r.has(`${L}1`) && r.has(`${L}2`))).toBe(true)
   })
 
   it('classifica o 2º de grupo COMPLETO empatado em pontos com o 3º (desempate por saldo) — regressão CAN/AUS', () => {
@@ -102,6 +124,8 @@ describe('calcularClassificadosMataMata', () => {
     const r = calcularClassificadosMataMata(jogos, grupos)
     expect(r.has('A2')).toBe(true) // 2º real (por saldo) — DEVE estar classificado (top-2)
     expect(r.has('A1')).toBe(true) // 1º
-    expect(r.has('A3')).toBe(false) // 3º não garantido entre os 8 melhores
+    // Fase completa: 9 terceiros a 4 pts → 8 classificam; A3 (1º na ordem de desempate) entra.
+    expect(r.has('A3')).toBe(true)
+    expect(letras.filter(L => r.has(`${L}3`))).toHaveLength(8)
   })
 })

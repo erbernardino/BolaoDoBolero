@@ -155,3 +155,59 @@ describe('resolverTimeMataMataPorPalpites', () => {
     expect(resultado).toBe('A1')
   })
 })
+
+describe('montarTerceirosPorSlot — atribuição oficial FIFA (tabela das 495 combinações)', () => {
+  // Helper: classificação mínima (só os campos usados na atribuição).
+  function ct(timeId: string) {
+    return { timeId, pontos: 3, jogos: 3, vitorias: 1, empates: 0, derrotas: 2, golsMarcados: 2, golsSofridos: 3, saldoGols: -1 }
+  }
+  // 12 grupos, cada um com 1º/2º/3º (`X1`,`X2`,`X3`).
+  const LETRAS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+  const classificacoes = Object.fromEntries(
+    LETRAS.map(L => [L, [ct(`${L}1`), ct(`${L}2`), ct(`${L}3`)]]),
+  )
+  // Combinação real da Copa 2026: terceiros classificados dos grupos B,D,E,F,I,J,K,L.
+  const GRUPOS_TERCEIROS = ['B', 'D', 'E', 'F', 'I', 'J', 'K', 'L']
+  const melhores = GRUPOS_TERCEIROS.map(L => classificacoes[L][2])
+  // Jogos da 2ª fase com vencedor (1X) e elegibilidade (3XYZ), labels reais do app.
+  const jogos = [
+    { id: 'f74', numero: 74, labelCasa: '1E', labelVisitante: '3ABCDF' },
+    { id: 'f77', numero: 77, labelCasa: '1I', labelVisitante: '3CDFGH' },
+    { id: 'f79', numero: 79, labelCasa: '1A', labelVisitante: '3CEFHI' },
+    { id: 'f80', numero: 80, labelCasa: '1L', labelVisitante: '3EHIJK' },
+    { id: 'f81', numero: 81, labelCasa: '1D', labelVisitante: '3BEFIJ' },
+    { id: 'f82', numero: 82, labelCasa: '1G', labelVisitante: '3AEHIJ' },
+    { id: 'f85', numero: 85, labelCasa: '1B', labelVisitante: '3EFGIJ' },
+    { id: 'f87', numero: 87, labelCasa: '1K', labelVisitante: '3DEIJL' },
+  ]
+
+  it('atribui cada terceiro ao 1º colocado conforme a tabela oficial (não por ranking)', () => {
+    const slots = montarTerceirosPorSlot(jogos, classificacoes, melhores)
+    // Tabela BDEFIJKL: 1A→3E, 1B→3J, 1D→3B, 1E→3D, 1G→3I, 1I→3F, 1K→3L, 1L→3K
+    expect(slots['f79:visitante']).toBe('E3') // 1A × 3E (MEX × ECU)
+    expect(slots['f85:visitante']).toBe('J3') // 1B × 3J (SUI × ALG)
+    expect(slots['f81:visitante']).toBe('B3') // 1D × 3B (USA × BIH)
+    expect(slots['f74:visitante']).toBe('D3') // 1E × 3D (GER × PAR)
+    expect(slots['f82:visitante']).toBe('I3') // 1G × 3I (BEL × SEN)
+    expect(slots['f77:visitante']).toBe('F3') // 1I × 3F (FRA × SWE)
+    expect(slots['f87:visitante']).toBe('L3') // 1K × 3L (COL × GHA)
+    expect(slots['f80:visitante']).toBe('K3') // 1L × 3K (ENG × COD)
+  })
+
+  it('preenche os 8 slots com 8 terceiros distintos', () => {
+    const slots = montarTerceirosPorSlot(jogos, classificacoes, melhores)
+    const v = Object.values(slots).filter(Boolean)
+    expect(v).toHaveLength(8)
+    expect(new Set(v).size).toBe(8)
+  })
+
+  it('faz fallback (não usa tabela) quando faltam os labels de vencedor (1X)', () => {
+    // Sem labelCasa não há como mapear vencedor→terceiro: cai no backtracking guloso,
+    // que ainda preenche 8 slots distintos.
+    const semVencedor = jogos.map(j => ({ id: j.id, numero: j.numero, labelVisitante: j.labelVisitante }))
+    const slots = montarTerceirosPorSlot(semVencedor, classificacoes, melhores)
+    const v = Object.values(slots).filter(Boolean)
+    expect(v).toHaveLength(8)
+    expect(new Set(v).size).toBe(8)
+  })
+})

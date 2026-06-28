@@ -1,8 +1,9 @@
-import type { JogoCalc as Jogo } from '../types/calc'
+import type { JogoCalc as Jogo, ClassificacaoTime } from '../types/calc'
 import type { GrupoRef } from './bracketUsuario'
 import { calcularClinchGrupo, type ClinchTime } from './clinchGrupo'
 import { calcularClassificacaoGrupo } from './classificacao'
 import { jogoParaPalpiteReal } from './resultadosOficiais'
+import { selecionarMelhoresTerceiros } from './melhoresTerceiros'
 
 /**
  * Clinch de classificação para o MATA-MATA (cross-group), considerando que a Copa
@@ -96,9 +97,40 @@ function analisarGrupo(jogosDoGrupo: Jogo[], times: string[]): AnaliseGrupo {
   return { pontosAtuais, piorPosicao, melhorPosicao, maxPontos3o }
 }
 
+/** Todos os grupos completos (todos os jogos encerrados com resultado). */
+function todosGruposCompletos(jogosGrupos: Jogo[], grupos: GrupoRef[]): boolean {
+  return grupos.every(g => {
+    const letra = g.nome.replace('Grupo ', '')
+    const js = jogosGrupos.filter(j => j.grupo === letra)
+    return js.length > 0 && js.every(j => j.encerrado && j.resultado)
+  })
+}
+
 /**
- * Retorna o conjunto de timeIds garantidos no mata-mata (top-2 OU melhor terceiro),
- * em todos os cenários possíveis. Conservador: nunca inclui quem não está garantido.
+ * Conjunto definitivo dos 8 melhores terceiros — só quando TODOS os grupos estão
+ * completos (desempate FIFA completo: pts > saldo > gols > conduta). Retorna null
+ * no estado provisório, para a contagem conservadora por pontos assumir.
+ */
+function melhores8SeCompleto(jogosGrupos: Jogo[], grupos: GrupoRef[]): Set<string> | null {
+  if (!todosGruposCompletos(jogosGrupos, grupos)) return null
+  const terceiros = grupos
+    .map(g => {
+      const letra = g.nome.replace('Grupo ', '')
+      const cls = calcularClassificacaoGrupo(
+        jogosGrupos.filter(j => j.grupo === letra).map(jogoParaPalpiteReal),
+        g.times,
+      )
+      return cls[2] ? { ...cls[2], grupo: letra } : null
+    })
+    .filter((t): t is ClassificacaoTime & { grupo: string } => t != null)
+  return new Set(selecionarMelhoresTerceiros(terceiros).map(t => t.timeId))
+}
+
+/**
+ * Retorna o conjunto de timeIds garantidos no mata-mata (top-2 OU melhor terceiro).
+ * Com grupos incompletos é CONSERVADOR (nunca inclui quem não está garantido por
+ * pontos). Com todos os grupos completos usa a ordenação DEFINITIVA dos 8 melhores
+ * terceiros (com saldo), evitando o falso negativo da contagem só por pontos.
  */
 export function calcularClassificadosMataMata(jogos: Jogo[], grupos: GrupoRef[]): Set<string> {
   const jogosGrupos = jogos.filter(j => j.fase === 'grupos')
@@ -108,6 +140,8 @@ export function calcularClassificadosMataMata(jogos: Jogo[], grupos: GrupoRef[])
     analises[letra] = analisarGrupo(jogosGrupos.filter(j => j.grupo === letra), g.times)
   }
 
+  const melhores8 = melhores8SeCompleto(jogosGrupos, grupos)
+
   const classificados = new Set<string>()
   for (const g of grupos) {
     const letra = g.nome.replace('Grupo ', '')
@@ -115,6 +149,11 @@ export function calcularClassificadosMataMata(jogos: Jogo[], grupos: GrupoRef[])
     for (const t of g.times) {
       if (a.piorPosicao[t] <= 2) { classificados.add(t); continue }
       if (a.piorPosicao[t] <= 3) {
+        // Grupos completos: terceiro classifica sse está entre os 8 melhores (definitivo).
+        if (melhores8) {
+          if (melhores8.has(t)) classificados.add(t)
+          continue
+        }
         const px = a.pontosAtuais[t]
         let count = 0
         for (const g2 of grupos) {
@@ -143,6 +182,7 @@ export function montarClinchCompleto(
 ): Record<string, Record<string, ClinchTime>> {
   const jogosGrupos = jogos.filter(j => j.fase === 'grupos')
   const classificados = calcularClassificadosMataMata(jogos, grupos)
+  const completos = todosGruposCompletos(jogosGrupos, grupos)
 
   const out: Record<string, Record<string, ClinchTime>> = {}
   for (const g of grupos) {
@@ -154,8 +194,9 @@ export function montarClinchCompleto(
       const ct = clinch[t]
       if (!ct) continue
       ct.classificadoMataMata = classificados.has(t)
-      // Eliminado do mata-mata: só quando o time não pode sair do último lugar.
-      ct.eliminado = !classificados.has(t) && analise.melhorPosicao[t] >= 4
+      // Eliminado do mata-mata: quando não pode sair do último lugar OU, com a fase
+      // de grupos completa, qualquer não-classificado está definitivamente fora.
+      ct.eliminado = !classificados.has(t) && (completos || analise.melhorPosicao[t] >= 4)
     }
     out[letra] = clinch
   }
