@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { collection, getDocs, onSnapshot, doc, getDoc, query, where } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { calcularPontosPalpite } from '../lib/pontuacao'
+import { resolverTimeAoVivo } from '../lib/resolverTimeAoVivo'
+import type { SnapshotResultados } from '../lib/snapshotResultados'
 import type { Jogo, Time, Palpite, Config } from '../types'
 
 interface JogoAoVivo {
@@ -24,6 +26,7 @@ export function AoVivo({ uid }: { uid: string }) {
   const [times, setTimes] = useState<Map<string, Time>>(new Map())
   const [palpites, setPalpites] = useState<Map<string, Palpite>>(new Map())
   const [config, setConfig] = useState<Config | null>(null)
+  const [snapshot, setSnapshot] = useState<SnapshotResultados | null>(null)
 
   // Times e config carregados uma unica vez (nao mudam com frequencia)
   useEffect(() => {
@@ -35,6 +38,17 @@ export function AoVivo({ uid }: { uid: string }) {
     getDoc(doc(db, 'config', 'geral')).then(snap => {
       if (snap.exists()) setConfig(snap.data() as Config)
     })
+  }, [])
+
+  // Snapshot oficial — resolve times de mata-mata (1A/2B/3XYZ) cujo timeCasa/
+  // timeVisitante ainda não foi materializado no doc do jogo.
+  useEffect(() => {
+    const unsub = onSnapshot(
+      doc(db, '_system', 'resultados'),
+      s => setSnapshot(s.exists() ? (s.data() as SnapshotResultados) : null),
+      () => { /* sem snapshot ou sem permissão — ignora */ },
+    )
+    return () => unsub()
   }, [])
 
   // Jogos ao vivo: subscribe apenas aos que estao com aoVivo=true (filtrado no servidor)
@@ -81,14 +95,14 @@ export function AoVivo({ uid }: { uid: string }) {
         }
         return {
           jogo,
-          timeCasa: times.get(jogo.timeCasa) ?? null,
-          timeVisitante: times.get(jogo.timeVisitante) ?? null,
+          timeCasa: resolverTimeAoVivo(jogo, 'casa', times, snapshot),
+          timeVisitante: resolverTimeAoVivo(jogo, 'visitante', times, snapshot),
           palpite,
           pontos,
           tipoAcerto,
         }
       })
-  }, [jogosLive, times, palpites, config])
+  }, [jogosLive, times, palpites, config, snapshot])
 
   if (jogosAoVivo.length === 0) return null
 

@@ -6,6 +6,8 @@ import { Navbar } from '../components/Navbar'
 import { RankingTable, type JogoAoVivoRanking } from '../components/RankingTable'
 import { RankingDestaques } from '../components/RankingDestaques'
 import { AoVivo } from '../components/AoVivo'
+import { resolverTimeAoVivo } from '../lib/resolverTimeAoVivo'
+import type { SnapshotResultados } from '../lib/snapshotResultados'
 import { useAuth } from '../hooks/useAuth'
 
 type RankingComUsuario = Ranking & { usuario: Usuario }
@@ -35,6 +37,7 @@ export function Ranking() {
   const [jogosLive, setJogosLive] = useState<Jogo[]>([])
   const [palpitesLive, setPalpitesLive] = useState<Map<string, Palpite>>(new Map())
   const [rankingAtualizadoEm, setRankingAtualizadoEm] = useState<Timestamp | null>(null)
+  const [snapshotResultados, setSnapshotResultados] = useState<SnapshotResultados | null>(null)
 
   // Última atualização do ranking — gravada pela Cloud Function em _system/ranking_meta
   // a cada recálculo. onSnapshot para refletir em tempo real quando um jogo encerra.
@@ -44,6 +47,17 @@ export function Ranking() {
       // serverTimestamp pode chegar null momentaneamente (latency compensation).
       setRankingAtualizadoEm(ts ?? null)
     }, () => { /* offline / sem doc — ignora */ })
+    return () => unsub()
+  }, [])
+
+  // Snapshot oficial — resolve os times de jogos de mata-mata (1A/2B/3XYZ) cujo
+  // timeCasa/timeVisitante ainda não foi materializado no doc do jogo ao vivo.
+  useEffect(() => {
+    const unsub = onSnapshot(
+      doc(db, '_system', 'resultados'),
+      (snap) => setSnapshotResultados(snap.exists() ? (snap.data() as SnapshotResultados) : null),
+      () => { /* offline / sem doc — ignora */ },
+    )
     return () => unsub()
   }, [])
 
@@ -99,10 +113,10 @@ export function Ranking() {
       .slice(0, 30)
       .map((jogo) => ({
         jogo,
-        timeCasa: times.get(jogo.timeCasa) ?? null,
-        timeVisitante: times.get(jogo.timeVisitante) ?? null,
+        timeCasa: resolverTimeAoVivo(jogo, 'casa', times, snapshotResultados),
+        timeVisitante: resolverTimeAoVivo(jogo, 'visitante', times, snapshotResultados),
       }))
-  }, [podeVerAlheios, jogosLive, times])
+  }, [podeVerAlheios, jogosLive, times, snapshotResultados])
 
   // Chave estável: só muda quando o CONJUNTO de jogos ao vivo muda (entra/sai
   // jogo), não a cada gol. Evita refazer o getDocs de palpites a cada placar.
