@@ -18,15 +18,25 @@
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function (regs) {
           if (!regs.length) return
-          regs.forEach(function (r) { r.unregister() })
-          if (window.caches && caches.keys) {
-            caches.keys().then(function (keys) { keys.forEach(function (k) { caches.delete(k) }) })
-          }
-          // Se um SW ainda controla esta página, recarrega UMA vez para sair do controle.
-          if (navigator.serviceWorker.controller && !sessionStorage.getItem('sw-removido')) {
-            sessionStorage.setItem('sw-removido', '1')
-            location.reload()
-          }
+          var estavaControlado = !!navigator.serviceWorker.controller
+          // Aguarda o unregister E a limpeza de caches CONCLUÍREM antes de recarregar —
+          // senão a página recarrega antes do desregistro persistir e o SW continua no controle.
+          Promise.all(regs.map(function (r) { return r.unregister() }))
+            .then(function () {
+              if (window.caches && caches.keys) {
+                return caches.keys().then(function (keys) {
+                  return Promise.all(keys.map(function (k) { return caches.delete(k) }))
+                })
+              }
+            })
+            .then(function () {
+              // Só agora: se um SW controlava esta página, recarrega UMA vez para sair do controle.
+              if (estavaControlado && !sessionStorage.getItem('sw-removido')) {
+                sessionStorage.setItem('sw-removido', '1')
+                location.reload()
+              }
+            })
+            .catch(function () {})
         }).catch(function () {})
       }
     </script>
