@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { collection, getDocs, getDoc, doc } from 'firebase/firestore'
 import { db } from '../../config/firebase'
 import { montarResolvedorBracket, type ResolverBracket } from '../../lib/bracketUsuario'
+import { resolverTimeIdExibicao } from '../../lib/resolverTimeExibicao'
+import type { SnapshotResultados } from '../../lib/snapshotResultados'
 import type { Jogo, Time, Palpite, Usuario, PalpiteEspecial, ResultadoEspecial, Grupo } from '../../types'
 
 const FASE_LABELS: Record<string, string> = {
@@ -51,10 +53,11 @@ export function ImprimirPalpites() {
   const [resultadoEspecial, setResultadoEspecial] = useState<ResultadoEspecial | null>(null)
   const [grupos, setGrupos] = useState<Grupo[]>([])
   const [desempatesPorUid, setDesempatesPorUid] = useState<Map<string, Record<string, number>>>(new Map())
+  const [snapshotResultados, setSnapshotResultados] = useState<SnapshotResultados | null>(null)
 
   useEffect(() => {
     async function load() {
-      const [jogosSnap, timesSnap, palpitesSnap, usuariosSnap, especiaisSnap, resEspSnap, gruposSnap, desempatesSnap] = await Promise.all([
+      const [jogosSnap, timesSnap, palpitesSnap, usuariosSnap, especiaisSnap, resEspSnap, gruposSnap, desempatesSnap, snapResultadosDoc] = await Promise.all([
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
         getDocs(collection(db, 'palpites')),
@@ -63,7 +66,9 @@ export function ImprimirPalpites() {
         getDoc(doc(db, 'config', 'resultado_especial')),
         getDocs(collection(db, 'grupos')),
         getDocs(collection(db, 'desempates_terceiros')),
+        getDoc(doc(db, '_system', 'resultados')),
       ])
+      setSnapshotResultados(snapResultadosDoc.exists() ? (snapResultadosDoc.data() as SnapshotResultados) : null)
 
       const jList = jogosSnap.docs.map(d => ({ id: d.id, ...d.data() } as Jogo))
       jList.sort((a, b) => a.numero - b.numero)
@@ -386,6 +391,9 @@ export function ImprimirPalpites() {
               const resultado = jogo.encerrado && jogo.resultado
                 ? `${jogo.resultado.golsCasa}–${jogo.resultado.golsVisitante}`
                 : null
+              // Cabeçalho OFICIAL: resolve times de mata-mata (timeCasa vazio) via snapshot.
+              const casaOficialId = resolverTimeIdExibicao(jogo, 'casa', snapshotResultados)
+              const visOficialId = resolverTimeIdExibicao(jogo, 'visitante', snapshotResultados)
 
               return (
                 <div key={jogo.id} style={{ marginBottom: 4, pageBreakInside: 'avoid' }}>
@@ -399,14 +407,14 @@ export function ImprimirPalpites() {
                       </span>
                     )}
                     <span style={{ fontSize: 9, display: 'flex', alignItems: 'center' }}>
-                      {jogo.timeCasa
-                        ? <><Flag url={bandeira(jogo.timeCasa)} /><strong>{sigla(jogo.timeCasa)}</strong></>
+                      {casaOficialId
+                        ? <><Flag url={bandeira(casaOficialId)} /><strong>{sigla(casaOficialId)}</strong></>
                         : <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>TBD</span>}
                     </span>
                     <span style={{ fontSize: 10, color: '#9ca3af' }}>vs</span>
                     <span style={{ fontSize: 9, display: 'flex', alignItems: 'center' }}>
-                      {jogo.timeVisitante
-                        ? <><Flag url={bandeira(jogo.timeVisitante)} /><strong>{sigla(jogo.timeVisitante)}</strong></>
+                      {visOficialId
+                        ? <><Flag url={bandeira(visOficialId)} /><strong>{sigla(visOficialId)}</strong></>
                         : <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>TBD</span>}
                     </span>
                     {resultado && (

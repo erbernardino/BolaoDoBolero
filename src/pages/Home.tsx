@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
-import { collection, getDocs, getCountFromServer, query, where } from 'firebase/firestore'
+import { collection, getDocs, getCountFromServer, getDoc, doc, query, where } from 'firebase/firestore'
 import { auth, db } from '../config/firebase'
 import { useAuth } from '../hooks/useAuth'
 import { Navbar } from '../components/Navbar'
 import { AoVivo } from '../components/AoVivo'
 import { useRemoteFlag } from '../hooks/useRemoteConfig'
+import { resolverTimeExibicao, resolverTimeIdExibicao } from '../lib/resolverTimeExibicao'
+import type { SnapshotResultados } from '../lib/snapshotResultados'
 import type { Jogo, Time, Ranking as RankingType } from '../types'
 
 function ContagemRegressiva({ dataAlvo }: { dataAlvo: Date }) {
@@ -60,7 +62,7 @@ export function Home() {
     async function load() {
       if (!firebaseUser) return
 
-      const [rankingSnap, jogosSnap, timesSnap, meusPalpitesCount] = await Promise.all([
+      const [rankingSnap, jogosSnap, timesSnap, meusPalpitesCount, snapResultadosDoc] = await Promise.all([
         getDocs(collection(db, 'ranking')),
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
@@ -71,7 +73,13 @@ export function Home() {
           collection(db, 'palpites'),
           where('uid', '==', firebaseUser.uid),
         )),
+        // Snapshot oficial — resolve times de mata-mata (1A/2B/3XYZ) ainda não
+        // materializados no doc do jogo.
+        getDoc(doc(db, '_system', 'resultados')),
       ])
+      const snapResultados = snapResultadosDoc.exists()
+        ? (snapResultadosDoc.data() as SnapshotResultados)
+        : null
 
       const rankings = rankingSnap.docs.map(d => ({ uid: d.id, ...d.data() } as RankingType))
       rankings.sort((a, b) => b.pontosTotal - a.pontosTotal)
@@ -89,13 +97,18 @@ export function Home() {
       const jogos = jogosSnap.docs.map(d => ({ id: d.id, ...d.data() } as Jogo))
       setTotalJogos(jogos.length)
       const proximos = jogos
-        .filter(j => !j.encerrado && !j.aoVivo && j.dataHora.toMillis() > agora && j.timeCasa)
+        // Só confrontos com AMBOS os times já conhecidos — direto (grupo) ou
+        // resolvido pelo snapshot oficial (mata-mata). Substitui o antigo
+        // `&& j.timeCasa`, que descartava todo jogo de mata-mata (timeCasa vazio).
+        .filter(j => !j.encerrado && !j.aoVivo && j.dataHora.toMillis() > agora
+          && resolverTimeIdExibicao(j, 'casa', snapResultados)
+          && resolverTimeIdExibicao(j, 'visitante', snapResultados))
         .sort((a, b) => a.dataHora.toMillis() - b.dataHora.toMillis())
         .slice(0, 3)
         .map(j => ({
           ...j,
-          timeCasaObj: timesMap.get(j.timeCasa),
-          timeVisitanteObj: timesMap.get(j.timeVisitante),
+          timeCasaObj: resolverTimeExibicao(j, 'casa', timesMap, snapResultados) ?? undefined,
+          timeVisitanteObj: resolverTimeExibicao(j, 'visitante', timesMap, snapResultados) ?? undefined,
         }))
       setProximosJogos(proximos)
 

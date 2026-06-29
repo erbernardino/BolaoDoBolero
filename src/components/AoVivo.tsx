@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { collection, getDocs, onSnapshot, doc, getDoc, query, where } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import { calcularPontosPalpite } from '../lib/pontuacao'
-import { resolverTimeAoVivo } from '../lib/resolverTimeAoVivo'
+import { resolverTimeExibicao } from '../lib/resolverTimeExibicao'
 import type { SnapshotResultados } from '../lib/snapshotResultados'
 import type { Jogo, Time, Palpite, Config } from '../types'
 
@@ -95,8 +95,8 @@ export function AoVivo({ uid }: { uid: string }) {
         }
         return {
           jogo,
-          timeCasa: resolverTimeAoVivo(jogo, 'casa', times, snapshot),
-          timeVisitante: resolverTimeAoVivo(jogo, 'visitante', times, snapshot),
+          timeCasa: resolverTimeExibicao(jogo, 'casa', times, snapshot),
+          timeVisitante: resolverTimeExibicao(jogo, 'visitante', times, snapshot),
           palpite,
           pontos,
           tipoAcerto,

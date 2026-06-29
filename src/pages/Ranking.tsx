@@ -6,7 +6,7 @@ import { Navbar } from '../components/Navbar'
 import { RankingTable, type JogoAoVivoRanking } from '../components/RankingTable'
 import { RankingDestaques } from '../components/RankingDestaques'
 import { AoVivo } from '../components/AoVivo'
-import { resolverTimeAoVivo } from '../lib/resolverTimeAoVivo'
+import { resolverTimeExibicao } from '../lib/resolverTimeExibicao'
 import type { SnapshotResultados } from '../lib/snapshotResultados'
 import { useAuth } from '../hooks/useAuth'
 
@@ -113,8 +113,8 @@ export function Ranking() {
       .slice(0, 30)
       .map((jogo) => ({
         jogo,
-        timeCasa: resolverTimeAoVivo(jogo, 'casa', times, snapshotResultados),
-        timeVisitante: resolverTimeAoVivo(jogo, 'visitante', times, snapshotResultados),
+        timeCasa: resolverTimeExibicao(jogo, 'casa', times, snapshotResultados),
+        timeVisitante: resolverTimeExibicao(jogo, 'visitante', times, snapshotResultados),
       }))
   }, [podeVerAlheios, jogosLive, times, snapshotResultados])
 
