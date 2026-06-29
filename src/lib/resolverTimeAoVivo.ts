@@ -20,8 +20,7 @@ export function resolverTimeAoVivo(
   snapshot: SnapshotResultados | null,
 ): Time | null {
   const direto = lado === 'casa' ? jogo.timeCasa : jogo.timeVisitante
-  const id = (direto && direto.length > 0)
-    ? direto
-    : snapshot?.bracket?.[jogo.id]?.[lado]?.timeId ?? null
+  // `direto` é "" (vazio) em jogos de mata-mata não materializados → cai no snapshot.
+  const id = direto || (snapshot?.bracket?.[jogo.id]?.[lado]?.timeId ?? null)
   return id ? times.get(id) ?? null : null
 }
