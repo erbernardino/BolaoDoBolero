@@ -54,6 +54,9 @@ self.addEventListener('install', () => { self.skipWaiting() })
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     try {
+      // Assume o controle das abas para que client.navigate() funcione mesmo quando
+      // o tombstone não controlava a aba (ex.: registro novo / sem clientsClaim).
+      try { await self.clients.claim() } catch (e) {}
       if (self.caches) {
         const keys = await caches.keys()
         await Promise.all(keys.map((k) => caches.delete(k)))
