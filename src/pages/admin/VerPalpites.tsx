@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, getDoc, doc } from 'firebase/firestore'
 import { db } from '../../config/firebase'
+import { resolverTimeIdExibicao } from '../../lib/resolverTimeExibicao'
+import type { SnapshotResultados } from '../../lib/snapshotResultados'
 import type { Jogo, Time, Palpite, Usuario, Fase, PalpiteEspecial, ResultadoEspecial } from '../../types'
 
 const FASES: { id: Fase | 'todos' | 'especiais'; label: string }[] = [
@@ -36,17 +38,20 @@ export function VerPalpites() {
   const [grupoFiltro, setGrupoFiltro] = useState('')
   const [palpitesEspeciais, setPalpitesEspeciais] = useState<PalpiteEspecial[]>([])
   const [resultadoEspecial, setResultadoEspecial] = useState<ResultadoEspecial | null>(null)
+  const [snapshotResultados, setSnapshotResultados] = useState<SnapshotResultados | null>(null)
 
   useEffect(() => {
     async function load() {
-      const [jogosSnap, timesSnap, palpitesSnap, usuariosSnap, especiaisSnap, resultadoEspecialSnap] = await Promise.all([
+      const [jogosSnap, timesSnap, palpitesSnap, usuariosSnap, especiaisSnap, resultadoEspecialSnap, snapResultadosDoc] = await Promise.all([
         getDocs(collection(db, 'jogos')),
         getDocs(collection(db, 'times')),
         getDocs(collection(db, 'palpites')),
         getDocs(collection(db, 'usuarios')),
         getDocs(collection(db, 'palpites_especiais')),
         getDoc(doc(db, 'config', 'resultado_especial')),
+        getDoc(doc(db, '_system', 'resultados')),
       ])
+      setSnapshotResultados(snapResultadosDoc.exists() ? (snapResultadosDoc.data() as SnapshotResultados) : null)
 
       const jogosData = jogosSnap.docs.map(d => ({ id: d.id, ...d.data() } as Jogo))
       jogosData.sort((a, b) => a.dataHora.toMillis() - b.dataHora.toMillis())
@@ -301,27 +306,32 @@ export function VerPalpites() {
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 sticky left-0 bg-gray-50 min-w-[120px]">
                 Participante
               </th>
-              {jogosFiltrados.map(jogo => (
+              {jogosFiltrados.map(jogo => {
+                // Resolve o time mesmo em jogos de mata-mata (timeCasa/Visitante vazios)
+                // via snapshot oficial — antes mostrava "A definir" indevidamente.
+                const casaId = resolverTimeIdExibicao(jogo, 'casa', snapshotResultados)
+                const visId = resolverTimeIdExibicao(jogo, 'visitante', snapshotResultados)
+                return (
                 <th key={jogo.id} className="px-1 py-2 text-center w-[90px] min-w-[90px] max-w-[90px] align-top">
                   <div className="flex flex-col items-center h-full">
                     <span className="text-[9px] font-bold text-blue-500 mb-1">Jogo {jogo.numero}</span>
-                    {jogo.timeCasa ? (
+                    {casaId ? (
                       <div className="flex items-center gap-1 justify-center">
-                        {bandeira(jogo.timeCasa) && (
-                          <img src={bandeira(jogo.timeCasa)!} alt="" className="w-4 h-3 object-cover rounded shrink-0" />
+                        {bandeira(casaId) && (
+                          <img src={bandeira(casaId)!} alt="" className="w-4 h-3 object-cover rounded shrink-0" />
                         )}
-                        <span className="text-[10px] font-medium text-gray-600 truncate max-w-[65px]" title={nome(jogo.timeCasa)}>{nome(jogo.timeCasa)}</span>
+                        <span className="text-[10px] font-medium text-gray-600 truncate max-w-[65px]" title={nome(casaId)}>{nome(casaId)}</span>
                       </div>
                     ) : (
                       <span className="text-[9px] text-gray-400 italic">A definir</span>
                     )}
                     <span className="text-[9px] text-gray-400 leading-tight">vs</span>
-                    {jogo.timeVisitante ? (
+                    {visId ? (
                       <div className="flex items-center gap-1 justify-center">
-                        {bandeira(jogo.timeVisitante) && (
-                          <img src={bandeira(jogo.timeVisitante)!} alt="" className="w-4 h-3 object-cover rounded shrink-0" />
+                        {bandeira(visId) && (
+                          <img src={bandeira(visId)!} alt="" className="w-4 h-3 object-cover rounded shrink-0" />
                         )}
-                        <span className="text-[10px] font-medium text-gray-600 truncate max-w-[65px]" title={nome(jogo.timeVisitante)}>{nome(jogo.timeVisitante)}</span>
+                        <span className="text-[10px] font-medium text-gray-600 truncate max-w-[65px]" title={nome(visId)}>{nome(visId)}</span>
                       </div>
                     ) : (
                       <span className="text-[9px] text-gray-400 italic">A definir</span>
@@ -333,7 +343,8 @@ export function VerPalpites() {
                     )}
                   </div>
                 </th>
-              ))}
+                )
+              })}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
