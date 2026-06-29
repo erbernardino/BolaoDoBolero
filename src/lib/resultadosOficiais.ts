@@ -70,9 +70,25 @@ export function montarResolvedorBracketOficial(
   jogos: Jogo[],
   grupos: GrupoRef[],
 ): ResolverBracket {
-  return montarResolvedorBracket({
-    jogos,
-    grupos,
-    palpitesPorJogoId: jogosParaPalpitesReais(jogos),
-  })
+  const palpitesPorJogoId = jogosParaPalpitesReais(jogos)
+  const resolver = montarResolvedorBracket({ jogos, grupos, palpitesPorJogoId })
+
+  // Jogos de mata-mata têm timeCasa/Visitante vazios até serem materializados, então
+  // uma cascata (W##/RU##) resolveria o vencedor como string vazia. Resolvemos cada
+  // jogo na ordem de dependência (o alimentador sempre tem número menor) e enriquecemos
+  // o "palpite real" com os times JÁ RESOLVIDOS — assim as cascatas posteriores
+  // (oitavas ← fase32, quartas ← oitavas, …) encontram o time correto. Os palpites
+  // vêm de jogosParaPalpitesReais (objetos novos), então a mutação é segura.
+  const mataMata = jogos
+    .filter(j => j.fase !== 'grupos')
+    .sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0))
+  for (const jogo of mataMata) {
+    const palpite = palpitesPorJogoId[jogo.id]
+    if (!palpite) continue // sem resultado → cascata permanece indefinida
+    const { casaId, visitanteId } = resolver(jogo)
+    if (casaId) palpite.timeCasa = casaId
+    if (visitanteId) palpite.timeVisitante = visitanteId
+  }
+
+  return resolver
 }
