@@ -36,18 +36,31 @@ function appVersionJson(version: string): Plugin {
   }
 }
 
-// Tombstone do Service Worker antigo (firebase-messaging-sw.js do PWA legado).
-// Quando o navegador checa atualizacao do SW, recebe esta versao que se
-// desregistra e recarrega todas as abas abertas. Apos esse ciclo, o SW some
-// do navegador do usuario sem necessidade de F5 manual.
-function firebaseMessagingSwTombstone(): Plugin {
-  const content = `// Service Worker tombstone: desregistra e recarrega abas.
-self.addEventListener('install', (event) => {
-  self.skipWaiting()
-})
+// Tombstones de Service Workers LEGADOS. A aplicação NÃO é mais PWA, mas usuários
+// antigos podem ter dois SWs registrados:
+//   - /sw.js                     → workbox do antigo vite-plugin-pwa (servia o app
+//                                  shell em cache → versões antigas voltavam no F5)
+//   - /firebase-messaging-sw.js  → SW de notificações FCM (removido)
+// Servimos um tombstone (JS válido) em ambos os caminhos. Quando o navegador faz o
+// update-check do SW registrado, recebe este script que limpa TODOS os caches,
+// desregistra o SW e recarrega as abas — eliminando o SW legado sem F5 manual.
+// (Antes /sw.js caía no rewrite → HTML; o update do SW abortava e o worker velho
+//  permanecia, servindo o app antigo. Servir JS válido faz o update concluir.)
+const SW_TOMBSTONE_PATHS = ['/sw.js', '/firebase-messaging-sw.js']
+
+function swTombstones(): Plugin {
+  const content = `// Service Worker tombstone: limpa caches, desregistra e recarrega abas.
+self.addEventListener('install', () => { self.skipWaiting() })
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     try {
+      // Assume o controle das abas para que client.navigate() funcione mesmo quando
+      // o tombstone não controlava a aba (ex.: registro novo / sem clientsClaim).
+      try { await self.clients.claim() } catch (e) {}
+      if (self.caches) {
+        const keys = await caches.keys()
+        await Promise.all(keys.map((k) => caches.delete(k)))
+      }
       await self.registration.unregister()
       const clients = await self.clients.matchAll({ type: 'window' })
       for (const client of clients) {
@@ -59,11 +72,13 @@ self.addEventListener('activate', (event) => {
   })())
 })
 `
+  const paths = new Set(SW_TOMBSTONE_PATHS)
   return {
-    name: 'firebase-messaging-sw-tombstone',
+    name: 'sw-tombstones',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        if (req.url?.split('?')[0] === '/firebase-messaging-sw.js') {
+        const url = req.url?.split('?')[0]
+        if (url && paths.has(url)) {
           res.setHeader('Content-Type', 'application/javascript')
           res.setHeader('Cache-Control', 'no-cache, max-age=0, must-revalidate')
           res.end(content)
@@ -74,7 +89,9 @@ self.addEventListener('activate', (event) => {
     },
     writeBundle(options) {
       const outDir = options.dir || 'dist'
-      writeFileSync(path.join(outDir, 'firebase-messaging-sw.js'), content)
+      for (const p of SW_TOMBSTONE_PATHS) {
+        writeFileSync(path.join(outDir, p.replace(/^\//, '')), content)
+      }
     },
   }
 }
@@ -86,7 +103,7 @@ export default defineConfig(() => {
       react(),
       tailwindcss(),
       appVersionJson(appVersion),
-      firebaseMessagingSwTombstone(),
+      swTombstones(),
     ],
     define: {
       __APP_VERSION__: JSON.stringify(appVersion),

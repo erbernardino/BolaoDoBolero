@@ -8,18 +8,38 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#1e40af" />
     <meta name="description" content="Bolão da Copa do Mundo 2026" />
-
-    <!-- iOS/Safari PWA -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Bolero" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-
     <!-- Prevent phone number detection -->
     <meta name="format-detection" content="telephone=no" />
+
+    <!-- A aplicação NÃO é PWA. Remove qualquer service worker legado (e seus caches)
+         que ainda esteja servindo versões antigas do app no navegador do usuário. -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          if (!regs.length) return
+          var estavaControlado = !!navigator.serviceWorker.controller
+          // Aguarda o unregister E a limpeza de caches CONCLUÍREM antes de recarregar —
+          // senão a página recarrega antes do desregistro persistir e o SW continua no controle.
+          Promise.all(regs.map(function (r) { return r.unregister() }))
+            .then(function () {
+              if (window.caches && caches.keys) {
+                return caches.keys().then(function (keys) {
+                  return Promise.all(keys.map(function (k) { return caches.delete(k) }))
+                })
+              }
+            })
+            .then(function () {
+              // Só agora: se um SW controlava esta página, recarrega UMA vez para sair do controle.
+              if (estavaControlado && !sessionStorage.getItem('sw-removido')) {
+                sessionStorage.setItem('sw-removido', '1')
+                location.reload()
+              }
+            })
+            .catch(function () {})
+        }).catch(function () {})
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
