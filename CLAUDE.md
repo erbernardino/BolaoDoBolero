@@ -42,7 +42,7 @@ O plano de implementação está em `docs/superpowers/plans/2026-03-31-bolao-do-
 
 ## Stack Tecnológica
 
-- **Frontend:** React 18 + TypeScript + Vite + Tailwind CSS (PWA via vite-plugin-pwa)
+- **Frontend:** React 18 + TypeScript + Vite + Tailwind CSS (não é PWA; SWs legados são removidos por tombstone em vite.config.ts)
 - **Backend:** Firebase Puro (Auth + Firestore + Cloud Functions + Hosting + FCM)
 - **Autenticação:** Firebase Auth (email/senha + telefone SMS)
 - **Testes:** Vitest

@@ -105,4 +105,40 @@ describe('montarResolvedorBracketOficial', () => {
     // o lado cujo alimentador ainda não foi jogado permanece indefinido:
     expect(resolver(oitavas).visitanteId).toBeNull()
   })
+
+  it('cascata de EMPATE por pênaltis: W resolve o vencedor e RU resolve o perdedor (alimentador não materializado)', () => {
+    const grupos: GrupoRef[] = [{ nome: 'Grupo A', times: ['BRA', 'SRB', 'SUI', 'CMR'] }]
+    const jogos: Jogo[] = [
+      jogoGrupo('a1', 'A', 'BRA', 'SRB', [3, 0]),
+      jogoGrupo('a2', 'A', 'BRA', 'SUI', [3, 0]),
+      jogoGrupo('a3', 'A', 'BRA', 'CMR', [3, 0]),
+      jogoGrupo('a4', 'A', 'SRB', 'SUI', [1, 0]),
+      jogoGrupo('a5', 'A', 'SRB', 'CMR', [1, 0]),
+      jogoGrupo('a6', 'A', 'SUI', 'CMR', [1, 0]),
+    ]
+    // fase32 #73: 1A vs 2A (BRA vs SRB), EMPATE 1-1, SRB avança nos pênaltis. Times não materializados.
+    const fase32: Jogo = {
+      id: 'f73', numero: 73, fase: 'fase32', grupo: null,
+      timeCasa: '', timeVisitante: '', labelCasa: '1A', labelVisitante: '2A',
+      origemCasa: null, origemVisitante: null, dataHora: {} as never,
+      resultado: { golsCasa: 1, golsVisitante: 1, classificado: 'SRB' }, encerrado: true,
+    }
+    const jogoW: Jogo = {
+      id: 'jw', numero: 89, fase: 'oitavas', grupo: null,
+      timeCasa: '', timeVisitante: '', labelCasa: 'W73', labelVisitante: 'W74',
+      origemCasa: null, origemVisitante: null, dataHora: {} as never, resultado: null, encerrado: false,
+    }
+    const jogoRU: Jogo = {
+      id: 'jru', numero: 103, fase: 'terceiro', grupo: null,
+      timeCasa: '', timeVisitante: '', labelCasa: 'RU73', labelVisitante: 'RU74',
+      origemCasa: null, origemVisitante: null, dataHora: {} as never, resultado: null, encerrado: false,
+    }
+    const resolver = montarResolvedorBracketOficial([...jogos, fase32, jogoW, jogoRU], grupos)
+    expect(resolver(fase32)).toEqual({ casaId: 'BRA', visitanteId: 'SRB' })
+    // W73 = vencedor por pênaltis (classificado) → SRB
+    expect(resolver(jogoW).casaId).toBe('SRB')
+    // RU73 = perdedor → BRA. Só resolve porque o enriquecimento materializou os times do #73:
+    // o perdedor é "o lado que não é o classificado", e isso exige timeCasa/Visitante reais.
+    expect(resolver(jogoRU).casaId).toBe('BRA')
+  })
 })
