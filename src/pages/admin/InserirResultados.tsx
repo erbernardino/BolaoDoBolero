@@ -98,7 +98,10 @@ export function InserirResultados() {
       resultado: {
         golsCasa,
         golsVisitante,
-        classificado: isMataMata && empate && form.classificado ? form.classificado : null,
+        // Classificado (pênaltis) só é gravado ao ENCERRAR. Durante o ao vivo fica
+        // sempre null — evita persistir um valor residual (ex.: jogo reaberto) que
+        // ficaria oculto (seletor escondido no ao vivo) e sem como o admin editar.
+        classificado: encerrar && isMataMata && empate && form.classificado ? form.classificado : null,
       },
       ...(encerrar ? { encerrado: true, aoVivo: false } : {}),
     })
