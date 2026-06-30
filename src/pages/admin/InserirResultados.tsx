@@ -83,19 +83,25 @@ export function InserirResultados() {
 
     const isMataMata = jogo.fase !== 'grupos'
     const empate = golsCasa === golsVisitante
+    // Encerrar (finalizar) só quando o jogo NÃO está ao vivo. Durante o ao vivo a
+    // partida ainda está em andamento: um empate é temporário e o classificado
+    // (pênaltis) só é exigido ao ENCERRAR — não enquanto o jogo rola.
+    const encerrar = !jogo.aoVivo
 
-    if (isMataMata && empate && !form.classificado) {
-      alert('Em caso de empate no mata-mata, selecione o classificado.')
+    if (encerrar && isMataMata && empate && !form.classificado) {
+      alert('Para encerrar um empate no mata-mata, selecione quem avança (pênaltis).')
       return
     }
 
     setSalvando((prev) => ({ ...prev, [jogo.id]: true }))
-    const encerrar = !jogo.aoVivo
     await updateDoc(doc(db, 'jogos', jogo.id), {
       resultado: {
         golsCasa,
         golsVisitante,
-        classificado: isMataMata && empate ? form.classificado : null,
+        // Classificado (pênaltis) só é gravado ao ENCERRAR. Durante o ao vivo fica
+        // sempre null — evita persistir um valor residual (ex.: jogo reaberto) que
+        // ficaria oculto (seletor escondido no ao vivo) e sem como o admin editar.
+        classificado: encerrar && isMataMata && empate && form.classificado ? form.classificado : null,
       },
       ...(encerrar ? { encerrado: true, aoVivo: false } : {}),
     })
@@ -272,8 +278,8 @@ export function InserirResultados() {
           </div>
         </div>
 
-        {/* Classificado (pênaltis) */}
-        {isMataMata && empate && editable && (
+        {/* Classificado (pênaltis) — só ao finalizar (não durante o ao vivo, jogo em andamento) */}
+        {isMataMata && empate && editable && !jogo.aoVivo && (
           <div className="mt-2 flex justify-center">
             <select
               value={form.classificado}
