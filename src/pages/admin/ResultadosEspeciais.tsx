@@ -69,7 +69,7 @@ export function ResultadosEspeciais() {
         paisesArtilheiros,
       }
       await setDoc(doc(db, 'config', 'resultado_especial'), resultado)
-      setMensagem({ tipo: 'sucesso', texto: 'Resultados especiais salvos! Recalcule o ranking para atualizar os pontos.' })
+      setMensagem({ tipo: 'sucesso', texto: 'Resultados especiais salvos! O ranking será recalculado automaticamente.' })
     } catch {
       setMensagem({ tipo: 'erro', texto: 'Erro ao salvar. Tente novamente.' })
     } finally {
