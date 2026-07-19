@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin'
-import { onDocumentUpdated } from 'firebase-functions/v2/firestore'
+import { onDocumentUpdated, onDocumentWritten } from 'firebase-functions/v2/firestore'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { recalcularTodoRanking } from './pontuacao'
 export { backupFirestoreDiario } from './backup'
@@ -19,6 +19,15 @@ export const onJogoEncerrado = onDocumentUpdated('jogos/{jogoId}', async (event)
   if (resultadoMudou || encerradoMudou) {
     await recalcularTodoRanking()
   }
+})
+
+// Recalcula o ranking quando o admin salva o gabarito dos palpites especiais
+// (campeão, vice, 3º, 4º, país do artilheiro) em config/resultado_especial.
+export const onResultadoEspecialSalvo = onDocumentWritten('config/resultado_especial', async (event) => {
+  const antes = event.data?.before.data() ?? null
+  const depois = event.data?.after.data() ?? null
+  if (JSON.stringify(antes) === JSON.stringify(depois)) return
+  await recalcularTodoRanking()
 })
 
 export const recalcularRanking = onCall(async (request) => {
